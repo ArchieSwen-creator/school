@@ -216,7 +216,7 @@ tbody tr:last-child td{border-bottom:0}
 <div class="app hidden" id="appShell">
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-scroll">
-      <div class="brand"><div class="brand-mark">E</div><div><strong>ArcDigital</strong><small id="sidebarRole">Signed out</small></div></div>
+      <div class="brand"><div class="brand-mark">E</div><div><strong>EduCore</strong><small id="sidebarRole">Signed out</small></div></div>
       <div class="nav-label">Main menu</div>
       <nav class="nav" id="navigation"></nav>
     </div>
@@ -317,17 +317,19 @@ tbody tr:last-child td{border-bottom:0}
   function buildSidebar(){
     const u = E.currentUser();
     if(!u) return;
+
+    /* Determine if viewer is fee-blocked from gradesheet + ledger */
+    const gsAccess = E.viewerGradesheetAccess();
+    const isFeeBlocked = !gsAccess.allowed;
+    const feeBlockedKeys = new Set(['gradesheet', 'ledger']);
+
     const nav = $('#navigation');
     const groups = {};
     E.PAGE_REGISTRY.forEach(p => {
       (groups[p.group] = groups[p.group] || []).push(p);
     });
-        /* Determine if viewer is fee-blocked from gradesheet + ledger */
-    const gsAccess = E.viewerGradesheetAccess();
-    const isFeeBlocked = !gsAccess.allowed;
-    const feeBlockedKeys = new Set(['gradesheet', 'ledger']);
-
     const order = ['Main menu','Family','Academic','Administration','Requests','System'];
+
     nav.innerHTML = order.filter(g => groups[g]).map(g => `
       <div class="nav-label">${g}</div>
       ${groups[g].map(p => {
@@ -338,10 +340,24 @@ tbody tr:last-child td{border-bottom:0}
         const title = feeLocked
           ? `Locked — ${E.money(gsAccess.totalShortfall || 0)} in outstanding fees`
           : '';
+
+        /* Unread announcements badge */
+        let badgeHTML = '';
+        if(p.key === 'announcements' && !locked){
+          const unread = E.unreadAnnouncementCount(u);
+          if(unread > 0){
+            badgeHTML = `<span style="margin-left:auto;background:#d64545;color:#fff;
+              font-size:10px;font-weight:800;border-radius:12px;padding:2px 7px;
+              min-width:18px;text-align:center;line-height:1.4">${unread > 99 ? '99+' : unread}</span>`;
+          }
+        }
+
         return `<button data-page="${p.key}" class="${current} ${locked?'locked':''}"
           ${locked?'data-locked="1"':''} ${feeLocked?'data-fee-locked="1"':''}
           ${title?`title="${E.esc(title)}"`:''}>
-          <span class="ico">${p.icon}</span> ${p.label}${feeLocked ? ' 🔒' : ''}
+          <span class="ico">${p.icon}</span>
+          <span style="flex:1;text-align:left">${p.label}${feeLocked ? ' 🔒' : ''}</span>
+          ${badgeHTML}
         </button>`;
       }).join('')}
     `).join('');
@@ -352,7 +368,8 @@ tbody tr:last-child td{border-bottom:0}
       const key = btn.dataset.page;
       const entry = E.PAGE_REGISTRY.find(p => p.key === key);
       if(!entry) return;
-            if(btn.dataset.locked){
+
+      if(btn.dataset.locked){
         if(btn.dataset.feeLocked){
           const access = E.viewerGradesheetAccess();
           E.toast(`Locked — ${E.money(access.totalShortfall || 0)} in outstanding fees.`);
@@ -361,7 +378,7 @@ tbody tr:last-child td{border-bottom:0}
         }
         return;
       }
-      
+
       if(entry.key === 'dashboard'){
         renderDashboard();
         $$('#navigation button').forEach(b => b.classList.toggle('active', b === btn));
@@ -369,6 +386,7 @@ tbody tr:last-child td{border-bottom:0}
         closeMobile();
         return;
       }
+
       if(entry.file) window.location.href = entry.file;
     });
   }
@@ -421,9 +439,7 @@ tbody tr:last-child td{border-bottom:0}
         perStudent[k].total += x.total / x.count;
         perStudent[k].count += 1;
       });
-      Object.keys(perStudent).forEach(k => {
-        studentAvg[k] = { ...perStudent[k] };
-      });
+      Object.keys(perStudent).forEach(k => { studentAvg[k] = { ...perStudent[k] }; });
     }
 
     const list = Object.values(studentAvg).filter(x => x.count > 0)
@@ -448,7 +464,7 @@ tbody tr:last-child td{border-bottom:0}
   }
 
   /* ============================================================
-     REPORT-CARD STATUS BANNER (for parent/student)
+     REPORT-CARD STATUS BANNER
      ============================================================ */
   function reportStatusBanner(studentId, className){
     const t = E.getReportThreshold();
@@ -478,6 +494,50 @@ tbody tr:last-child td{border-bottom:0}
   }
 
   /* ============================================================
+     ANNOUNCEMENTS PANEL HELPER
+     ============================================================ */
+  function visibleAnnouncementsFor(u){
+    const list = E.readStore(E.STORE_KEYS.announcements, []) || [];
+    const rank = p => {
+      const s = String(p || 'Normal').toLowerCase();
+      if(s === 'urgent') return 0;
+      if(s === 'important') return 1;
+      return 2;
+    };
+    return list
+      .filter(a => E.announcementIsLive(a) && E.announcementVisibleTo(a, u))
+      .sort((a,b) => {
+        if(!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
+        const pr = rank(a.priority) - rank(b.priority);
+        if(pr) return pr;
+        return new Date(b.at || 0) - new Date(a.at || 0);
+      });
+  }
+
+  function announcementCardHTML(a){
+    const audience = String(a.audience || 'All');
+    const priority = String(a.priority || 'Normal');
+    const priorityPill = priority !== 'Normal'
+      ? `<span class="pill ${priority === 'Urgent' ? 'red' : 'orange'}" style="margin-left:6px">${esc(priority)}</span>`
+      : '';
+    const link = a.link && a.link.url
+      ? `<div style="margin-top:10px"><a href="${esc(a.link.url)}" target="_blank"
+           style="display:inline-block;background:linear-gradient(135deg,#f7d97a,#c99a2e);
+             color:#5a3a00;padding:8px 12px;border-radius:8px;font-size:11px;font-weight:800;
+             text-decoration:none">${esc(a.link.label || 'Open link')} →</a></div>`
+      : '';
+    const unreadDot = !E.hasReadAnnouncement(a.id, E.currentUser().id)
+      ? `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;
+          background:#d64545;margin-right:8px;vertical-align:middle"></span>`
+      : '';
+    return `<div class="notice">
+      <strong>${unreadDot}${esc(a.title)}</strong>${priorityPill}
+      <p>${esc(a.body)}</p>
+      ${link}
+    </div>`;
+  }
+
+  /* ============================================================
      DASHBOARD
      ============================================================ */
   function renderDashboard(){
@@ -486,7 +546,6 @@ tbody tr:last-child td{border-bottom:0}
 
     const students = E.readStore(E.STORE_KEYS.students, []) || [];
     const teachers = E.readStore(E.STORE_KEYS.teachers, []) || [];
-    const announcements = E.readStore(E.STORE_KEYS.announcements, []) || [];
 
     /* ---------- STUDENT ---------- */
     if(user.role === 'Student'){
@@ -506,8 +565,7 @@ tbody tr:last-child td{border-bottom:0}
         ? (() => {
             const avgs = mySubjects
               .map(sub => E.semesterAverageFor(s.name, s.class, sub, 1, category, year))
-              .filter(Boolean)
-              .map(x => x.number);
+              .filter(Boolean).map(x => x.number);
             return avgs.length ? avgs.reduce((a,b) => a+b, 0) / avgs.length : null;
           })()
         : null;
@@ -515,8 +573,7 @@ tbody tr:last-child td{border-bottom:0}
         ? (() => {
             const avgs = mySubjects
               .map(sub => E.semesterAverageFor(s.name, s.class, sub, 2, category, year))
-              .filter(Boolean)
-              .map(x => x.number);
+              .filter(Boolean).map(x => x.number);
             return avgs.length ? avgs.reduce((a,b) => a+b, 0) / avgs.length : null;
           })()
         : null;
@@ -552,7 +609,6 @@ tbody tr:last-child td{border-bottom:0}
 
       const summary = s ? E.studentFeeSummary(s.id, s.class) : null;
 
-      /* Report card button respects threshold */
       const reportBtnHTML = (() => {
         if(!user.permissions.reportcard) return '';
         if(!s) return `<button class="btn" data-goto="reportcards">📄 My report card</button>`;
@@ -563,6 +619,8 @@ tbody tr:last-child td{border-bottom:0}
         return `<button class="btn outline" disabled title="Meet the payment threshold to unlock"
           style="color:#a86414">🔒 Report card locked (${E.money(access.shortfall || 0)} owed)</button>`;
       })();
+
+      const anns = visibleAnnouncementsFor(user).slice(0, 5);
 
       $('#contentRoot').innerHTML = `
         <div class="welcome">
@@ -584,12 +642,7 @@ tbody tr:last-child td{border-bottom:0}
           <div>
             <div class="panel"><div class="panel-head"><h3>My academic record</h3><p>Subject · S1 Avg · S2 Avg · Yearly</p></div>
               <div class="table-wrap"><table>
-                <thead><tr>
-                  <th>Subject</th>
-                  <th>S1 Avg</th>
-                  <th>S2 Avg</th>
-                  <th>Yearly</th>
-                </tr></thead>
+                <thead><tr><th>Subject</th><th>S1 Avg</th><th>S2 Avg</th><th>Yearly</th></tr></thead>
                 <tbody>${
                   myRows.length
                     ? myRows.map(r => {
@@ -625,8 +678,15 @@ tbody tr:last-child td{border-bottom:0}
             </div>
           </div>
           <div>
-            <div class="panel"><div class="panel-head"><h3>Announcements</h3></div>
-              <div class="panel-body">${announcements.slice(0,3).map(a => `<div class="notice"><strong>${esc(a.title)}</strong><p>${esc(a.body)}</p></div>`).join('') || '<div class="empty">No announcements.</div>'}</div>
+            <div class="panel"><div class="panel-head">
+              <h3>Announcements</h3>
+              <button class="link-btn" data-goto="announcements">View all →</button>
+            </div>
+              <div class="panel-body">${
+                anns.length
+                  ? anns.map(a => announcementCardHTML(a)).join('')
+                  : '<div class="empty">No announcements.</div>'
+              }</div>
             </div>
           </div>
         </div>
@@ -684,6 +744,8 @@ tbody tr:last-child td{border-bottom:0}
         return vals.length ? (vals.reduce((a,b) => a+b,0)/vals.length).toFixed(1) + '%' : '—';
       })();
 
+      const anns = visibleAnnouncementsFor(user).slice(0, 5);
+
       $('#contentRoot').innerHTML = `
         <div class="welcome">
           <div><h2>Welcome, ${esc(user.name)} 👋</h2>
@@ -731,9 +793,14 @@ tbody tr:last-child td{border-bottom:0}
           </div>
         </div>
         <div class="panel">
-          <div class="panel-head"><h3>Announcements</h3></div>
+          <div class="panel-head">
+            <h3>Announcements</h3>
+            <button class="link-btn" data-goto="announcements">View all →</button>
+          </div>
           <div class="panel-body">
-            ${announcements.slice(0, 3).map(a => `<div class="notice"><strong>${esc(a.title)}</strong><p>${esc(a.body)}</p></div>`).join('') || '<div class="empty">No announcements.</div>'}
+            ${anns.length
+              ? anns.map(a => announcementCardHTML(a)).join('')
+              : '<div class="empty">No announcements.</div>'}
           </div>
         </div>
         <div class="footer">EduCore · Front-end demonstration only.</div>`;
@@ -765,6 +832,8 @@ tbody tr:last-child td{border-bottom:0}
       const sum = E.studentFeeSummary(s.id, s.class);
       totalOutstanding += Math.max(0, sum.balance);
     });
+
+    const anns = visibleAnnouncementsFor(user).slice(0, 5);
 
     $('#contentRoot').innerHTML = `
       <div class="welcome">
@@ -835,8 +904,15 @@ tbody tr:last-child td{border-bottom:0}
           </div>
         </div>
         <div>
-          <div class="panel"><div class="panel-head"><h3>Announcements</h3></div>
-            <div class="panel-body">${announcements.slice(0,3).map(a => `<div class="notice"><strong>${esc(a.title)}</strong><p>${esc(a.body)}</p></div>`).join('') || '<div class="empty">No announcements.</div>'}</div>
+          <div class="panel"><div class="panel-head">
+            <h3>Announcements</h3>
+            <button class="link-btn" data-goto="announcements">View all →</button>
+          </div>
+            <div class="panel-body">${
+              anns.length
+                ? anns.map(a => announcementCardHTML(a)).join('')
+                : '<div class="empty">No announcements.</div>'
+            }</div>
           </div>
         </div>
       </div>

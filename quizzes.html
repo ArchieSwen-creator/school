@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quizzes | EduCore</title>
+<style>
+  :root{--navy:#12315a;--blue:#3987ee;--border:#d8e4f2;--text:#23354d;--muted:#73849a;
+    --green:#14805e;--orange:#d88922;--red:#d64545;--gold:#c99a2e;--gold2:#fff4d6;
+    --line:#e8ebf2;--shadow:0 8px 24px rgba(24,42,78,.06)}
+  *{box-sizing:border-box}
+  body{margin:0;padding:64px 16px 40px;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button,input,select{font:inherit}
+  button{cursor:pointer}
+  .page{width:100%;max-width:1200px;margin:0 auto}
+
+  .band{background:linear-gradient(120deg,#102949,#245d9c);color:#fff;border-radius:16px;
+    padding:22px 28px;margin-bottom:20px;box-shadow:0 18px 50px #16345417;
+    display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
+    border-top:5px solid #58a4ff}
+  .band-left{display:flex;align-items:center;gap:14px}
+  .band-logo{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;
+    place-items:center;overflow:hidden;color:var(--navy);font-weight:900;font-size:18px;
+    border:3px solid #d8e8ff;flex:0 0 48px}
+  .band-logo img{width:100%;height:100%;object-fit:contain}
+  .band h1{margin:0;font-size:19px;letter-spacing:.3px;text-transform:uppercase}
+  .band p{margin:4px 0 0;font-size:11px;color:#cfdcf5}
+  .band-user{display:flex;align-items:center;gap:10px;font-size:11px;color:#cfdcf5;
+    background:#ffffff14;border:1px solid #ffffff36;padding:7px 12px;border-radius:20px}
+  .band-user strong{color:#fff}
+
+  .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:16px 18px;
+    box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--blue)}
+  .stat.green::before{background:var(--green)}
+  .stat.orange::before{background:var(--orange)}
+  .stat.red::before{background:var(--red)}
+  .stat small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.8px;
+    color:var(--muted);font-weight:800;margin-bottom:8px}
+  .stat strong{font-size:22px;color:var(--navy);font-weight:800}
+
+  .toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;
+    flex-wrap:wrap;margin-bottom:16px}
+  .toolbar-left{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .field,.pick{border:1px solid var(--line);border-radius:9px;padding:10px 12px;
+    background:#fff;color:var(--text);font-size:12px;outline:none}
+  .field{min-width:220px}
+  .field:focus,.pick:focus{border-color:var(--blue)}
+
+  .btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{filter:brightness(.96)}
+  .btn.secondary{background:#eef2fb;color:#34415c}
+  .btn.outline{background:#fff;color:#34415c;border:1px solid var(--line)}
+  .btn.danger{background:#fff0f1;color:var(--red)}
+  .btn.green{background:#e6f7f0;color:#16835f}
+  .btn.gold{background:linear-gradient(135deg,#f7d97a,#c99a2e);color:#5a3a00}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+
+  .qcard{background:#fff;border:1px solid var(--line);border-radius:14px;
+    box-shadow:var(--shadow);padding:20px;display:flex;flex-direction:column}
+  .qcard h3{margin:0 0 6px;font-size:15px;color:var(--navy)}
+  .qcard .meta{font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.6}
+  .qcard .row{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;
+    border-bottom:1px dashed #eef2f7}
+  .qcard .row:last-of-type{border-bottom:0}
+  .qcard .row strong{color:var(--navy);font-family:monospace}
+  .qcard .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;
+    border-top:1px solid var(--line);padding-top:12px}
+  .qcard .actions .btn{padding:8px 11px;font-size:11px}
+
+  .pill{display:inline-block;padding:5px 8px;border-radius:20px;font-size:10px;font-weight:700}
+  .pill.green{background:#e6f7f0;color:#16835f}
+  .pill.orange{background:#fff2dd;color:#aa6c14}
+  .pill.red{background:#ffeaec;color:#bd3b48}
+  .pill.blue{background:#edf2ff;color:#3b5cc1}
+  .pill.grey{background:#eef1f6;color:#59647c}
+  .pill.gold{background:var(--gold2);color:#8a6a1a}
+
+  .empty{padding:60px 20px;text-align:center;color:var(--muted);font-size:13px;
+    background:#fff;border:1px solid var(--line);border-radius:13px}
+  .empty .icon{font-size:48px;margin-bottom:14px;opacity:.5;display:block}
+
+  @media (max-width:900px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media (max-width:650px){
+    body{padding:64px 8px 24px}
+    .band{padding:18px 20px}
+    .band h1{font-size:15px}
+    .field,.pick{min-width:0;width:100%}
+    .toolbar{flex-direction:column;align-items:stretch}
+    .toolbar-left{width:100%}
+    .stats{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="band">
+    <div class="band-left">
+      <div class="band-logo" id="bandLogo">EC</div>
+      <div>
+        <h1 id="bandSchool">Quizzes</h1>
+        <p id="bandSub">Online tests and assessments</p>
+      </div>
+    </div>
+    <div class="band-user">Signed in as <strong id="bandUser">—</strong></div>
+  </div>
+
+  <div id="pageBody"></div>
+
+</div>
+
+<script src="educore-shared.js"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  const user = E.requirePerm('quizzes', 'Quizzes');
+  if(!user) return;
+
+  const isStaff = user.role === 'Principal' || user.role === 'Registrar';
+  const isTeacher = user.role === 'Teacher';
+  const isStudent = user.role === 'Student';
+
+  const canCreate  = E.can('quizzes.create');
+  const canEdit    = E.can('quizzes.edit');
+  const canDelete  = E.can('quizzes.delete');
+  const canPublish = E.can('quizzes.publish');
+  const canViewAll = E.can('quizzes.view_all');
+
+  /* ---------- HEADER ---------- */
+  function paintHeader(){
+    const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const name = settings.name || 'EduCore High School';
+    if(settings.logo){
+      document.getElementById('bandLogo').innerHTML = `<img src="${settings.logo}" alt="">`;
+    } else {
+      document.getElementById('bandLogo').textContent =
+        name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
+    }
+    document.getElementById('bandSchool').textContent = name;
+    document.getElementById('bandSub').textContent = isStudent
+      ? 'Your online quizzes and tests'
+      : 'Create, publish, and review quizzes';
+    document.getElementById('bandUser').textContent = user.name || user.username;
+  }
+
+  /* ---------- TEACHER VIEW ---------- */
+  function paintTeacherView(){
+    const quizzes = E.getQuizzes();
+    const myQuizzes = isStaff ? quizzes : quizzes.filter(q => q.createdBy === user.username);
+    const attempts = E.getQuizAttempts();
+
+    const totalAttempts = attempts.filter(a => myQuizzes.some(q => q.id === a.quizId)).length;
+    const pendingManual = attempts.filter(a =>
+      a.status === 'pending-manual' && myQuizzes.some(q => q.id === a.quizId)).length;
+
+    document.getElementById('pageBody').innerHTML = `
+      <div class="stats">
+        <div class="stat"><small>Total quizzes</small><strong>${myQuizzes.length}</strong></div>
+        <div class="stat green"><small>Published</small><strong>${myQuizzes.filter(q => q.published).length}</strong></div>
+        <div class="stat orange"><small>Attempts</small><strong>${totalAttempts}</strong></div>
+        <div class="stat red"><small>Pending grading</small><strong>${pendingManual}</strong></div>
+      </div>
+
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <input class="field" id="search" placeholder="Search title, subject, class...">
+          <select class="pick" id="statusFilter">
+            <option value="">All statuses</option>
+            <option value="published">Published</option>
+            <option value="draft">Draft</option>
+          </select>
+        </div>
+        <div class="toolbar-left">
+          ${canCreate ? `<button class="btn" id="addBtn">＋ New quiz</button>` : ''}
+        </div>
+      </div>
+
+      <div class="grid" id="grid"></div>
+      <div class="empty" id="empty" style="display:none">
+        <span class="icon">📝</span>
+        No quizzes yet. Click <strong>New quiz</strong> to create one.
+      </div>`;
+
+    paintQuizGrid();
+
+    document.getElementById('search').addEventListener('input', paintQuizGrid);
+    document.getElementById('statusFilter').addEventListener('change', paintQuizGrid);
+    document.getElementById('addBtn')?.addEventListener('click', () => {
+      window.location.href = 'quiz-builder.html';
+    });
+
+    document.getElementById('grid').addEventListener('click', e => {
+      const edit = e.target.closest('[data-edit]');
+      const del  = e.target.closest('[data-delete]');
+      const pub  = e.target.closest('[data-publish]');
+      const unpub= e.target.closest('[data-unpublish]');
+      const res  = e.target.closest('[data-results]');
+      const take = e.target.closest('[data-take]');
+      if(edit)  window.location.href = 'quiz-builder.html?id=' + encodeURIComponent(edit.dataset.edit);
+      if(res)   window.location.href = 'quiz-results.html?quiz=' + encodeURIComponent(res.dataset.results);
+      if(take)  window.location.href = 'quiz-take.html?id=' + encodeURIComponent(take.dataset.take);
+      if(pub)   togglePublish(pub.dataset.publish, true);
+      if(unpub) togglePublish(unpub.dataset.unpublish, false);
+      if(del)   deleteQuiz(del.dataset.delete);
+    });
+  }
+
+  function paintQuizGrid(){
+    const myQuizzes = (() => {
+      const all = E.getQuizzes();
+      return isStaff ? all : all.filter(q => q.createdBy === user.username);
+    })();
+
+    const q = document.getElementById('search').value.toLowerCase();
+    const st = document.getElementById('statusFilter').value;
+
+    const arr = myQuizzes.filter(quiz => {
+      if(q && !(`${quiz.title} ${quiz.subject} ${quiz.className}`).toLowerCase().includes(q)) return false;
+      if(st === 'published' && !quiz.published) return false;
+      if(st === 'draft' && quiz.published) return false;
+      return true;
+    }).sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    const grid = document.getElementById('grid');
+    const empty = document.getElementById('empty');
+
+    if(!arr.length){
+      grid.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+
+    grid.innerHTML = arr.map(quiz => {
+      const qs = E.questionsForQuiz(quiz.id);
+      const totalMarks = E.quizTotalMarks(quiz.id);
+      const attempts = E.getQuizAttempts().filter(a => a.quizId === quiz.id && a.status !== 'reset');
+      const ready = E.quizIsReady(quiz.id);
+
+      const actions = [];
+      if(canEdit) actions.push(`<button class="btn secondary" data-edit="${E.esc(quiz.id)}">✎ Edit</button>`);
+      if(canPublish){
+        actions.push(quiz.published
+          ? `<button class="btn warn" data-unpublish="${E.esc(quiz.id)}">Unpublish</button>`
+          : `<button class="btn green" data-publish="${E.esc(quiz.id)}" ${ready.ok ? '' : 'disabled title="' + E.esc(ready.reason) + '"'}>Publish</button>`);
+      }
+      if(canViewAll) actions.push(`<button class="btn outline" data-results="${E.esc(quiz.id)}">📊 Results (${attempts.length})</button>`);
+      if(canDelete) actions.push(`<button class="btn danger" data-delete="${E.esc(quiz.id)}">Delete</button>`);
+
+      return `<div class="qcard">
+        <h3>${E.esc(quiz.title || 'Untitled')}</h3>
+        <div class="meta">
+          ${E.esc(quiz.subject || '—')} · ${E.esc(quiz.className || '—')}
+          ${quiz.published ? ' <span class="pill green">Published</span>' : ' <span class="pill grey">Draft</span>'}
+          ${!ready.ok ? ` <span class="pill orange" title="${E.esc(ready.reason)}">Not ready</span>` : ''}
+        </div>
+        <div class="row"><span>Questions</span><strong>${qs.length}</strong></div>
+        <div class="row"><span>Total marks</span><strong>${totalMarks}</strong></div>
+        <div class="row"><span>Duration</span><strong>${Number(quiz.durationMinutes || 0)} min</strong></div>
+        <div class="row"><span>Due</span><strong>${quiz.dueDate ? E.fmtDate(quiz.dueDate) : '—'}</strong></div>
+        <div class="row"><span>Attempts</span><strong>${attempts.length}</strong></div>
+        <div class="actions">${actions.join(' ')}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function togglePublish(id, published){
+    if(!canPublish){ E.toast("You don't have permission."); return; }
+    const quiz = E.getQuiz(id);
+    if(!quiz) return;
+    if(published){
+      const ready = E.quizIsReady(id);
+      if(!ready.ok){ E.toast('Cannot publish: ' + ready.reason); return; }
+    }
+    quiz.published = !!published;
+    E.saveQuiz(quiz);
+    E.audit('update', `Quiz ${quiz.title}`, '', published ? 'published' : 'unpublished');
+    paintQuizGrid();
+    E.toast(published ? 'Quiz published.' : 'Quiz unpublished.');
+  }
+
+  async function deleteQuiz(id){
+    if(!canDelete){ E.toast("You don't have permission."); return; }
+    const quiz = E.getQuiz(id);
+    if(!quiz) return;
+    const ok = await E.confirmModal({
+      title: 'Delete quiz?',
+      message: `<strong>${E.esc(quiz.title)}</strong><br><br>
+        This will permanently delete the quiz, its questions, and all attempts.
+        This cannot be undone.`,
+      submitText: 'Delete',
+      danger: true
+    });
+    if(!ok) return;
+    E.deleteQuiz(id);
+    E.audit('delete', `Quiz ${quiz.title}`, '', '');
+    paintQuizGrid();
+    E.toast('Quiz deleted.');
+  }
+
+  /* ---------- STUDENT VIEW ---------- */
+  function paintStudentView(){
+    const me = (E.readStore(E.STORE_KEYS.students, []) || [])
+      .find(s => s.id === user.linkedStudentId);
+    if(!me){
+      document.getElementById('pageBody').innerHTML = `
+        <div class="empty">
+          <span class="icon">🔒</span>
+          Your account is not linked to a student record. Contact the school office.
+        </div>`;
+      return;
+    }
+
+    /* Only quizzes for the student's class, that are published */
+    const quizzes = E.getQuizzes()
+      .filter(q => q.published && (q.className === me.class || !q.className))
+      .sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    const attempts = E.getQuizAttempts().filter(a => a.studentId === me.id && a.status !== 'reset');
+
+    document.getElementById('pageBody').innerHTML = `
+      <div class="stats">
+        <div class="stat"><small>Available quizzes</small><strong>${quizzes.length}</strong></div>
+        <div class="stat green"><small>Completed</small><strong>${attempts.filter(a => a.status === 'graded').length}</strong></div>
+        <div class="stat orange"><small>Awaiting grading</small><strong>${attempts.filter(a => a.status === 'pending-manual').length}</strong></div>
+        <div class="stat red"><small>Not attempted</small><strong>${quizzes.filter(q => !attempts.some(a => a.quizId === q.id)).length}</strong></div>
+      </div>
+
+      <div class="grid" id="grid"></div>`;
+
+    const grid = document.getElementById('grid');
+    if(!quizzes.length){
+      grid.innerHTML = `
+        <div class="empty" style="grid-column:1/-1">
+          <span class="icon">📝</span>
+          No quizzes available for your class right now.
+        </div>`;
+      return;
+    }
+
+    grid.innerHTML = quizzes.map(quiz => {
+      const existing = E.existingAttemptFor(quiz.id, me.id);
+      const totalMarks = E.quizTotalMarks(quiz.id);
+      const qsCount = E.questionsForQuiz(quiz.id).length;
+
+      let statusPillHTML = '<span class="pill blue">Not attempted</span>';
+      let actionHTML = `<button class="btn" data-take="${E.esc(quiz.id)}">▶ Start quiz</button>`;
+
+      if(existing){
+        if(existing.status === 'in-progress'){
+          statusPillHTML = '<span class="pill orange">In progress</span>';
+          actionHTML = `<button class="btn orange" data-take="${E.esc(quiz.id)}">▶ Resume</button>`;
+        } else if(existing.status === 'pending-manual'){
+          statusPillHTML = '<span class="pill orange">Awaiting grading</span>';
+          actionHTML = `<button class="btn secondary" data-results="${E.esc(existing.id)}">View result</button>`;
+        } else {
+          statusPillHTML = '<span class="pill green">Completed</span>';
+          actionHTML = `<button class="btn secondary" data-results="${E.esc(existing.id)}">View result</button>`;
+        }
+      } else {
+        /* Due date enforcement */
+        if(quiz.dueDate){
+          const due = new Date(quiz.dueDate + 'T23:59:59').getTime();
+          if(Date.now() > due){
+            statusPillHTML = '<span class="pill red">Expired</span>';
+            actionHTML = '';
+          }
+        }
+      }
+
+      return `<div class="qcard">
+        <h3>${E.esc(quiz.title || 'Untitled')}</h3>
+        <div class="meta">
+          ${E.esc(quiz.subject || '—')} · ${E.esc(quiz.className || '—')} · ${statusPillHTML}
+        </div>
+        <div class="row"><span>Questions</span><strong>${qsCount}</strong></div>
+        <div class="row"><span>Total marks</span><strong>${totalMarks}</strong></div>
+        <div class="row"><span>Duration</span><strong>${Number(quiz.durationMinutes || 0)} min</strong></div>
+        <div class="row"><span>Due</span><strong>${quiz.dueDate ? E.fmtDate(quiz.dueDate) : 'No deadline'}</strong></div>
+        <div class="actions">${actionHTML}</div>
+      </div>`;
+    }).join('');
+
+    grid.addEventListener('click', e => {
+      const take = e.target.closest('[data-take]');
+      const res  = e.target.closest('[data-results]');
+      if(take) window.location.href = 'quiz-take.html?id=' + encodeURIComponent(take.dataset.take);
+      if(res)  window.location.href = 'quiz-results.html?attempt=' + encodeURIComponent(res.dataset.results);
+    });
+  }
+
+  /* ---------- INIT ---------- */
+  paintHeader();
+  if(isStudent) paintStudentView();
+  else          paintTeacherView();
+})();
+</script>
+</body>
+</html>

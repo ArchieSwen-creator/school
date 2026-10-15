@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Results | EduCore</title>
+<style>
+  :root{--navy:#12315a;--blue:#3987ee;--border:#d8e4f2;--text:#23354d;--muted:#73849a;
+    --green:#14805e;--orange:#d88922;--red:#d64545;--gold:#c99a2e;--gold2:#fff4d6;
+    --line:#e8ebf2;--shadow:0 8px 24px rgba(24,42,78,.06)}
+  *{box-sizing:border-box}
+  body{margin:0;padding:64px 16px 40px;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+  .page{width:100%;max-width:1100px;margin:0 auto}
+
+  .band{background:linear-gradient(120deg,#102949,#245d9c);color:#fff;border-radius:16px;
+    padding:22px 28px;margin-bottom:20px;box-shadow:0 18px 50px #16345417;
+    display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
+    border-top:5px solid #58a4ff}
+  .band-left{display:flex;align-items:center;gap:14px}
+  .band-logo{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;
+    place-items:center;overflow:hidden;color:var(--navy);font-weight:900;font-size:18px;
+    border:3px solid #d8e8ff;flex:0 0 48px}
+  .band-logo img{width:100%;height:100%;object-fit:contain}
+  .band h1{margin:0;font-size:19px;letter-spacing:.3px;text-transform:uppercase}
+  .band p{margin:4px 0 0;font-size:11px;color:#cfdcf5}
+  .band-user{display:flex;align-items:center;gap:10px;font-size:11px;color:#cfdcf5;
+    background:#ffffff14;border:1px solid #ffffff36;padding:7px 12px;border-radius:20px}
+  .band-user strong{color:#fff}
+
+  .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:16px 18px;
+    box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--blue)}
+  .stat.green::before{background:var(--green)}
+  .stat.orange::before{background:var(--orange)}
+  .stat.red::before{background:var(--red)}
+  .stat small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.8px;
+    color:var(--muted);font-weight:800;margin-bottom:8px}
+  .stat strong{font-size:22px;color:var(--navy);font-weight:800}
+
+  .toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;
+    flex-wrap:wrap;margin-bottom:14px}
+  .toolbar-left{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .field,.pick{border:1px solid var(--line);border-radius:9px;padding:10px 12px;
+    background:#fff;color:var(--text);font-size:12px;outline:none}
+  .field{min-width:220px}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);overflow:hidden;margin-bottom:18px}
+  .card-head{padding:16px 20px;border-bottom:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .card-head h3{margin:0;font-size:14px}
+  .card-head .count{padding:4px 9px;border-radius:20px;background:#edf2ff;color:#3b5cc1;
+    font-size:10px;font-weight:800}
+
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;white-space:nowrap}
+  th{text-align:left;background:#fafbfe;color:#7a8498;font-size:10px;text-transform:uppercase;
+    letter-spacing:.6px;padding:13px 18px;border-bottom:1px solid var(--line)}
+  td{padding:13px 18px;border-bottom:1px solid #f0f2f7;font-size:12px}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:hover{background:#fbfdff}
+
+  .person{display:flex;align-items:center;gap:10px}
+  .mini-avatar{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;
+    background:#edf2ff;color:#3859b7;font-size:10px;font-weight:700}
+  .person strong{display:block;font-size:12px}
+  .person small{display:block;color:var(--muted);font-size:10px;margin-top:4px}
+
+  .pill{display:inline-block;padding:5px 8px;border-radius:20px;font-size:10px;font-weight:700}
+  .pill.green{background:#e6f7f0;color:#16835f}
+  .pill.orange{background:#fff2dd;color:#aa6c14}
+  .pill.red{background:#ffeaec;color:#bd3b48}
+  .pill.blue{background:#edf2ff;color:#3b5cc1}
+  .pill.grey{background:#eef1f6;color:#59647c}
+
+  .btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{filter:brightness(.96)}
+  .btn.secondary{background:#eef2fb;color:#34415c}
+  .btn.outline{background:#fff;color:#34415c;border:1px solid var(--line)}
+  .btn.danger{background:#fff0f1;color:var(--red)}
+  .btn.green{background:#e6f7f0;color:#16835f}
+  .btn.gold{background:linear-gradient(135deg,#f7d97a,#c99a2e);color:#5a3a00}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .row-actions{display:flex;gap:5px;flex-wrap:wrap}
+  .row-actions .btn{padding:7px 10px;font-size:11px}
+
+  .empty{padding:60px 20px;text-align:center;color:var(--muted);font-size:13px;
+    background:#fff;border:1px solid var(--line);border-radius:13px}
+  .empty .icon{font-size:48px;margin-bottom:14px;opacity:.5;display:block}
+  .empty a{display:inline-block;background:var(--blue);color:#fff;padding:11px 18px;
+    border-radius:9px;text-decoration:none;font-weight:700;font-size:12px;margin-top:14px}
+
+  .score-hero{padding:30px;background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
+    text-align:center;border-top:5px solid #58a4ff}
+  .score-hero .big{font-size:56px;font-weight:900;letter-spacing:-1px;margin:0}
+  .score-hero .sub{font-size:13px;color:#cfdcf5;margin-top:8px}
+  .score-hero .grade{margin-top:16px;display:inline-block;padding:6px 16px;
+    border-radius:20px;font-weight:800;font-size:14px;letter-spacing:1px}
+
+  .q-res{background:#fff;border:1px solid var(--line);border-radius:12px;
+    padding:18px 20px;margin-bottom:12px;border-left:4px solid #e0e6f0}
+  .q-res.correct{border-left-color:#14805e}
+  .q-res.wrong{border-left-color:#d64545}
+  .q-res.pending{border-left-color:#d88922;background:#fffcf5}
+  .q-res .label{font-size:10px;text-transform:uppercase;letter-spacing:1px;
+    font-weight:800;color:var(--muted);margin-bottom:6px}
+  .q-res .text{font-size:14px;color:var(--navy);font-weight:700;margin:0 0 12px;line-height:1.5}
+  .q-res .answer{font-size:12px;color:#3b4a63;background:#f8faff;padding:10px 12px;
+    border-radius:8px;margin-bottom:8px;line-height:1.6;white-space:pre-wrap}
+  .q-res .answer strong{color:var(--navy)}
+  .q-res .result-row{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+
+  .grade-box{background:#fff8e6;border:1px solid #f3d999;border-radius:10px;
+    padding:14px 16px;margin-top:12px}
+  .grade-box label{display:block;font-size:11px;font-weight:800;color:#8a6a1a;
+    text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
+  .grade-box input{width:120px;border:1px solid #dfe4ee;border-radius:8px;
+    padding:8px 10px;font-size:13px;font-family:monospace;font-weight:800;
+    text-align:right;outline:none}
+
+  @media (max-width:900px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media (max-width:650px){
+    body{padding:64px 8px 24px}
+    .band{padding:18px 20px}
+    .band h1{font-size:15px}
+    .stats{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="band">
+    <div class="band-left">
+      <div class="band-logo" id="bandLogo">EC</div>
+      <div>
+        <h1 id="bandSchool">Quiz Results</h1>
+        <p id="bandSub">Attempts and grading</p>
+      </div>
+    </div>
+    <div class="band-user">Signed in as <strong id="bandUser">—</strong></div>
+  </div>
+
+  <div id="pageBody"></div>
+
+</div>
+
+<script src="educore-shared.js"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  const user = E.requirePerm('quizzes', 'Quizzes');
+  if(!user) return;
+
+  const isStudent = user.role === 'Student';
+  const canGrade = E.can('quizzes.grade');
+  const canViewAll = E.can('quizzes.view_all');
+  const canReset = E.can('quizzes.reset');
+  const canExport = E.can('quizzes.export');
+
+  const params = new URLSearchParams(location.search);
+  const attemptParam = params.get('attempt');
+  const quizParam = params.get('quiz');
+
+  function paintHeader(){
+    const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const name = settings.name || 'EduCore High School';
+    if(settings.logo){
+      document.getElementById('bandLogo').innerHTML = `<img src="${settings.logo}" alt="">`;
+    } else {
+      document.getElementById('bandLogo').textContent =
+        name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
+    }
+    document.getElementById('bandSchool').textContent = name;
+    document.getElementById('bandUser').textContent = user.name || user.username;
+  }
+
+  function paintEmpty(msg){
+    document.getElementById('pageBody').innerHTML = `
+      <div class="empty">
+        <span class="icon">🔍</span>
+        ${E.esc(msg)}
+        <div><a href="quizzes.html">← Back to Quizzes</a></div>
+      </div>`;
+  }
+
+  /* ============================================================
+     STUDENT VIEW — one attempt breakdown
+     ============================================================ */
+  function paintStudentAttempt(attempt){
+    const quiz = E.getQuiz(attempt.quizId);
+    if(!quiz){ paintEmpty('Quiz not found.'); return; }
+
+    const qs = E.questionsForQuiz(quiz.id);
+    const responses = E.responsesForAttempt(attempt.id);
+    const score = E.computeAttemptScore(attempt.id);
+
+    const pct = score.percentage || 0;
+    const passMark = Number(quiz.passMark || 50);
+    const passed = pct >= passMark;
+    const heroClass = passed ? '#14805e' : '#d64545';
+
+    document.getElementById('bandSub').textContent = quiz.title;
+
+    document.getElementById('pageBody').innerHTML = `
+      <div class="card">
+        <div class="score-hero">
+          <p class="big">${score.total} <span style="font-size:24px;color:#cfdcf5">/ ${score.max}</span></p>
+          <div class="sub">${pct.toFixed(1)}% · ${passed ? 'Passed' : 'Did not pass'} (pass mark ${passMark}%)</div>
+          <span class="grade" style="background:${heroClass}22;color:${heroClass}">
+            ${score.pendingManual > 0 ? '⏳ ' + score.pendingManual + ' awaiting grading' : '✔ Final'}
+          </span>
+        </div>
+      </div>
+
+      ${score.pendingManual > 0 ? `
+        <div style="background:#fff8e6;border:1px solid #f3d999;color:#8a6a1a;
+          padding:12px 16px;border-radius:10px;margin-bottom:16px;font-size:12px;line-height:1.6">
+          Some questions require manual grading by your teacher.
+          Your final score may change once they are reviewed.
+        </div>` : ''}
+
+      <div class="card">
+        <div class="card-head"><h3>Your answers</h3></div>
+        <div style="padding:20px">
+          ${qs.map((q, idx) => buildStudentQuestion(q, idx, responses.find(r => r.questionId === q.id), quiz.showAnswersAfter)).join('')}
+        </div>
+      </div>
+
+      <div style="text-align:right">
+        <a href="quizzes.html" style="display:inline-block;background:#3987ee;color:#fff;
+          padding:11px 18px;border-radius:9px;text-decoration:none;font-weight:700;font-size:12px">
+          ← Back to Quizzes
+        </a>
+      </div>`;
+  }
+
+  function buildStudentQuestion(q, idx, resp, showAnswers){
+    resp = resp || {};
+    const meta = E.questionTypeMeta(q.type);
+    const max = Number(q.points || 0);
+    let cls = 'q-res';
+    let label = `Question ${idx+1} · ${E.esc(meta.label)} · ${max} mark${max===1?'':'s'}`;
+    let yourAns = '';
+    let correctAns = '';
+    let awarded = '—';
+
+    if(q.type === 'multiple-choice'){
+      const sel = (q.options || []).find(o => o.id === resp.selectedOptionId);
+      yourAns = sel ? sel.text : '(not answered)';
+      const correct = (q.options || []).find(o => o.isCorrect);
+      correctAns = correct ? correct.text : '';
+      awarded = resp.awardedPoints ?? 0;
+      cls += resp.isCorrect ? ' correct' : ' wrong';
+    }
+    else if(q.type === 'true-false'){
+      yourAns = resp.answerText ? (resp.answerText === 'true' ? 'True' : 'False') : '(not answered)';
+      correctAns = q.tfAnswer === 'true' ? 'True' : 'False';
+      awarded = resp.awardedPoints ?? 0;
+      cls += resp.isCorrect ? ' correct' : ' wrong';
+    }
+    else if(q.type === 'numeric'){
+      yourAns = resp.answerText || '(not answered)';
+      correctAns = `${q.numericAnswer}${Number(q.tolerance) ? ' ± ' + q.tolerance : ''}`;
+      awarded = resp.awardedPoints ?? 0;
+      cls += resp.isCorrect ? ' correct' : ' wrong';
+    }
+    else if(q.type === 'short-answer' || q.type === 'essay'){
+      yourAns = resp.answerText || '(not answered)';
+      const manual = resp.manualPoints;
+      awarded = manual == null ? '⏳ pending' : Number(manual);
+      cls += manual == null ? ' pending' : (manual > 0 ? ' correct' : ' wrong');
+    }
+
+    return `<div class="${cls}">
+      <div class="label">${label}</div>
+      <h4 class="text">${E.esc(q.text)}</h4>
+      <div class="answer"><strong>Your answer:</strong> ${E.esc(yourAns)}</div>
+      ${showAnswers && correctAns ? `<div class="answer"><strong>Correct answer:</strong> ${E.esc(correctAns)}</div>` : ''}
+      <div class="result-row">
+        <span>Awarded</span>
+        <strong>${awarded} / ${max}</strong>
+      </div>
+    </div>`;
+  }
+
+  /* ============================================================
+     TEACHER VIEW — one attempt in detail
+     ============================================================ */
+  function paintTeacherAttempt(attempt){
+    const quiz = E.getQuiz(attempt.quizId);
+    if(!quiz){ paintEmpty('Quiz not found.'); return; }
+    const qs = E.questionsForQuiz(quiz.id);
+    const responses = E.responsesForAttempt(attempt.id);
+    const score = E.computeAttemptScore(attempt.id);
+
+    document.getElementById('bandSub').textContent = `${quiz.title} · ${attempt.studentName}`;
+
+    document.getElementById('pageBody').innerHTML = `
+      <div class="stats">
+        <div class="stat"><small>Student</small><strong>${E.esc(attempt.studentName)}</strong></div>
+        <div class="stat green"><small>Auto score</small><strong>${score.autoScore} / ${score.autoMax}</strong></div>
+        <div class="stat orange"><small>Manual score</small><strong>${score.manualScore} / ${score.manualMax}</strong></div>
+        <div class="stat ${score.pendingManual > 0 ? 'red' : ''}">
+          <small>Total</small><strong>${score.total} / ${score.max} (${score.percentage}%)</strong>
+        </div>
+      </div>
+
+      ${attempt.suspicionEvents ? `
+        <div style="background:#fff8e6;border:1px solid #f3d999;color:#8a6a1a;
+          padding:12px 16px;border-radius:10px;margin-bottom:16px;font-size:12px;line-height:1.6">
+          ⚠ Student switched tabs <strong>${attempt.suspicionEvents}</strong> time(s) during the attempt.
+        </div>` : ''}
+
+      ${score.pendingManual > 0 ? `
+        <div style="background:#fff8e6;border:1px solid #f3d999;color:#8a6a1a;
+          padding:12px 16px;border-radius:10px;margin-bottom:16px;font-size:12px;line-height:1.6">
+          ${score.pendingManual} question(s) require manual grading.
+        </div>` : ''}
+
+      <div class="card">
+        <div class="card-head"><h3>Answers &amp; grading</h3></div>
+        <div style="padding:20px">
+          ${qs.map((q, idx) => buildTeacherQuestion(attempt, q, idx, responses.find(r => r.questionId === q.id))).join('')}
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
+        <div>
+          ${canReset ? `<button class="btn danger" id="resetBtn">↺ Reset attempt (allow retake)</button>` : ''}
+        </div>
+        <a href="quiz-results.html?quiz=${encodeURIComponent(quiz.id)}"
+          style="display:inline-block;background:#3987ee;color:#fff;
+            padding:11px 18px;border-radius:9px;text-decoration:none;font-weight:700;font-size:12px">
+          ← Back to results
+        </a>
+      </div>`;
+
+    if(canReset){
+      document.getElementById('resetBtn').addEventListener('click', async () => {
+        const ok = await E.confirmModal({
+          title: 'Reset this attempt?',
+          message: `This will delete ${E.esc(attempt.studentName)}'s answers and let them
+            retake the quiz. The reset is logged in the audit trail.`,
+          submitText: 'Reset',
+          danger: true
+        });
+        if(!ok) return;
+        E.resetAttempt(attempt.id);
+        E.audit('delete', `Attempt ${attempt.id}`, attempt.studentName, 'reset');
+        E.toast('Attempt reset. The student can retake the quiz now.');
+        window.location.href = 'quiz-results.html?quiz=' + encodeURIComponent(quiz.id);
+      });
+    }
+  }
+
+  function buildTeacherQuestion(attempt, q, idx, resp){
+    resp = resp || {};
+    const meta = E.questionTypeMeta(q.type);
+    const max = Number(q.points || 0);
+    let cls = 'q-res';
+    let yourAns = '';
+    let correctAns = '';
+    let awarded = '—';
+
+    if(q.type === 'multiple-choice'){
+      const sel = (q.options || []).find(o => o.id === resp.selectedOptionId);
+      yourAns = sel ? sel.text : '(not answered)';
+      const correct = (q.options || []).find(o => o.isCorrect);
+      correctAns = correct ? correct.text : '';
+      awarded = resp.awardedPoints ?? 0;
+      cls += resp.isCorrect ? ' correct' : ' wrong';
+    }
+    else if(q.type === 'true-false'){
+      yourAns = resp.answerText ? (resp.answerText === 'true' ? 'True' : 'False') : '(not answered)';
+      correctAns = q.tfAnswer === 'true' ? 'True' : 'False';
+      awarded = resp.awardedPoints ?? 0;
+      cls += resp.isCorrect ? ' correct' : ' wrong';
+    }
+    else if(q.type === 'numeric'){
+      yourAns = resp.answerText || '(not answered)';
+      correctAns = `${q.numericAnswer}${Number(q.tolerance) ? ' ± ' + q.tolerance : ''}`;
+      awarded = resp.awardedPoints ?? 0;
+      cls += resp.isCorrect ? ' correct' : ' wrong';
+    }
+    else if(q.type === 'short-answer' || q.type === 'essay'){
+      yourAns = resp.answerText || '(not answered)';
+      const manual = resp.manualPoints;
+      awarded = manual == null ? '⏳ pending' : Number(manual);
+      cls += manual == null ? ' pending' : (manual > 0 ? ' correct' : ' wrong');
+    }
+
+    const gradeBox = (q.type === 'short-answer' || q.type === 'essay') && canGrade
+      ? `<div class="grade-box">
+           <label>Award marks (0 – ${max})</label>
+           <input type="number" min="0" max="${max}" step="0.5"
+             data-manual="${E.esc(q.id)}"
+             value="${resp.manualPoints != null ? Number(resp.manualPoints) : ''}"
+             placeholder="—">
+           <button class="btn green" data-save-manual="${E.esc(q.id)}"
+             style="margin-left:10px;padding:8px 12px;font-size:11px">💾 Save mark</button>
+         </div>`
+      : '';
+
+    return `<div class="${cls}">
+      <div class="label">Question ${idx+1} · ${E.esc(meta.label)} · ${max} mark${max===1?'':'s'}</div>
+      <h4 class="text">${E.esc(q.text)}</h4>
+      <div class="answer"><strong>Student's answer:</strong> ${E.esc(yourAns)}</div>
+      ${correctAns ? `<div class="answer"><strong>Correct answer:</strong> ${E.esc(correctAns)}</div>` : ''}
+      ${q.sampleAnswer ? `<div class="answer"><strong>Reference / guidelines:</strong> ${E.esc(q.sampleAnswer)}</div>` : ''}
+      <div class="result-row">
+        <span>Awarded</span>
+        <strong>${awarded} / ${max}</strong>
+      </div>
+      ${gradeBox}
+    </div>`;
+  }
+
+  function bindTeacherGrading(attemptId){
+    document.querySelectorAll('[data-save-manual]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const qid = btn.dataset.saveManual;
+        const input = document.querySelector(`[data-manual="${qid}"]`);
+        if(!input) return;
+        const val = Number(input.value);
+        const q = E.getQuizQuestions().find(x => x.id === qid);
+        const max = Number(q.points || 0);
+        if(!Number.isFinite(val) || val < 0 || val > max){
+          E.toast(`Enter a value between 0 and ${max}.`);
+          return;
+        }
+        E.setManualPoints(attemptId, qid, val);
+        E.audit('update', `Grade attempt ${attemptId}`, '', `Q ${qid} = ${val}`);
+        E.toast('Mark saved.');
+        const attempt = E.getQuizAttempts().find(a => a.id === attemptId);
+        if(attempt) paintTeacherAttempt(attempt);
+      });
+    });
+  }
+
+  /* ============================================================
+     TEACHER VIEW — list of all attempts of a quiz
+     ============================================================ */
+  function paintQuizAttempts(quizId){
+    const quiz = E.getQuiz(quizId);
+    if(!quiz){ paintEmpty('Quiz not found.'); return; }
+    if(!canViewAll){ E.showDenied('Quiz Results'); return; }
+
+    document.getElementById('bandSub').textContent = quiz.title + ' · all attempts';
+
+    /* Which classes can this viewer filter by? */
+    const visibleClasses = E.visibleClassNamesFor(user);
+    const isRestricted = user.role !== 'Principal' && user.role !== 'Registrar';
+
+    let filterClass = sessionStorage.getItem('educoreQuizResultsClass_' + quizId) || '';
+    if(filterClass && !visibleClasses.includes(filterClass)) filterClass = '';
+
+    const attemptsAll = E.getQuizAttempts()
+      .filter(a => a.quizId === quiz.id && a.status !== 'reset')
+      .sort((a,b) => new Date(b.submittedAt || b.startedAt) - new Date(a.submittedAt || a.startedAt));
+
+    const attempts = filterClass ? attemptsAll.filter(a => a.className === filterClass) : attemptsAll;
+
+    const graded = attempts.filter(a => a.status === 'graded');
+    const pending = attempts.filter(a => a.status === 'pending-manual');
+    const inprog = attempts.filter(a => a.status === 'in-progress');
+    const avg = graded.length
+      ? Math.round(graded.reduce((s,a) => s + Number(a.percentage || 0), 0) / graded.length * 100) / 100
+      : null;
+
+    document.getElementById('pageBody').innerHTML = `
+      <div class="stats">
+        <div class="stat"><small>Total attempts</small><strong>${attempts.length}</strong></div>
+        <div class="stat green"><small>Graded</small><strong>${graded.length}</strong></div>
+        <div class="stat orange"><small>Pending grading</small><strong>${pending.length}</strong></div>
+        <div class="stat red"><small>Class average</small><strong>${avg != null ? avg + '%' : '—'}</strong></div>
+      </div>
+
+      <div class="toolbar">
+        <div class="toolbar-left">
+          ${visibleClasses.length > 1 ? `
+            <select class="pick" id="classFilter">
+              ${isRestricted ? '' : '<option value="">All classes</option>'}
+              ${visibleClasses.map(c => `<option ${filterClass === c ? 'selected' : ''}>${E.esc(c)}</option>`).join('')}
+            </select>` : ''}
+          <span style="font-size:11px;color:var(--muted)">
+            Showing ${attempts.length} attempt${attempts.length===1?'':'s'}${filterClass ? ' for ' + E.esc(filterClass) : ''}
+          </span>
+        </div>
+        <div class="toolbar-left">
+          ${canExport ? `<button class="btn secondary" id="exportBtn">↓ Download CSV</button>` : ''}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Attempts <span class="count">${attempts.length}</span></h3>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Class</th>
+                <th>Submitted</th>
+                <th>Score</th>
+                <th>Percentage</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${attempts.length ? attempts.map(a => {
+                const score = a.score != null ? a.score : 0;
+                const total = a.totalMarks || E.quizTotalMarks(quiz.id);
+                const statusPill = a.status === 'graded' ? '<span class="pill green">Graded</span>'
+                                  : a.status === 'pending-manual' ? '<span class="pill orange">Pending</span>'
+                                  : '<span class="pill blue">In progress</span>';
+                const autoMark = a.autoSubmitted ? ' <span class="pill grey" title="Auto-submitted">Auto</span>' : '';
+                return `<tr>
+                  <td><div class="person">
+                    <div class="mini-avatar">${E.initials(a.studentName)}</div>
+                    <div><strong>${E.esc(a.studentName)}</strong><small>${E.esc(a.studentId)}</small></div>
+                  </div></td>
+                  <td>${E.esc(a.className || '—')}</td>
+                  <td>${a.submittedAt ? E.fmtDateTime(a.submittedAt) : '—'}${autoMark}</td>
+                  <td><strong style="font-family:monospace">${score} / ${total}</strong></td>
+                  <td><strong style="font-family:monospace">${a.percentage != null ? a.percentage + '%' : '—'}</strong></td>
+                  <td>${statusPill}</td>
+                  <td><div class="row-actions">
+                    <button class="btn secondary" data-view="${E.esc(a.id)}">View</button>
+                    ${canReset ? `<button class="btn danger" data-reset="${E.esc(a.id)}">Reset</button>` : ''}
+                  </div></td>
+                </tr>`;
+              }).join('') : `<tr><td colspan="7" style="text-align:center;padding:40px;color:#7a8498">
+                No attempts yet.
+              </td></tr>`}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style="text-align:right">
+        <a href="quizzes.html" style="display:inline-block;background:#3987ee;color:#fff;
+          padding:11px 18px;border-radius:9px;text-decoration:none;font-weight:700;font-size:12px">
+          ← Back to Quizzes
+        </a>
+      </div>`;
+
+    /* Class filter */
+    document.getElementById('classFilter')?.addEventListener('change', e => {
+      const v = e.target.value;
+      if(v) sessionStorage.setItem('educoreQuizResultsClass_' + quizId, v);
+      else sessionStorage.removeItem('educoreQuizResultsClass_' + quizId);
+      paintQuizAttempts(quizId);
+    });
+
+    /* CSV download */
+    document.getElementById('exportBtn')?.addEventListener('click', () => {
+      const res = E.quizResultsCSV(quiz.id, { classId: filterClass });
+      if(!res.ok){ E.toast(res.error || 'Nothing to export.'); return; }
+      const safeTitle = quiz.title.replace(/[^a-z0-9\-_]+/gi, '_').slice(0, 40);
+      const filename = `quiz-results_${safeTitle}${filterClass ? '_' + filterClass.replace(/\s+/g, '_') : ''}.csv`;
+      const blob = new Blob(['\ufeff' + res.csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.click();
+      URL.revokeObjectURL(url);
+      E.audit('create', `Quiz CSV export ${quiz.title}`, '', `${res.count} rows · ${filterClass || 'all classes'}`);
+      E.toast(`Downloaded ${res.count} row${res.count === 1 ? '' : 's'}.`);
+    });
+
+    /* Row actions */
+    document.getElementById('pageBody').addEventListener('click', async e => {
+      const view = e.target.closest('[data-view]');
+      const reset = e.target.closest('[data-reset]');
+      if(view) window.location.href = 'quiz-results.html?attempt=' + encodeURIComponent(view.dataset.view);
+      if(reset){
+        const at = E.getQuizAttempts().find(a => a.id === reset.dataset.reset);
+        if(!at) return;
+        const ok = await E.confirmModal({
+          title: 'Reset this attempt?',
+          message: `Reset ${E.esc(at.studentName)}'s attempt? They will be able to retake the quiz.`,
+          submitText: 'Reset',
+          danger: true
+        });
+        if(!ok) return;
+        E.resetAttempt(at.id);
+        E.audit('delete', `Attempt ${at.id}`, at.studentName, 'reset');
+        paintQuizAttempts(quizId);
+        E.toast('Attempt reset.');
+      }
+    });
+  }
+
+  /* ============================================================
+     STUDENT VIEW — list of own attempts
+     ============================================================ */
+  function paintStudentList(){
+    const me = (E.readStore(E.STORE_KEYS.students, []) || [])
+      .find(s => s.id === user.linkedStudentId);
+    if(!me){ paintEmpty('Account not linked to a student record.'); return; }
+
+    const attempts = E.getQuizAttempts()
+      .filter(a => a.studentId === me.id && a.status !== 'reset')
+      .sort((a,b) => new Date(b.submittedAt || b.startedAt) - new Date(a.submittedAt || a.startedAt));
+
+    if(!attempts.length){ paintEmpty('You have not taken any quizzes yet.'); return; }
+
+    document.getElementById('pageBody').innerHTML = `
+      <div class="card">
+        <div class="card-head"><h3>My quiz attempts <span class="count">${attempts.length}</span></h3></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Quiz</th>
+                <th>Submitted</th>
+                <th>Score</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${attempts.map(a => {
+                const quiz = E.getQuiz(a.quizId);
+                const statusPill = a.status === 'graded' ? '<span class="pill green">Graded</span>'
+                                  : a.status === 'pending-manual' ? '<span class="pill orange">Pending</span>'
+                                  : '<span class="pill blue">In progress</span>';
+                return `<tr>
+                  <td><strong>${E.esc(quiz?.title || '—')}</strong></td>
+                  <td>${a.submittedAt ? E.fmtDateTime(a.submittedAt) : '—'}</td>
+                  <td><strong style="font-family:monospace">${a.score ?? '—'} / ${a.totalMarks || E.quizTotalMarks(a.quizId)}</strong></td>
+                  <td>${statusPill}</td>
+                  <td><div class="row-actions">
+                    <button class="btn secondary" data-view="${E.esc(a.id)}">View</button>
+                  </div></td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+
+    document.getElementById('pageBody').addEventListener('click', e => {
+      const view = e.target.closest('[data-view]');
+      if(view) window.location.href = 'quiz-results.html?attempt=' + encodeURIComponent(view.dataset.view);
+    });
+  }
+
+  /* ---------- ROUTER ---------- */
+  paintHeader();
+
+  if(attemptParam){
+    const attempt = E.getQuizAttempts().find(a => a.id === attemptParam);
+    if(!attempt){ paintEmpty('Attempt not found.'); return; }
+    if(isStudent){
+      if(attempt.studentId !== user.linkedStudentId){
+        E.showDenied('Quiz Result');
+        return;
+      }
+      paintStudentAttempt(attempt);
+    } else if(canViewAll){
+      paintTeacherAttempt(attempt);
+      bindTeacherGrading(attempt.id);
+    }
+    return;
+  }
+
+  if(quizParam && !isStudent){
+    paintQuizAttempts(quizParam);
+    return;
+  }
+
+  if(isStudent){
+    paintStudentList();
+    return;
+  }
+
+  paintEmpty('Choose a quiz from the Quizzes page.');
+})();
+</script>
+</body>
+</html>

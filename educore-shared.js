@@ -28,12 +28,18 @@
     photos: 'educorePhotos',
     teachers: 'educoreTeachers',
     announcements: 'educoreAnnouncements',
+    announcementReads: 'educoreAnnouncementReads',
+    announcementAcks: 'educoreAnnouncementAcks',
     subjects: 'educoreSubjects',
     assignments: 'educoreAssignments',
     sponsors: 'educoreSponsors',
     enrollments: 'educoreEnrollments',
     archives: 'educoreArchives',
     salaryPayments: 'educoreSalaryPayments',
+    quizzes: 'educoreQuizzes',
+    quizQuestions: 'educoreQuizQuestions',
+    quizAttempts: 'educoreQuizAttempts',
+    quizResponses: 'educoreQuizResponses',
     migratedCategories: 'educoreMigratedCategoriesV2',
     migratedResults: 'educoreMigratedResultsToPeriodsV1',
     migratedFees: 'educoreMigratedFeesV3'
@@ -203,19 +209,13 @@
   function validateScore(raw, category){
     if(raw === '' || raw === null || raw === undefined) return { ok:true, normalized:'' };
     if(isNurseryCategory(category)){
-      if(typeof raw === 'string' && /^[A-Fa-f]$/.test(raw.trim())){
-        return { ok:true, normalized: raw.trim().toUpperCase() };
-      }
+      if(typeof raw === 'string' && /^[A-Fa-f]$/.test(raw.trim())) return { ok:true, normalized: raw.trim().toUpperCase() };
       const n = Number(raw);
-      if(!Number.isFinite(n) || n < 0 || n > 100){
-        return { ok:false, error:'Nursery scores must be a letter A–F or a number 0–100.' };
-      }
+      if(!Number.isFinite(n) || n < 0 || n > 100) return { ok:false, error:'Nursery scores must be a letter A–F or a number 0–100.' };
       return { ok:true, normalized: gradeFromNumber(n, category) };
     }
     const n = Number(raw);
-    if(!Number.isFinite(n) || n < 0 || n > 100){
-      return { ok:false, error:'Enter a score between 0 and 100.' };
-    }
+    if(!Number.isFinite(n) || n < 0 || n > 100) return { ok:false, error:'Enter a score between 0 and 100.' };
     return { ok:true, normalized:n };
   }
   function averageScores(values, category){
@@ -263,21 +263,19 @@
   }
 
   /* ============================================================
-     RESULTS
+     RESULTS + AVERAGES (unchanged)
      ============================================================ */
   function readResults(){ return readStore(STORE_KEYS.results, []) || []; }
   function periodResultsFor(studentName, className, subject, year){
     const y = year || currentAcademicYear();
     return readResults().filter(r =>
       r.student === studentName && r.class === className && r.subject === subject &&
-      (r.year === y || !r.year)
-    );
+      (r.year === y || !r.year));
   }
   function scoreFor(studentName, className, subject, semester, period, year){
     const rows = periodResultsFor(studentName, className, subject, year);
     const row = rows.find(r =>
-      Number(r.semester) === Number(semester) &&
-      String(r.period) === String(period));
+      Number(r.semester) === Number(semester) && String(r.period) === String(period));
     return row ? row.score : '';
   }
   function saveScore({ student, className, subject, semester, period, score, year }){
@@ -289,8 +287,7 @@
     const idx = list.findIndex(r =>
       r.student === student && r.class === className && r.subject === subject &&
       String(r.period) === String(period) && Number(r.semester) === Number(semester) &&
-      (r.year === y || !r.year)
-    );
+      (r.year === y || !r.year));
     const u = currentUser();
     const payload = {
       student, class: className, subject, year: y,
@@ -299,26 +296,20 @@
       updatedAt: new Date().toISOString(),
       updatedBy: u ? u.username : ''
     };
-    if(idx >= 0){
-      list[idx] = Object.assign({}, list[idx], payload);
-    } else {
+    if(idx >= 0) list[idx] = Object.assign({}, list[idx], payload);
+    else {
       if(v.normalized === '') return { ok:true, skipped:true };
       list.push(Object.assign({ id: 'r-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6) }, payload));
     }
     writeStore(STORE_KEYS.results, list);
     return { ok:true };
   }
-
-  /* ============================================================
-     AVERAGES
-     ============================================================ */
   function semesterAverageFor(studentName, className, subject, semester, category, year){
     const cat = category || classCategoryFor(className);
     const periods = periodsForSemester(semester);
     const nonExam = periods.filter(p => !p.isExam);
     const exam = periods.find(p => p.isExam);
-    const nonExamVals = nonExam
-      .map(p => scoreFor(studentName, className, subject, semester, p.key, year))
+    const nonExamVals = nonExam.map(p => scoreFor(studentName, className, subject, semester, p.key, year))
       .filter(v => v !== '' && v !== null && v !== undefined);
     const examVal = exam ? scoreFor(studentName, className, subject, semester, exam.key, year) : '';
     if(!nonExamVals.length && (examVal === '' || examVal === undefined)) return null;
@@ -392,7 +383,7 @@
   function isNurseryClass(className){ return isNurseryCategory(classCategoryFor(className)); }
 
   /* ============================================================
-     TEACHERS + ASSIGNMENTS + SPONSOR
+     TEACHERS + ASSIGNMENTS
      ============================================================ */
   function getTeachers(){ return readStore(STORE_KEYS.teachers, []) || []; }
   function getAssignments(filter){
@@ -402,8 +393,7 @@
       (!filter.teacherId || a.teacherId === filter.teacherId) &&
       (!filter.className || a.className === filter.className) &&
       (!filter.subject   || a.subject   === filter.subject) &&
-      (!filter.semester  || Number(a.semester) === Number(filter.semester))
-    );
+      (!filter.semester  || Number(a.semester) === Number(filter.semester)));
   }
   function assignmentsForTeacher(tid){ return getAssignments({ teacherId: tid }); }
   function getSponsors(){ return readStore(STORE_KEYS.sponsors, {}) || {}; }
@@ -438,7 +428,6 @@
     const t = teachers.find(x => x.name === u.name);
     return t ? t.id : null;
   }
-
   function taughtSubjectsInClass(user, className){
     if(!user || user.role !== 'Teacher') return [];
     const tid = currentTeacherId();
@@ -467,7 +456,7 @@
   }
 
   /* ============================================================
-     PARENT CHILDREN
+     PARENT CHILDREN + VISIBILITY
      ============================================================ */
   function childrenOf(user){
     if(!user || user.role !== 'Parent') return [];
@@ -484,10 +473,6 @@
     }
     return kids;
   }
-
-  /* ============================================================
-     VISIBILITY
-     ============================================================ */
   function visibleClassNamesFor(user){
     if(!user) return [];
     const classes = getClasses();
@@ -620,19 +605,8 @@
     const netBill    = round2(billedBase - discount);
     const balance    = round2(netBill - paid);
     return {
-      studentId, className,
-      billedBase,
-      discount,
-      netBill,
-      paid,
-      balance,
-      status: netBill <= 0
-        ? 'Paid'
-        : paid >= netBill - 0.005
-          ? 'Paid'
-          : paid > 0
-            ? 'Part-paid'
-            : 'Pending'
+      studentId, className, billedBase, discount, netBill, paid, balance,
+      status: netBill <= 0 ? 'Paid' : paid >= netBill - 0.005 ? 'Paid' : paid > 0 ? 'Part-paid' : 'Pending'
     };
   }
   function recordPayment({ studentId, studentName, className, amount, method, date, reference, note }){
@@ -666,8 +640,6 @@
     writeStore(STORE_KEYS.payments, list);
     return p;
   }
-
-  /* ---------- Report card threshold ---------- */
   function getReportThreshold(){
     const s = readStore(STORE_KEYS.settingsExtra, {}) || {};
     return {
@@ -703,18 +675,6 @@
     }
     return reportAccessFor(studentId, className);
   }
-
-  /* ============================================================
-     VIEWER-LEVEL GRADESHEET ACCESS
-     Returns:
-       { allowed:true }                          for staff
-       { allowed:false, reason:'threshold_off' } ? no — off means allowed
-       { allowed:false, blockedStudents:[...], totalShortfall }  for student/parent when owed
-     Behaviour:
-       - Staff (Principal/Registrar/Teacher): always allowed
-       - Student: allowed if own balance meets threshold
-       - Parent:  allowed only if ALL children meet the threshold
-  -------------------------------------------------------------- */
   function viewerGradesheetAccess(){
     const u = currentUser();
     if(!u) return { allowed:false, reason:'Not signed in' };
@@ -722,53 +682,26 @@
       return { allowed:true, staffBypass:true };
     }
     const t = getReportThreshold();
-    if(!t.enabled){
-      return { allowed:true, reason:'Threshold disabled' };
-    }
+    if(!t.enabled) return { allowed:true, reason:'Threshold disabled' };
     const kids = u.role === 'Student'
       ? (readStore(STORE_KEYS.students, []) || []).filter(s => s.id === u.linkedStudentId)
       : childrenOf(u);
-
-    if(!kids.length){
-      /* No linked students — allow (nothing to owe) */
-      return { allowed:true, reason:'No linked students' };
-    }
-
+    if(!kids.length) return { allowed:true, reason:'No linked students' };
     const blocked = [];
     let totalShortfall = 0;
     kids.forEach(s => {
       const access = reportAccessFor(s.id, s.class);
       if(!access.allowed){
-        blocked.push({
-          student: s,
-          access,
-          owed: access.shortfall
-        });
+        blocked.push({ student: s, access, owed: access.shortfall });
         totalShortfall += access.shortfall;
       }
     });
-
-    if(!blocked.length){
-      return { allowed:true, checkedStudents: kids.length };
-    }
-    return {
-      allowed: false,
-      mode: t.mode,
-      value: t.value,
-      blockedStudents: blocked,
-      totalShortfall,
-      checkedStudents: kids.length
-    };
+    if(!blocked.length) return { allowed:true, checkedStudents: kids.length };
+    return { allowed:false, mode: t.mode, value: t.value, blockedStudents: blocked, totalShortfall, checkedStudents: kids.length };
   }
-
-  /* ============================================================
-     RENDER — Payment-locked page for Gradesheet / Ledger
-     ============================================================ */
   function renderGradesheetLocked(access, pageLabel){
-    const u = currentUser();
     const kids = access.blockedStudents || [];
-    const body = document.body;
-    body.innerHTML = `
+    document.body.innerHTML = `
       <div style="min-height:100vh;display:grid;place-items:center;
         background:linear-gradient(135deg,#edf4fc,#dfeaf7);
         font-family:Arial,Helvetica,sans-serif;color:#23354d;padding:24px">
@@ -788,14 +721,12 @@
               </div>
             </div>
           </div>
-
           <div style="padding:26px 30px">
             <p style="font-size:13px;color:#54637d;line-height:1.7;margin:0 0 16px">
               Your account is not permitted to open the
               <strong>${esc(pageLabel || 'Gradesheet')}</strong> because the payment threshold
               has not been met for:
             </p>
-
             ${kids.map(x => {
               const s = x.student;
               const a = x.access;
@@ -829,14 +760,12 @@
                   </div>
                 </div>`;
             }).join('')}
-
             <div style="display:flex;justify-content:space-between;padding:12px 16px;
               background:#fff8e6;border:1px solid #f3d999;border-radius:10px;
               font-size:12px;color:#8a6a1a;margin-top:16px">
               <span><strong>Total outstanding</strong></span>
               <strong style="font-family:monospace;font-size:14px">${money(access.totalShortfall)}</strong>
             </div>
-
             <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:20px">
               <a href="index.html" style="display:inline-block;background:#eef2fb;color:#34415c;
                 padding:11px 18px;border-radius:9px;text-decoration:none;font-weight:700;font-size:12px">
@@ -855,9 +784,7 @@
   /* ============================================================
      PAYROLL
      ============================================================ */
-  function getSalaryPayments(){
-    return readStore(STORE_KEYS.salaryPayments, []) || [];
-  }
+  function getSalaryPayments(){ return readStore(STORE_KEYS.salaryPayments, []) || []; }
   function computeSalary({ totalSalary, advance, taxPercent }){
     const total = round2(totalSalary);
     const adv   = round2(advance || 0);
@@ -873,15 +800,12 @@
     const row = {
       id: 's-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6),
       teacherId, teacherName,
-      totalSalary: calc.total,
-      advance: calc.advance,
-      taxPercent: calc.taxPercent,
-      taxAmount: calc.taxAmount,
+      totalSalary: calc.total, advance: calc.advance,
+      taxPercent: calc.taxPercent, taxAmount: calc.taxAmount,
       netBalance: calc.netBalance,
       method: method || 'Bank transfer',
       date: date || todayISO(),
-      reference: reference || '',
-      note: note || '',
+      reference: reference || '', note: note || '',
       receiptNo: nextReceiptNumber('SAL'),
       createdAt: new Date().toISOString(),
       createdBy: u ? u.username : '',
@@ -902,7 +826,6 @@
     writeStore(STORE_KEYS.salaryPayments, list);
     return s;
   }
-
   function nextReceiptNumber(prefix){
     const key = 'educoreReceiptSeq_' + (prefix || 'RCP');
     const y = new Date().getFullYear();
@@ -912,6 +835,524 @@
     writeStore(key, raw);
     const p = prefix || 'RCP';
     return `${p}-${y}-${String(raw.seq).padStart(4, '0')}`;
+  }
+
+  /* ============================================================
+     ANNOUNCEMENTS
+     ============================================================ */
+  function announcementVisibleTo(a, viewer){
+    if(!a) return false;
+    const u = viewer || currentUser();
+    if(!u) return false;
+    const role = u.role;
+    if(role === 'Principal' || role === 'Registrar') return true;
+    const aud = String(a.audience || 'All').trim();
+    if(aud === 'All') return true;
+    if(aud === 'Staff') return role === 'Teacher';
+    if(aud === 'Students') return role === 'Student';
+    if(aud === 'Parents') return role === 'Parent';
+    return false;
+  }
+  function announcementIsLive(a){
+    if(!a) return false;
+    if(a.deleted) return false;
+    const now = Date.now();
+    if(a.publishAt){
+      const t = new Date(a.publishAt).getTime();
+      if(Number.isFinite(t) && t > now) return false;
+    }
+    if(a.expiresAt){
+      const t = new Date(a.expiresAt).getTime();
+      if(Number.isFinite(t) && t < now) return false;
+    }
+    return true;
+  }
+  function getAnnouncementReads(){ return readStore(STORE_KEYS.announcementReads, []) || []; }
+  function hasReadAnnouncement(announcementId, userId){
+    const u = userId || (currentUser() || {}).id;
+    if(!u) return false;
+    return getAnnouncementReads().some(r => r.announcementId === announcementId && r.userId === u);
+  }
+  function markAnnouncementRead(announcementId){
+    const u = currentUser();
+    if(!u) return null;
+    const list = getAnnouncementReads();
+    if(list.some(r => r.announcementId === announcementId && r.userId === u.id)) return null;
+    const row = {
+      id: 'ar-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6),
+      announcementId, userId: u.id, username: u.username,
+      readAt: new Date().toISOString()
+    };
+    list.push(row);
+    writeStore(STORE_KEYS.announcementReads, list);
+    return row;
+  }
+  function readCountFor(announcementId){
+    return getAnnouncementReads().filter(r => r.announcementId === announcementId).length;
+  }
+  function getAnnouncementAcks(){ return readStore(STORE_KEYS.announcementAcks, []) || []; }
+  function hasAcknowledged(announcementId, userId){
+    const u = userId || (currentUser() || {}).id;
+    if(!u) return false;
+    return getAnnouncementAcks().some(r => r.announcementId === announcementId && r.userId === u);
+  }
+  function acknowledgeAnnouncement(announcementId, note){
+    const u = currentUser();
+    if(!u) return null;
+    const list = getAnnouncementAcks();
+    if(list.some(r => r.announcementId === announcementId && r.userId === u.id)) return null;
+    const row = {
+      id: 'ak-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6),
+      announcementId, userId: u.id, username: u.username,
+      name: u.name || u.username,
+      note: note || '',
+      at: new Date().toISOString()
+    };
+    list.push(row);
+    writeStore(STORE_KEYS.announcementAcks, list);
+    return row;
+  }
+  function ackCountFor(announcementId){
+    return getAnnouncementAcks().filter(r => r.announcementId === announcementId).length;
+  }
+  function unreadAnnouncementCount(viewer){
+    const u = viewer || currentUser();
+    if(!u) return 0;
+    const list = readStore(STORE_KEYS.announcements, []) || [];
+    const visible = list.filter(a => announcementVisibleTo(a, u) && announcementIsLive(a));
+    return visible.filter(a => !hasReadAnnouncement(a.id, u.id)).length;
+  }
+  function audienceSizeFor(announcement){
+    const u = currentUser();
+    if(!u) return 0;
+    const users = readStore(STORE_KEYS.users, []) || [];
+    const aud = announcement.audience || 'All';
+    return users.filter(x => {
+      if(!x.active) return false;
+      if(x.role === 'Principal' || x.role === 'Registrar') return false;
+      if(aud === 'All') return ['Teacher','Student','Parent'].includes(x.role);
+      if(aud === 'Staff') return x.role === 'Teacher';
+      if(aud === 'Students') return x.role === 'Student';
+      if(aud === 'Parents') return x.role === 'Parent';
+      return false;
+    }).length;
+  }
+
+  /* ============================================================
+     QUIZZES
+     ============================================================ */
+
+  const QUESTION_TYPES = [
+    { key:'multiple-choice', label:'Multiple choice',  auto:true,  hint:'One correct option' },
+    { key:'true-false',      label:'True / False',     auto:true,  hint:'Two options' },
+    { key:'numeric',         label:'Numeric',          auto:true,  hint:'Auto-graded against a target value (± tolerance)' },
+    { key:'short-answer',    label:'Short answer',     auto:false, hint:'Manually graded by the teacher' },
+    { key:'essay',           label:'Essay',            auto:false, hint:'Long-form, manually graded' }
+  ];
+  function questionTypeMeta(key){
+    return QUESTION_TYPES.find(t => t.key === key) || QUESTION_TYPES[0];
+  }
+
+  /* ---------- Quizzes ---------- */
+  function getQuizzes(){ return readStore(STORE_KEYS.quizzes, []) || []; }
+  function saveQuiz(q){
+    const list = getQuizzes();
+    const u = currentUser();
+    const idx = list.findIndex(x => x.id === q.id);
+    if(idx >= 0){
+      list[idx] = Object.assign({}, list[idx], q, { updatedAt: new Date().toISOString() });
+    } else {
+      list.push(Object.assign({
+        id: 'qz-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6),
+        createdAt: new Date().toISOString(),
+        createdBy: u ? u.username : '',
+        published: false,
+        assignedTo: []        // NEW: empty array = everyone in the class
+      }, q));
+    }
+    writeStore(STORE_KEYS.quizzes, list);
+    return idx >= 0 ? list[idx] : list[list.length - 1];
+  }
+  function getQuiz(id){
+    return getQuizzes().find(q => q.id === id) || null;
+  }
+  function deleteQuiz(id){
+    writeStore(STORE_KEYS.quizzes, getQuizzes().filter(q => q.id !== id));
+    writeStore(STORE_KEYS.quizQuestions, getQuizQuestions().filter(q => q.quizId !== id));
+    writeStore(STORE_KEYS.quizAttempts, getQuizAttempts().filter(a => a.quizId !== id));
+    writeStore(STORE_KEYS.quizResponses, getQuizResponses().filter(r => {
+      const at = (readStore(STORE_KEYS.quizAttempts, []) || []).find(a => a.id === r.attemptId);
+      return at && at.quizId !== id;
+    }));
+  }
+
+  /* ---------- Questions ---------- */
+  function getQuizQuestions(){ return readStore(STORE_KEYS.quizQuestions, []) || []; }
+  function questionsForQuiz(quizId){
+    return getQuizQuestions()
+      .filter(q => q.quizId === quizId)
+      .sort((a,b) => Number(a.order || 0) - Number(b.order || 0));
+  }
+  function saveQuestion(q){
+    const list = getQuizQuestions();
+    const isNew = !q.id || !list.some(x => x.id === q.id);
+    const u = currentUser();
+    const id = isNew
+      ? ('qq-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6))
+      : q.id;
+    const payload = Object.assign({}, q, {
+      id,
+      updatedAt: new Date().toISOString(),
+      updatedBy: u ? u.username : ''
+    });
+    if(isNew){
+      payload.createdAt = new Date().toISOString();
+      list.push(payload);
+    } else {
+      const idx = list.findIndex(x => x.id === id);
+      list[idx] = Object.assign({}, list[idx], payload);
+    }
+    writeStore(STORE_KEYS.quizQuestions, list);
+    return list.find(x => x.id === id);
+  }
+  function deleteQuestion(id){
+    writeStore(STORE_KEYS.quizQuestions, getQuizQuestions().filter(q => q.id !== id));
+  }
+  function quizTotalMarks(quizId){
+    return questionsForQuiz(quizId).reduce((sum, q) => sum + Number(q.points || 0), 0);
+  }
+  function quizIsReady(quizId){
+    const qs = questionsForQuiz(quizId);
+    if(!qs.length) return { ok:false, reason:'No questions yet.' };
+    for(const q of qs){
+      if(!q.text || !String(q.text).trim()) return { ok:false, reason:'A question is missing its text.' };
+      if(q.type === 'multiple-choice'){
+        if(!Array.isArray(q.options) || q.options.length < 2) return { ok:false, reason:'A multiple-choice question needs at least 2 options.' };
+        if(!q.options.some(o => o.isCorrect)) return { ok:false, reason:'A multiple-choice question has no correct answer marked.' };
+      }
+      if(q.type === 'numeric' && (q.numericAnswer === '' || q.numericAnswer === null || q.numericAnswer === undefined)){
+        return { ok:false, reason:'A numeric question has no target answer.' };
+      }
+    }
+    return { ok:true };
+  }
+
+  /* ---------- Attempts ---------- */
+  function getQuizAttempts(){ return readStore(STORE_KEYS.quizAttempts, []) || []; }
+  function saveAttempt(a){
+    const list = getQuizAttempts();
+    const idx = list.findIndex(x => x.id === a.id);
+    if(idx >= 0) list[idx] = Object.assign({}, list[idx], a);
+    else list.push(a);
+    writeStore(STORE_KEYS.quizAttempts, list);
+    return a;
+  }
+  function createAttempt(quiz, student){
+    const u = currentUser();
+    const attempt = {
+      id: 'qa-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6),
+      quizId: quiz.id,
+      studentId: student.id,
+      studentName: student.name,
+      className: student.class,
+      startedAt: new Date().toISOString(),
+      submittedAt: null,
+      score: null,
+      totalMarks: quizTotalMarks(quiz.id),
+      percentage: null,
+      status: 'in-progress',
+      suspicionEvents: 0,
+      autoSubmitted: false,
+      graded: false,
+      gradedBy: null,
+      gradedAt: null,
+      createdBy: u ? u.username : ''
+    };
+    saveAttempt(attempt);
+    return attempt;
+  }
+  function existingAttemptFor(quizId, studentId){
+    return getQuizAttempts().find(a => a.quizId === quizId && a.studentId === studentId && a.status !== 'reset') || null;
+  }
+  function resetAttempt(attemptId){
+    const list = getQuizAttempts();
+    const at = list.find(x => x.id === attemptId);
+    if(!at) return null;
+    at.status = 'reset';
+    at.resetAt = new Date().toISOString();
+    at.resetBy = (currentUser() || {}).username || '';
+    writeStore(STORE_KEYS.quizAttempts, list);
+    writeStore(STORE_KEYS.quizResponses, getQuizResponses().filter(r => r.attemptId !== attemptId));
+    return at;
+  }
+
+  /* ---------- Responses ---------- */
+  function getQuizResponses(){ return readStore(STORE_KEYS.quizResponses, []) || []; }
+  function responsesForAttempt(attemptId){
+    return getQuizResponses().filter(r => r.attemptId === attemptId);
+  }
+  function saveResponse(resp){
+    const list = getQuizResponses();
+    const idx = list.findIndex(r => r.attemptId === resp.attemptId && r.questionId === resp.questionId);
+    const payload = Object.assign({
+      id: 'qr-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6),
+      answeredAt: new Date().toISOString()
+    }, resp);
+    if(idx >= 0) list[idx] = Object.assign({}, list[idx], resp, { answeredAt: new Date().toISOString() });
+    else list.push(payload);
+    writeStore(STORE_KEYS.quizResponses, list);
+    return payload;
+  }
+
+  /* ---------- Grading ---------- */
+  function gradeResponse(question, resp){
+    const q = question;
+    const max = Number(q.points || 0);
+    if(q.type === 'multiple-choice'){
+      const correct = (q.options || []).find(o => o.isCorrect);
+      const isCorrect = !!(resp.selectedOptionId && correct && resp.selectedOptionId === correct.id);
+      return { isCorrect, awardedPoints: isCorrect ? max : 0 };
+    }
+    if(q.type === 'true-false'){
+      const correct = String(q.tfAnswer || '').toLowerCase();
+      const given = String(resp.answerText || '').trim().toLowerCase();
+      const isCorrect = correct && given === correct;
+      return { isCorrect, awardedPoints: isCorrect ? max : 0 };
+    }
+    if(q.type === 'numeric'){
+      const target = Number(q.numericAnswer);
+      const tol = Number(q.tolerance || 0);
+      const given = Number(resp.answerText);
+      const isCorrect = Number.isFinite(given) && Number.isFinite(target) && Math.abs(given - target) <= tol;
+      return { isCorrect, awardedPoints: isCorrect ? max : 0 };
+    }
+    return { isCorrect: null, awardedPoints: null };
+  }
+
+  function computeAttemptScore(attemptId){
+    const at = getQuizAttempts().find(a => a.id === attemptId);
+    if(!at) return null;
+    const qs = questionsForQuiz(at.quizId);
+    const responses = responsesForAttempt(attemptId);
+
+    let autoScore = 0, autoMax = 0;
+    let manualScore = 0, manualMax = 0;
+    let pendingManual = 0;
+
+    qs.forEach(q => {
+      const resp = responses.find(r => r.questionId === q.id) || {};
+      const max = Number(q.points || 0);
+      const meta = questionTypeMeta(q.type);
+      if(meta.auto){
+        autoMax += max;
+        const g = gradeResponse(q, resp);
+        autoScore += Number(g.awardedPoints || 0);
+      } else {
+        manualMax += max;
+        if(resp.manualPoints !== undefined && resp.manualPoints !== null){
+          manualScore += Number(resp.manualPoints || 0);
+        } else {
+          pendingManual += 1;
+        }
+      }
+    });
+
+    const total = round2(autoScore + manualScore);
+    const max = round2(autoMax + manualMax);
+    return {
+      autoScore: round2(autoScore), autoMax: round2(autoMax),
+      manualScore: round2(manualScore), manualMax: round2(manualMax),
+      pendingManual, total, max,
+      percentage: max > 0 ? round2(total / max * 100) : 0
+    };
+  }
+
+  function submitAttempt(attemptId, auto){
+    const at = getQuizAttempts().find(a => a.id === attemptId);
+    if(!at) return null;
+    const score = computeAttemptScore(attemptId);
+    at.submittedAt = new Date().toISOString();
+    at.score = score.total;
+    at.totalMarks = score.max;
+    at.percentage = score.percentage;
+    at.autoSubmitted = !!auto;
+    at.status = score.pendingManual > 0 ? 'pending-manual' : 'graded';
+    at.graded = score.pendingManual === 0;
+    saveAttempt(at);
+    return at;
+  }
+
+  function setManualPoints(attemptId, questionId, points){
+    const list = getQuizResponses();
+    const idx = list.findIndex(r => r.attemptId === attemptId && r.questionId === questionId);
+    const u = currentUser();
+    if(idx >= 0){
+      list[idx].manualPoints = Number(points);
+      list[idx].manualGradedAt = new Date().toISOString();
+      list[idx].manualGradedBy = u ? u.username : '';
+    } else {
+      list.push({
+        id: 'qr-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6),
+        attemptId, questionId,
+        selectedOptionId: null, answerText: '',
+        isCorrect: null, awardedPoints: null,
+        manualPoints: Number(points),
+        manualGradedAt: new Date().toISOString(),
+        manualGradedBy: u ? u.username : '',
+        answeredAt: new Date().toISOString()
+      });
+    }
+    writeStore(STORE_KEYS.quizResponses, list);
+
+    const at = getQuizAttempts().find(a => a.id === attemptId);
+    if(at){
+      const score = computeAttemptScore(attemptId);
+      at.score = score.total;
+      at.totalMarks = score.max;
+      at.percentage = score.percentage;
+      at.status = score.pendingManual > 0 ? 'pending-manual' : 'graded';
+      at.graded = score.pendingManual === 0;
+      at.gradedAt = at.graded ? new Date().toISOString() : at.gradedAt;
+      at.gradedBy = at.graded ? (u ? u.username : '') : at.gradedBy;
+      saveAttempt(at);
+    }
+    return true;
+  }
+
+  /* ---------- Per-student assignment ----------
+     A quiz's assignedTo array, when non-empty, restricts who can take it.
+     Empty or missing = class-wide. */
+  function quizAssignedToStudent(quiz, student){
+    if(!quiz || !student) return false;
+    if(!Array.isArray(quiz.assignedTo) || !quiz.assignedTo.length) return true; /* class-wide */
+    return quiz.assignedTo.includes(student.id);
+  }
+
+  function canTakeQuiz(quiz, student){
+    if(!quiz || !student) return { ok:false, reason:'Missing quiz or student.' };
+    if(!quiz.published) return { ok:false, reason:'This quiz has not been published yet.' };
+    if(quiz.className && quiz.className !== student.class){
+      return { ok:false, reason:'This quiz is not assigned to your class.' };
+    }
+    if(!quizAssignedToStudent(quiz, student)){
+      return { ok:false, reason:'This quiz was not assigned to you.' };
+    }
+    if(quiz.dueDate){
+      const due = new Date(quiz.dueDate + 'T23:59:59').getTime();
+      if(Date.now() > due) return { ok:false, reason:'This quiz is past its due date.' };
+    }
+    const ready = quizIsReady(quiz.id);
+    if(!ready.ok) return { ok:false, reason:'Quiz is not ready: ' + ready.reason };
+    const existing = existingAttemptFor(quiz.id, student.id);
+    if(existing){
+      if(existing.status === 'in-progress') return { ok:false, reason:'You have an in-progress attempt.', attempt: existing };
+      return { ok:false, reason:'You have already taken this quiz.', attempt: existing };
+    }
+    return { ok:true };
+  }
+
+  /* ---------- CSV helper for quiz results ----------
+     Returns a CSV string for the given quiz's attempts.
+     Optional filter: { classId } restricts to one class. */
+  function quizResultsCSV(quizId, opts){
+    opts = opts || {};
+    const quiz = getQuiz(quizId);
+    if(!quiz) return { ok:false, error:'Quiz not found.' };
+
+    const questions = questionsForQuiz(quizId);
+    const attempts = getQuizAttempts()
+      .filter(a => a.quizId === quizId && a.status !== 'reset')
+      .filter(a => !opts.classId || a.className === opts.classId)
+      .sort((a,b) => a.studentName.localeCompare(b.studentName));
+
+    if(!attempts.length){
+      return { ok:false, error:'No attempts to export for this filter.' };
+    }
+
+    const headers = [
+      'Student Name','Student ID','Class',
+      'Started','Submitted','Auto-submitted',
+      'Status','Score','Total Marks','Percentage','Pass/Fail',
+      'Tab switches',
+      ...questions.map((q, i) => `Q${i+1} (${q.points}m)`),
+      ...questions.map((q, i) => `Q${i+1} awarded`),
+      'Correct','Incorrect','Pending manual'
+    ];
+
+    const passMark = Number(quiz.passMark || 50);
+
+    const rows = attempts.map(a => {
+      const responses = responsesForAttempt(a.id);
+      const questionCells = questions.map(q => {
+        const r = responses.find(x => x.questionId === q.id) || {};
+        if(q.type === 'multiple-choice'){
+          const sel = (q.options || []).find(o => o.id === r.selectedOptionId);
+          return sel ? sel.text : '';
+        }
+        if(q.type === 'true-false') return r.answerText || '';
+        if(q.type === 'numeric' || q.type === 'short-answer' || q.type === 'essay'){
+          return String(r.answerText || '').slice(0, 200);
+        }
+        return '';
+      });
+
+      const awardedCells = questions.map(q => {
+        const r = responses.find(x => x.questionId === q.id) || {};
+        const meta = questionTypeMeta(q.type);
+        if(meta.auto){
+          const g = gradeResponse(q, r);
+          return g.awardedPoints ?? '';
+        }
+        return r.manualPoints ?? '';
+      });
+
+      const correctCount = questions.filter(q => {
+        const r = responses.find(x => x.questionId === q.id) || {};
+        const meta = questionTypeMeta(q.type);
+        if(!meta.auto) return false;
+        return gradeResponse(q, r).isCorrect === true;
+      }).length;
+
+      const incorrectCount = questions.filter(q => {
+        const r = responses.find(x => x.questionId === q.id) || {};
+        const meta = questionTypeMeta(q.type);
+        if(!meta.auto) return false;
+        return gradeResponse(q, r).isCorrect === false;
+      }).length;
+
+      const pending = questions.filter(q => {
+        const r = responses.find(x => x.questionId === q.id) || {};
+        const meta = questionTypeMeta(q.type);
+        if(meta.auto) return false;
+        return r.manualPoints === undefined || r.manualPoints === null;
+      }).length;
+
+      return [
+        a.studentName,
+        a.studentId,
+        a.className,
+        a.startedAt ? new Date(a.startedAt).toISOString() : '',
+        a.submittedAt ? new Date(a.submittedAt).toISOString() : '',
+        a.autoSubmitted ? 'Yes' : 'No',
+        a.status,
+        a.score != null ? a.score : '',
+        a.totalMarks != null ? a.totalMarks : '',
+        a.percentage != null ? a.percentage : '',
+        a.percentage != null ? (a.percentage >= passMark ? 'Pass' : 'Fail') : '',
+        a.suspicionEvents || 0,
+        ...questionCells,
+        ...awardedCells,
+        correctCount,
+        incorrectCount,
+        pending
+      ];
+    });
+
+    const csv = [headers, ...rows]
+      .map(r => r.map(v => '"' + String(v ?? '').replace(/"/g, '""') + '"').join(','))
+      .join('\r\n');
+
+    return { ok:true, csv, count: attempts.length };
   }
 
   /* ============================================================
@@ -988,6 +1429,7 @@
           .ecedu-btn{border:0;border-radius:9px;padding:11px 15px;background:#4169e1;color:#fff;
             font-weight:700;font-size:12px;cursor:pointer;font-family:inherit}
           .ecedu-btn.outline{background:#fff;color:#34415c;border:1px solid #e8ebf2}
+          .ecedu-btn.danger{background:#d64545}
           @media(max-width:650px){.educore-modal-form{grid-template-columns:1fr}.educore-modal-actions{grid-column:1}}
         `;
         document.head.appendChild(s);
@@ -1021,6 +1463,29 @@
     document.getElementById('educoreModalBackdrop')?.classList.remove('show');
     const f = document.getElementById('educoreModalForm');
     if(f) f.innerHTML = '';
+  }
+
+  function confirmModal({ title, message, submitText, danger }){
+    return new Promise(resolve => {
+      const html = `
+        <div class="full" style="font-size:13px;line-height:1.7;color:#3b4a63">
+          ${message}
+        </div>`;
+      openModal(title || 'Confirm', html,
+        submitText || 'Confirm',
+        () => { closeModal(); resolve(true); });
+      if(danger){
+        setTimeout(() => {
+          const btn = document.querySelector('.educore-modal-actions .ecedu-btn:not(.outline)');
+          if(btn){ btn.classList.add('danger'); }
+        }, 0);
+      }
+      const cancel = document.getElementById('educoreModalCancel');
+      if(cancel){
+        const orig = cancel.onclick;
+        cancel.onclick = () => { if(orig) orig(); resolve(false); };
+      }
+    });
   }
 
   function showDenied(label){
@@ -1072,122 +1537,132 @@
     ]},
     { title:'Academic', items:[
       { key:'students', label:'Students', desc:'Manage student records', subFeatures:[
-        { key:'add',    label:'Add student',     desc:'Create new student records' },
-        { key:'edit',   label:'Edit student',    desc:'Modify student details' },
-        { key:'delete', label:'Delete student',  desc:'Remove students and their data' },
-        { key:'report', label:'Open report card',desc:'Launch a report card for a student' },
-        { key:'export', label:'Export CSV',      desc:'Download the student list' }
+        { key:'add', label:'Add student', desc:'Create new student records' },
+        { key:'edit', label:'Edit student', desc:'Modify student details' },
+        { key:'delete', label:'Delete student', desc:'Remove students and their data' },
+        { key:'report', label:'Open report card', desc:'Launch a report card for a student' },
+        { key:'export', label:'Export CSV', desc:'Download the student list' }
       ]},
       { key:'teachers', label:'Teachers', desc:'Manage teaching staff', subFeatures:[
-        { key:'add',          label:'Add teacher',           desc:'Create new teacher records' },
-        { key:'edit',         label:'Edit teacher',          desc:'Modify teacher details' },
-        { key:'delete',       label:'Delete teacher',        desc:'Remove teachers and their data' },
-        { key:'assignments',  label:'Manage assignments',    desc:'Assign subjects and classes' },
-        { key:'sponsorship',  label:'Manage sponsorship',    desc:'Assign a class to sponsor' }
+        { key:'add', label:'Add teacher', desc:'Create new teacher records' },
+        { key:'edit', label:'Edit teacher', desc:'Modify teacher details' },
+        { key:'delete', label:'Delete teacher', desc:'Remove teachers and their data' },
+        { key:'assignments', label:'Manage assignments', desc:'Assign subjects and classes' },
+        { key:'sponsorship', label:'Manage sponsorship', desc:'Assign a class to sponsor' }
       ]},
       { key:'classes', label:'Classes', desc:'Class registry, sections, sponsors', subFeatures:[
-        { key:'add',              label:'Add / edit',           desc:'Create and edit subjects & classes' },
-        { key:'delete',           label:'Delete',               desc:'Remove subjects and classes' },
-        { key:'archive',          label:'Archive subject',      desc:'Archive or restore subjects' },
-        { key:'manage_subjects',  label:'Manage class subjects',desc:'Choose which subjects a class offers' },
-        { key:'promote',          label:'Promote students',     desc:'Move students to the next class' }
+        { key:'add', label:'Add / edit', desc:'Create and edit subjects & classes' },
+        { key:'delete', label:'Delete', desc:'Remove subjects and classes' },
+        { key:'archive', label:'Archive subject', desc:'Archive or restore subjects' },
+        { key:'manage_subjects', label:'Manage class subjects', desc:'Choose which subjects a class offers' },
+        { key:'promote', label:'Promote students', desc:'Move students to the next class' }
       ]},
       { key:'attendance', label:'Attendance', desc:'Daily attendance register', subFeatures:[
-        { key:'save',      label:'Save attendance', desc:'Record attendance for a class and date' },
-        { key:'clear_day', label:'Clear day',       desc:'Erase a day\'s attendance' },
-        { key:'mark_all',  label:'Bulk mark',       desc:'Mark everyone Present in one click' }
+        { key:'save', label:'Save attendance', desc:'Record attendance for a class and date' },
+        { key:'clear_day', label:'Clear day', desc:'Erase a day\'s attendance' },
+        { key:'mark_all', label:'Bulk mark', desc:'Mark everyone Present in one click' }
       ]},
       { key:'exams', label:'Gradesheet', desc:'Enter and view examination scores', subFeatures:[
-        { key:'add',    label:'Add result',    desc:'Enter a new examination result' },
-        { key:'edit',   label:'Edit result',   desc:'Modify an existing score' },
+        { key:'add', label:'Add result', desc:'Enter a new examination result' },
+        { key:'edit', label:'Edit result', desc:'Modify an existing score' },
         { key:'delete', label:'Delete result', desc:'Remove a result row' }
       ]},
       { key:'reportcard', label:'Report Card', desc:'Print and manage report cards', subFeatures:[
-        { key:'open',            label:'Open single',       desc:'View a single student\'s report card' },
-        { key:'batch_print',     label:'Batch print',       desc:'Print report cards for multiple students' },
-        { key:'lock_term',       label:'Lock semester',     desc:'Prevent further score edits' },
-        { key:'unlock_term',     label:'Unlock semester',   desc:'Re-enable score edits for a semester' },
-        { key:'copy_prev_term',  label:'Copy previous term',desc:'Bring subject list forward from the last term' }
+        { key:'open', label:'Open single', desc:'View a single student\'s report card' },
+        { key:'batch_print', label:'Batch print', desc:'Print report cards for multiple students' },
+        { key:'lock_term', label:'Lock semester', desc:'Prevent further score edits' },
+        { key:'unlock_term', label:'Unlock semester', desc:'Re-enable score edits for a semester' },
+        { key:'copy_prev_term', label:'Copy previous term', desc:'Bring subject list forward from the last term' }
+      ]},
+      { key:'quizzes', label:'Quizzes', desc:'Create, assign, and take online quizzes', subFeatures:[
+        { key:'create',   label:'Create quiz',      desc:'Build a new quiz' },
+        { key:'edit',     label:'Edit quiz',        desc:'Modify an existing quiz' },
+        { key:'delete',   label:'Delete quiz',      desc:'Remove a quiz and its attempts' },
+        { key:'publish',  label:'Publish',          desc:'Make a quiz visible to students' },
+        { key:'grade',    label:'Grade attempts',   desc:'Manually grade essay / short-answer questions' },
+        { key:'view_all', label:'View all results', desc:'See every student\'s attempt' },
+        { key:'reset',    label:'Reset attempt',    desc:'Allow a student to retake a quiz' },
+        { key:'assign',   label:'Assign to student',desc:'Assign a quiz to one specific student' },
+        { key:'export',   label:'Export results',   desc:'Download quiz results as CSV' }
       ]}
     ]},
     { title:'Administration', items:[
       { key:'fees', label:'Fees', desc:'Tuition per class, student payments, teacher salaries', subFeatures:[
-        { key:'class_fees',      label:'Set class tuition',   desc:'Set tuition + extra fees per class' },
-        { key:'record_payment',  label:'Record student payment', desc:'Add a payment to a student account' },
+        { key:'class_fees', label:'Set class tuition', desc:'Set tuition + extra fees per class' },
+        { key:'record_payment', label:'Record student payment', desc:'Add a payment to a student account' },
         { key:'reverse_payment', label:'Reverse student payment', desc:'Undo a previously recorded payment' },
-        { key:'view_history',    label:'View history',        desc:'See every payment on an account' },
-        { key:'salary',          label:'Record salary',       desc:'Disburse a salary to a teacher' },
-        { key:'reverse_salary',  label:'Reverse salary',      desc:'Undo a previously recorded salary' },
-        { key:'export',          label:'Export CSV',          desc:'Download the fee or salary list' }
+        { key:'view_history', label:'View history', desc:'See every payment on an account' },
+        { key:'salary', label:'Record salary', desc:'Disburse a salary to a teacher' },
+        { key:'reverse_salary', label:'Reverse salary', desc:'Undo a previously recorded salary' },
+        { key:'export', label:'Export CSV', desc:'Download the fee or salary list' }
       ]},
       { key:'announcements', label:'Announcements', desc:'Publish and read school announcements', subFeatures:[
-        { key:'publish', label:'Publish',  desc:'Create a new announcement' },
-        { key:'edit',    label:'Edit',     desc:'Modify an existing announcement' },
-        { key:'delete',  label:'Delete',   desc:'Remove an announcement' },
-        { key:'pin',     label:'Pin',      desc:'Pin an announcement to the top' }
+        { key:'publish', label:'Publish', desc:'Create a new announcement' },
+        { key:'edit', label:'Edit', desc:'Modify an existing announcement' },
+        { key:'delete', label:'Delete', desc:'Remove an announcement' },
+        { key:'pin', label:'Pin', desc:'Pin an announcement to the top' }
       ]},
       { key:'promotions', label:'Promotions', desc:'Promote classes, students, whole school' },
-      { key:'termLock',   label:'Semester lock / unlock', desc:'Lock a semester from further score edits' },
-      { key:'settings',   label:'School settings',    desc:'School name, logo, principal signature' }
+      { key:'termLock', label:'Semester lock / unlock', desc:'Lock a semester from further score edits' },
+      { key:'settings', label:'School settings', desc:'School name, logo, principal signature' }
     ]},
     { title:'Requests', items:[
       { key:'transfers', label:'Transfers', desc:'Transfer students out or between classes', subFeatures:[
         { key:'create', label:'Create transfer', desc:'Request a transfer record' },
-        { key:'issue',  label:'Issue',           desc:'Mark a transfer as issued' },
-        { key:'reject', label:'Reject',          desc:'Reject a pending transfer' },
-        { key:'delete', label:'Delete',          desc:'Remove a transfer record' },
-        { key:'print',  label:'Print letter',    desc:'Open the transfer letter for printing' }
+        { key:'issue', label:'Issue', desc:'Mark a transfer as issued' },
+        { key:'reject', label:'Reject', desc:'Reject a pending transfer' },
+        { key:'delete', label:'Delete', desc:'Remove a transfer record' },
+        { key:'print', label:'Print letter', desc:'Open the transfer letter for printing' }
       ]},
       { key:'transcripts', label:'Transcripts', desc:'Request, approve, issue transcripts', subFeatures:[
-        { key:'request', label:'Request',    desc:'Submit a new transcript request' },
-        { key:'approve', label:'Approve',    desc:'Approve a pending request' },
-        { key:'reject',  label:'Reject',     desc:'Reject a pending request' },
-        { key:'issue',   label:'Issue',      desc:'Issue and open the transcript' },
-        { key:'print',   label:'Print',      desc:'Reopen an issued transcript' },
-        { key:'delete',  label:'Delete',     desc:'Delete a transcript request' }
+        { key:'request', label:'Request', desc:'Submit a new transcript request' },
+        { key:'approve', label:'Approve', desc:'Approve a pending request' },
+        { key:'reject', label:'Reject', desc:'Reject a pending request' },
+        { key:'issue', label:'Issue', desc:'Issue and open the transcript' },
+        { key:'print', label:'Print', desc:'Reopen an issued transcript' },
+        { key:'delete', label:'Delete', desc:'Delete a transcript request' }
       ]},
       { key:'recommendations', label:'Recommendations', desc:'Request, approve, issue letters', subFeatures:[
-        { key:'request', label:'Request',    desc:'Submit a new recommendation request' },
-        { key:'approve', label:'Approve',    desc:'Approve a pending request' },
-        { key:'reject',  label:'Reject',     desc:'Reject a pending request' },
-        { key:'issue',   label:'Issue',      desc:'Issue and open the letter' },
-        { key:'print',   label:'Print',      desc:'Reopen an issued letter' },
-        { key:'delete',  label:'Delete',     desc:'Delete a request' }
+        { key:'request', label:'Request', desc:'Submit a new recommendation request' },
+        { key:'approve', label:'Approve', desc:'Approve a pending request' },
+        { key:'reject', label:'Reject', desc:'Reject a pending request' },
+        { key:'issue', label:'Issue', desc:'Issue and open the letter' },
+        { key:'print', label:'Print', desc:'Reopen an issued letter' },
+        { key:'delete', label:'Delete', desc:'Delete a request' }
       ]},
       { key:'idcards', label:'ID Cards', desc:'Design and print student ID cards', subFeatures:[
-        { key:'upload_photo', label:'Upload photo',     desc:'Attach a photo to a student' },
-        { key:'remove_photo', label:'Remove photo',     desc:'Delete a student photo' },
-        { key:'print_single', label:'Print single card',desc:'Print one student\'s ID card' },
-        { key:'print_batch',  label:'Print batch',      desc:'Print ID cards for multiple students' }
+        { key:'upload_photo', label:'Upload photo', desc:'Attach a photo to a student' },
+        { key:'remove_photo', label:'Remove photo', desc:'Delete a student photo' },
+        { key:'print_single', label:'Print single card', desc:'Print one student\'s ID card' },
+        { key:'print_batch', label:'Print batch', desc:'Print ID cards for multiple students' }
       ]}
     ]},
     { title:'Family', items:[
       { key:'children', label:'My Children', desc:'Linked students and their quick summaries', subFeatures:[
-        { key:'report',  label:'Open report card', desc:'Launch a child\'s report card' },
-        { key:'fees',    label:'View fees',        desc:'See a child\'s fee account' },
-        { key:'id_card', label:'Open ID card',     desc:'Print a child\'s ID card' }
+        { key:'report', label:'Open report card', desc:'Launch a child\'s report card' },
+        { key:'fees', label:'View fees', desc:'See a child\'s fee account' },
+        { key:'id_card', label:'Open ID card', desc:'Print a child\'s ID card' }
       ]}
     ]},
     { title:'System', items:[
       { key:'audit', label:'Audit Log', desc:'View every action taken in the system', subFeatures:[
-        { key:'view',   label:'View',   desc:'Open the audit log' },
-        { key:'clear',  label:'Clear',  desc:'Wipe the entire log' },
+        { key:'view', label:'View', desc:'Open the audit log' },
+        { key:'clear', label:'Clear', desc:'Wipe the entire log' },
         { key:'export', label:'Export', desc:'Download the log as CSV' }
       ]},
       { key:'userManagement', label:'User Management', desc:'Create, edit, disable users', subFeatures:[
-        { key:'create',         label:'Create user',  desc:'Add a new user account' },
-        { key:'edit',           label:'Edit user',    desc:'Change user details and permissions' },
-        { key:'disable',        label:'Disable',      desc:'Block or restore sign-in' },
-        { key:'reset_password', label:'Reset password',desc:'Assign a new password' },
-        { key:'delete',         label:'Delete user',  desc:'Permanently remove a user' }
+        { key:'create', label:'Create user', desc:'Add a new user account' },
+        { key:'edit', label:'Edit user', desc:'Change user details and permissions' },
+        { key:'disable', label:'Disable', desc:'Block or restore sign-in' },
+        { key:'reset_password', label:'Reset password', desc:'Assign a new password' },
+        { key:'delete', label:'Delete user', desc:'Permanently remove a user' }
       ]}
     ]}
   ];
 
   const ALL_PERMISSION_KEYS = PERMISSION_GROUPS.flatMap(g => g.items.map(i => i.key));
   const ALL_SUB_FEATURE_KEYS = PERMISSION_GROUPS.flatMap(g =>
-    g.items.flatMap(i => (i.subFeatures || []).map(sf => i.key + '.' + sf.key))
-  );
+    g.items.flatMap(i => (i.subFeatures || []).map(sf => i.key + '.' + sf.key)));
   const ALL_KEYS = [...ALL_PERMISSION_KEYS, ...ALL_SUB_FEATURE_KEYS];
 
   function subFeaturesFor(menuKey){
@@ -1215,6 +1690,7 @@
           'attendance','attendance.save','attendance.clear_day','attendance.mark_all',
           'exams','exams.add','exams.edit','exams.delete',
           'reportcard','reportcard.open','reportcard.batch_print','reportcard.copy_prev_term',
+          'quizzes','quizzes.create','quizzes.edit','quizzes.delete','quizzes.publish','quizzes.grade','quizzes.view_all','quizzes.reset','quizzes.assign','quizzes.export',
           'fees','fees.class_fees','fees.record_payment','fees.reverse_payment','fees.view_history','fees.export',
           'announcements','announcements.publish','announcements.edit','announcements.delete','announcements.pin',
           'transfers','transfers.create','transfers.issue','transfers.reject','transfers.delete','transfers.print',
@@ -1232,6 +1708,7 @@
           'attendance','attendance.save','attendance.mark_all',
           'exams','exams.add','exams.edit',
           'reportcard','reportcard.open',
+          'quizzes','quizzes.create','quizzes.edit','quizzes.publish','quizzes.grade','quizzes.view_all','quizzes.reset','quizzes.assign','quizzes.export',
           'announcements',
           'recommendations','recommendations.request',
           'idcards','idcards.print_single'
@@ -1242,6 +1719,7 @@
           'dashboard',
           'reportcard','reportcard.open',
           'exams',
+          'quizzes',
           'fees','fees.view_history',
           'announcements',
           'transcripts','transcripts.request',
@@ -1274,9 +1752,6 @@
     Parent:    buildPreset('Parent')
   };
 
-  /* ============================================================
-     PAGE REGISTRY — Report Cards menu removed
-     ============================================================ */
   const PAGE_REGISTRY = [
     { key:'dashboard',       label:'Dashboard',         icon:'▦', group:'Main menu',      perm:'dashboard',  file:null },
     { key:'children',        label:'My Children',       icon:'👨‍👩‍👧', group:'Family',      perm:'children',   file:'children.html' },
@@ -1287,6 +1762,7 @@
     { key:'attendance',      label:'Attendance',        icon:'✓', group:'Academic',      perm:'attendance', file:'attendance.html' },
     { key:'gradesheet',      label:'Gradesheet',        icon:'✎', group:'Academic',      perm:'exams',      file:'gradesheet.html' },
     { key:'ledger',          label:'Gradesheet Ledger', icon:'▦', group:'Academic',      perm:'reportcard', file:'report-card-ledger.html' },
+    { key:'quizzes',         label:'Quizzes',           icon:'📝', group:'Academic',     perm:'quizzes',    file:'quizzes.html' },
     { key:'fees',            label:'Fees',              icon:'＄', group:'Administration',perm:'fees',       file:'fees.html' },
     { key:'announcements',   label:'Announcements',     icon:'◉', group:'Administration',perm:'announcements',file:'announcements.html' },
     { key:'transfers',       label:'Transfers',         icon:'⇄', group:'Requests',      perm:'transfers',  file:'transfers.html' },
@@ -1334,8 +1810,7 @@
     list.forEach(r => {
       if(r.semester && r.period) return;
       const m = map[r.term] || { semester:1, period:1 };
-      r.semester = m.semester;
-      r.period   = m.period;
+      r.semester = m.semester; r.period = m.period;
       if(!r.year) r.year = currentAcademicYear();
       delete r.term;
       changed = true;
@@ -1352,11 +1827,9 @@
       if(classFees[className]) return;
       const plan = oldPlans[className];
       const items = plan && Array.isArray(plan.items) ? plan.items : [];
-      const tuition = items
-        .filter(i => /tuition/i.test(i.label || '') || /tuition/i.test(i.code || ''))
+      const tuition = items.filter(i => /tuition/i.test(i.label || '') || /tuition/i.test(i.code || ''))
         .reduce((a,i) => a + Number(i.amount || 0), 0);
-      const extras = items
-        .filter(i => !(/tuition/i.test(i.label || '') || /tuition/i.test(i.code || '')))
+      const extras = items.filter(i => !(/tuition/i.test(i.label || '') || /tuition/i.test(i.code || '')))
         .reduce((a,i) => a + Number(i.amount || 0), 0);
       if(items.length){
         classFees[className] = {
@@ -1385,7 +1858,7 @@
     readAudit, writeAudit, audit,
 
     $, $$, esc, initials, money, todayISO, fmtDate, fmtDateTime, round2,
-    toast, openModal, closeModal, showDenied, injectBackPill, confirmTyped,
+    toast, openModal, closeModal, confirmModal, showDenied, injectBackPill, confirmTyped,
 
     NURSERY_SCALE, DEFAULT_NUMERIC_SCALE, numericScale,
     CATEGORY_LIST, isNurseryCategory,
@@ -1422,6 +1895,23 @@
 
     /* PAYROLL */
     getSalaryPayments, computeSalary, recordSalary, reverseSalary,
+
+    /* ANNOUNCEMENTS */
+    announcementVisibleTo, announcementIsLive,
+    getAnnouncementReads, hasReadAnnouncement, markAnnouncementRead, readCountFor,
+    getAnnouncementAcks, hasAcknowledged, acknowledgeAnnouncement, ackCountFor,
+    unreadAnnouncementCount, audienceSizeFor,
+
+    /* QUIZZES */
+    QUESTION_TYPES, questionTypeMeta,
+    getQuizzes, saveQuiz, getQuiz, deleteQuiz,
+    getQuizQuestions, questionsForQuiz, saveQuestion, deleteQuestion,
+    quizTotalMarks, quizIsReady,
+    getQuizAttempts, saveAttempt, createAttempt, existingAttemptFor, resetAttempt,
+    getQuizResponses, responsesForAttempt, saveResponse,
+    gradeResponse, computeAttemptScore, submitAttempt,
+    setManualPoints, canTakeQuiz, quizAssignedToStudent,
+    quizResultsCSV,
 
     PERMISSION_GROUPS, ALL_PERMISSION_KEYS, ALL_SUB_FEATURE_KEYS, ALL_KEYS,
     ROLE_PRESETS, PAGE_REGISTRY, subFeaturesFor

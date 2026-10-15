@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Builder | EduCore</title>
+<style>
+  :root{--navy:#12315a;--blue:#3987ee;--border:#d8e4f2;--text:#23354d;--muted:#73849a;
+    --green:#14805e;--orange:#d88922;--red:#d64545;--gold:#c99a2e;--gold2:#fff4d6;
+    --line:#e8ebf2;--shadow:0 8px 24px rgba(24,42,78,.06)}
+  *{box-sizing:border-box}
+  body{margin:0;padding:64px 16px 40px;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+  .page{width:100%;max-width:1000px;margin:0 auto}
+
+  .band{background:linear-gradient(120deg,#102949,#245d9c);color:#fff;border-radius:16px;
+    padding:22px 28px;margin-bottom:20px;box-shadow:0 18px 50px #16345417;
+    display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
+    border-top:5px solid #58a4ff}
+  .band-left{display:flex;align-items:center;gap:14px}
+  .band-logo{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;
+    place-items:center;overflow:hidden;color:var(--navy);font-weight:900;font-size:18px;
+    border:3px solid #d8e8ff;flex:0 0 48px}
+  .band-logo img{width:100%;height:100%;object-fit:contain}
+  .band h1{margin:0;font-size:19px;letter-spacing:.3px;text-transform:uppercase}
+  .band p{margin:4px 0 0;font-size:11px;color:#cfdcf5}
+  .band-user{display:flex;align-items:center;gap:10px;font-size:11px;color:#cfdcf5;
+    background:#ffffff14;border:1px solid #ffffff36;padding:7px 12px;border-radius:20px}
+  .band-user strong{color:#fff}
+
+  .panel{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);margin-bottom:18px;overflow:hidden}
+  .panel-head{padding:16px 20px;border-bottom:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .panel-head h3{margin:0;font-size:14px}
+  .panel-head p{margin:4px 0 0;font-size:11px;color:var(--muted)}
+  .panel-body{padding:20px}
+
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .form-grid .full{grid-column:1/-1}
+  .form-grid label{display:block;font-size:11px;color:#657089;font-weight:800;
+    text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
+  .form-grid input,.form-grid select,.form-grid textarea{
+    width:100%;border:1px solid #dfe4ee;border-radius:8px;padding:10px 12px;
+    font-size:12px;outline:none;background:#fff;font-family:inherit}
+  .form-grid input:focus,.form-grid select:focus,.form-grid textarea:focus{
+    border-color:var(--blue)}
+  .form-grid textarea{min-height:70px;resize:vertical}
+
+  .btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{filter:brightness(.96)}
+  .btn.secondary{background:#eef2fb;color:#34415c}
+  .btn.outline{background:#fff;color:#34415c;border:1px solid var(--line)}
+  .btn.danger{background:#fff0f1;color:var(--red)}
+  .btn.green{background:#e6f7f0;color:#16835f}
+  .btn.gold{background:linear-gradient(135deg,#f7d97a,#c99a2e);color:#5a3a00}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  .q-list{display:flex;flex-direction:column;gap:10px}
+  .q-row{background:#fbfcff;border:1px solid var(--line);border-radius:10px;
+    padding:14px 16px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .q-row .info{flex:1;min-width:0}
+  .q-row .num{display:inline-flex;align-items:center;justify-content:center;
+    width:26px;height:26px;border-radius:8px;background:#edf2ff;color:#3859b7;
+    font-weight:800;font-size:11px;margin-right:8px}
+  .q-row strong{font-size:12px;color:var(--navy)}
+  .q-row small{font-size:10px;color:var(--muted);display:block;margin-top:4px}
+  .q-row .actions{display:flex;gap:5px;flex-wrap:wrap}
+  .q-row .actions .btn{padding:6px 10px;font-size:11px}
+
+  .type-pill{display:inline-block;padding:3px 8px;border-radius:12px;font-size:10px;
+    font-weight:800;letter-spacing:.4px;text-transform:uppercase}
+  .type-pill.multiple-choice{background:#edf2ff;color:#3b5cc1}
+  .type-pill.true-false{background:#e6f7f0;color:#16835f}
+  .type-pill.numeric{background:#fff2dd;color:#a86414}
+  .type-pill.short-answer{background:#f4eaff;color:#6b3da5}
+  .type-pill.essay{background:#ffeaec;color:#bd3b48}
+
+  .opt-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;
+    margin-bottom:6px}
+  .opt-row input[type="text"]{width:100%;border:1px solid #dfe4ee;border-radius:8px;
+    padding:9px 12px;font-size:12px;outline:none}
+  .opt-row input[type="text"]:focus{border-color:var(--blue)}
+  .opt-row label{display:inline-flex;align-items:center;gap:6px;font-size:11px;
+    color:#3b4a63;white-space:nowrap}
+
+  .empty{padding:40px 20px;text-align:center;color:var(--muted);font-size:13px}
+
+  .assign-note{font-size:11px;color:#1d4d82;background:#eef5ff;border:1px solid #cfe3ff;
+    padding:10px 12px;border-radius:8px;margin-top:8px;line-height:1.6}
+
+  @media (max-width:650px){
+    body{padding:64px 8px 24px}
+    .band{padding:18px 20px}
+    .band h1{font-size:15px}
+    .form-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="band">
+    <div class="band-left">
+      <div class="band-logo" id="bandLogo">EC</div>
+      <div>
+        <h1 id="bandSchool">Quiz Builder</h1>
+        <p id="bandSub">Create and edit a quiz</p>
+      </div>
+    </div>
+    <div class="band-user">Signed in as <strong id="bandUser">—</strong></div>
+  </div>
+
+  <div id="pageBody"></div>
+
+</div>
+
+<script src="educore-shared.js"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  const user = E.requirePerm('quizzes', 'Quizzes');
+  if(!user) return;
+  if(!E.can('quizzes.create') && !E.can('quizzes.edit')){
+    E.showDenied('Quiz Builder');
+    return;
+  }
+
+  /* ---------- One-time cleanup: fix orphaned question rows ---------- */
+  (function fixOrphanedQuestions(){
+    const list = E.readStore(E.STORE_KEYS.quizQuestions, []) || [];
+    let changed = false;
+    const seen = new Set();
+    list.forEach(q => {
+      if(!q.id || seen.has(q.id)){
+        q.id = 'qq-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,8);
+        changed = true;
+      }
+      seen.add(q.id);
+    });
+    if(changed) E.writeStore(E.STORE_KEYS.quizQuestions, list);
+  })();
+
+  const params = new URLSearchParams(location.search);
+  const editId = params.get('id');
+  const quiz = editId ? E.getQuiz(editId) : null;
+
+  /* ---------- HEADER ---------- */
+  function paintHeader(){
+    const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const name = settings.name || 'EduCore High School';
+    if(settings.logo){
+      document.getElementById('bandLogo').innerHTML = `<img src="${settings.logo}" alt="">`;
+    } else {
+      document.getElementById('bandLogo').textContent =
+        name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
+    }
+    document.getElementById('bandSchool').textContent = name;
+    document.getElementById('bandSub').textContent = quiz ? `Editing · ${quiz.title}` : 'Create a new quiz';
+    document.getElementById('bandUser').textContent = user.name || user.username;
+  }
+
+  /* ---------- SHELL ---------- */
+  function paintShell(){
+    const classes = E.getClasses();
+    const subjects = E.getSubjects();
+
+    const q = quiz || {
+      title: '',
+      subject: '',
+      className: '',
+      durationMinutes: 30,
+      passMark: 50,
+      dueDate: '',
+      shuffleQuestions: true,
+      shuffleOptions: true,
+      showAnswersAfter: true,
+      published: false,
+      assignedTo: []
+    };
+
+    /* Students in the currently selected class — populate the "Assign to" select */
+    const allStudents = E.readStore(E.STORE_KEYS.students, []) || [];
+    const classStudents = q.className
+      ? allStudents.filter(s => s.class === q.className).sort((a,b) => a.name.localeCompare(b.name))
+      : [];
+
+    const assignedTo = Array.isArray(q.assignedTo) ? q.assignedTo : [];
+    const isClassWide = assignedTo.length === 0;
+
+    document.getElementById('pageBody').innerHTML = `
+      <div class="panel">
+        <div class="panel-head"><h3>Quiz details</h3></div>
+        <div class="panel-body">
+          <div class="form-grid">
+            <div class="full"><label>Title</label>
+              <input id="fTitle" value="${E.esc(q.title)}" placeholder="e.g. Grade 10A Physics Quiz 1">
+            </div>
+            <div><label>Subject</label>
+              <select id="fSubject">
+                <option value="">— Choose subject —</option>
+                ${subjects.map(s => `<option ${q.subject === s.name ? 'selected' : ''}>${E.esc(s.name)}</option>`).join('')}
+              </select>
+            </div>
+            <div><label>Class</label>
+              <select id="fClass">
+                <option value="">— Choose class —</option>
+                ${classes.map(c => `<option ${q.className === c.name ? 'selected' : ''}>${E.esc(c.name)}</option>`).join('')}
+              </select>
+            </div>
+            <div><label>Duration (minutes)</label>
+              <input id="fDuration" type="number" min="1" value="${Number(q.durationMinutes || 30)}">
+            </div>
+            <div><label>Pass mark (%)</label>
+              <input id="fPass" type="number" min="0" max="100" value="${Number(q.passMark || 50)}">
+            </div>
+            <div><label>Due date (optional)</label>
+              <input id="fDue" type="date" value="${E.esc(q.dueDate || '')}">
+            </div>
+            <div class="full">
+              <label>Assign to</label>
+              <select id="fAssignTo">
+                <option value="" ${isClassWide ? 'selected' : ''}>Whole class (everyone in the class)</option>
+                ${classStudents.map(s => `<option value="${E.esc(s.id)}" ${assignedTo.includes(s.id) ? 'selected' : ''}>${E.esc(s.name)} — ${E.esc(s.id)} (only this student)</option>`).join('')}
+              </select>
+              <div class="assign-note">
+                ${isClassWide
+                  ? 'This quiz is visible to <strong>every student in the class</strong>.'
+                  : `This quiz is visible <strong>only to the selected student</strong>. Other students in the class will not see it.`}
+              </div>
+            </div>
+            <div><label>Shuffle questions</label>
+              <select id="fShuffleQ">
+                <option value="1" ${q.shuffleQuestions ? 'selected' : ''}>Yes</option>
+                <option value="" ${!q.shuffleQuestions ? 'selected' : ''}>No</option>
+              </select>
+            </div>
+            <div><label>Shuffle options</label>
+              <select id="fShuffleO">
+                <option value="1" ${q.shuffleOptions ? 'selected' : ''}>Yes</option>
+                <option value="" ${!q.shuffleOptions ? 'selected' : ''}>No</option>
+              </select>
+            </div>
+            <div><label>Show answers after submit</label>
+              <select id="fShowAns">
+                <option value="1" ${q.showAnswersAfter ? 'selected' : ''}>Yes</option>
+                <option value="" ${!q.showAnswersAfter ? 'selected' : ''}>No</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:18px">
+            <button class="btn secondary" onclick="window.location.href='quizzes.html'">← Cancel</button>
+            <button class="btn" id="saveBtn">${quiz ? 'Save quiz' : 'Create quiz'}</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="questionsPanel" style="${quiz ? '' : 'display:none'}">
+        <div class="panel-head">
+          <div><h3>Questions</h3><p id="qCount">0 questions · 0 marks</p></div>
+          <button class="btn" id="addQBtn">＋ Add question</button>
+        </div>
+        <div class="panel-body">
+          <div class="q-list" id="qList"></div>
+          <div class="empty" id="qEmpty">No questions yet. Click <strong>Add question</strong> to start.</div>
+        </div>
+      </div>`;
+
+    bindShellEvents();
+    if(quiz) paintQuestions();
+  }
+
+  function bindShellEvents(){
+    document.getElementById('saveBtn').addEventListener('click', saveQuizDetails);
+    document.getElementById('addQBtn')?.addEventListener('click', () => openQuestionEditor(null));
+
+    /* When the class changes, repopulate the "Assign to" select */
+    document.getElementById('fClass')?.addEventListener('change', e => {
+      const className = e.target.value;
+      const select = document.getElementById('fAssignTo');
+      const allStudents = E.readStore(E.STORE_KEYS.students, []) || [];
+      const classStudents = className
+        ? allStudents.filter(s => s.class === className).sort((a,b) => a.name.localeCompare(b.name))
+        : [];
+      select.innerHTML = `
+        <option value="">Whole class (everyone in the class)</option>
+        ${classStudents.map(s => `<option value="${E.esc(s.id)}">${E.esc(s.name)} — ${E.esc(s.id)} (only this student)</option>`).join('')}
+      `;
+    });
+
+    document.getElementById('qList')?.addEventListener('click', e => {
+      const edit = e.target.closest('[data-edit-q]');
+      const del  = e.target.closest('[data-del-q]');
+      const up   = e.target.closest('[data-up-q]');
+      const down = e.target.closest('[data-down-q]');
+      if(edit) openQuestionEditor(edit.dataset.editQ);
+      if(del)  deleteQuestion(del.dataset.delQ);
+      if(up)   moveQuestion(up.dataset.upQ, -1);
+      if(down) moveQuestion(down.dataset.downQ, 1);
+    });
+  }
+
+  function saveQuizDetails(){
+    const title = document.getElementById('fTitle').value.trim();
+    if(!title){ E.toast('Enter a title.'); return; }
+    const assignedToValue = document.getElementById('fAssignTo').value;
+    const assignedTo = assignedToValue ? [assignedToValue] : [];
+    const data = {
+      title,
+      subject: document.getElementById('fSubject').value,
+      className: document.getElementById('fClass').value,
+      durationMinutes: Number(document.getElementById('fDuration').value) || 30,
+      passMark: Number(document.getElementById('fPass').value) || 50,
+      dueDate: document.getElementById('fDue').value || '',
+      shuffleQuestions: !!document.getElementById('fShuffleQ').value,
+      shuffleOptions: !!document.getElementById('fShuffleO').value,
+      showAnswersAfter: !!document.getElementById('fShowAns').value,
+      assignedTo
+    };
+    const saved = E.saveQuiz(Object.assign({}, quiz || {}, data));
+    E.audit(quiz ? 'update' : 'create', `Quiz ${title}`, '', `${data.className} · ${assignedTo.length ? 'single student' : 'class-wide'}`);
+    if(!quiz){
+      window.location.href = 'quiz-builder.html?id=' + encodeURIComponent(saved.id);
+      return;
+    }
+    Object.assign(quiz, saved);
+    document.getElementById('bandSub').textContent = `Editing · ${saved.title}`;
+    E.toast('Quiz details saved.');
+  }
+
+  /* ---------- QUESTIONS ---------- */
+  function paintQuestions(){
+    const qs = E.questionsForQuiz(quiz.id);
+    const list = document.getElementById('qList');
+    const empty = document.getElementById('qEmpty');
+    const count = document.getElementById('qCount');
+
+    count.textContent = `${qs.length} question${qs.length === 1 ? '' : 's'} · ${E.quizTotalMarks(quiz.id)} mark${E.quizTotalMarks(quiz.id) === 1 ? '' : 's'}`;
+
+    if(!qs.length){
+      list.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+
+    list.innerHTML = qs.map((q, i) => {
+      const meta = E.questionTypeMeta(q.type);
+      let summary = '';
+      if(q.type === 'multiple-choice'){
+        summary = `${(q.options || []).length} options · ${(q.options || []).filter(o => o.isCorrect).length} correct`;
+      } else if(q.type === 'true-false'){
+        summary = `Correct: ${q.tfAnswer === 'true' ? 'True' : q.tfAnswer === 'false' ? 'False' : '—'}`;
+      } else if(q.type === 'numeric'){
+        summary = `Target: ${q.numericAnswer}${Number(q.tolerance) ? ' ± ' + q.tolerance : ''}`;
+      } else if(q.type === 'short-answer'){
+        summary = q.sampleAnswer ? `Sample: ${String(q.sampleAnswer).slice(0, 60)}` : 'Manually graded';
+      } else if(q.type === 'essay'){
+        summary = 'Manually graded';
+      }
+      return `<div class="q-row">
+        <div class="info">
+          <span class="num">${i + 1}</span>
+          <strong>${E.esc(q.text || '(untitled)')}</strong>
+          <small>
+            <span class="type-pill ${q.type}">${E.esc(meta.label)}</span>
+            · ${q.points} mark${q.points === 1 ? '' : 's'} · ${E.esc(summary)}
+          </small>
+        </div>
+        <div class="actions">
+          <button class="btn outline" data-up-q="${E.esc(q.id)}">▲</button>
+          <button class="btn outline" data-down-q="${E.esc(q.id)}">▼</button>
+          <button class="btn secondary" data-edit-q="${E.esc(q.id)}">Edit</button>
+          <button class="btn danger" data-del-q="${E.esc(q.id)}">Delete</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function deleteQuestion(id){
+    if(!confirm('Delete this question?')) return;
+    E.deleteQuestion(id);
+    E.audit('delete', `Question ${id}`, '', '');
+    paintQuestions();
+    E.toast('Question deleted.');
+  }
+
+  function moveQuestion(id, delta){
+    const qs = E.questionsForQuiz(quiz.id);
+    const idx = qs.findIndex(q => q.id === id);
+    if(idx < 0) return;
+    const target = idx + delta;
+    if(target < 0 || target >= qs.length) return;
+    const a = qs[idx], b = qs[target];
+    const oldA = a.order, oldB = b.order;
+    a.order = oldB; b.order = oldA;
+    E.saveQuestion(a); E.saveQuestion(b);
+    paintQuestions();
+  }
+
+  /* ---------- QUESTION EDITOR ---------- */
+  function openQuestionEditor(questionId){
+    const existing = questionId ? E.getQuizQuestions().find(q => q.id === questionId) : null;
+    const type = existing?.type || 'multiple-choice';
+
+    const html = `
+      <div class="full"><label>Question type</label>
+        <select name="type" id="qType">
+          ${E.QUESTION_TYPES.map(t => `<option value="${t.key}" ${t.key === type ? 'selected' : ''}>${E.esc(t.label)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="full"><label>Question text</label>
+        <textarea name="text" required placeholder="Type the question here...">${E.esc(existing?.text || '')}</textarea>
+      </div>
+      <div><label>Points</label>
+        <input name="points" type="number" min="1" step="1" value="${existing?.points || 1}">
+      </div>
+      <div></div>
+      <div class="full" id="typeEditor"></div>`;
+
+    E.openModal(existing ? 'Edit question' : 'Add question', html,
+      existing ? 'Save question' : 'Add question',
+      d => saveQuestionFromForm(existing, d), true);
+
+    function renderTypeEditor(){
+      const currentType = document.getElementById('qType').value;
+      const wrap = document.getElementById('typeEditor');
+
+      if(currentType === 'multiple-choice'){
+        const opts = existing?.options || [
+          { id: 'o1', text: '', isCorrect: true },
+          { id: 'o2', text: '', isCorrect: false },
+          { id: 'o3', text: '', isCorrect: false },
+          { id: 'o4', text: '', isCorrect: false }
+        ];
+        wrap.innerHTML = `
+          <label>Options (mark the correct one)</label>
+          <div id="optList">
+            ${opts.map((o, i) => `
+              <div class="opt-row" data-opt>
+                <input type="text" data-opt-text value="${E.esc(o.text)}" placeholder="Option ${i+1}">
+                <label><input type="radio" name="correctOpt" data-opt-correct ${o.isCorrect ? 'checked' : ''}> Correct</label>
+                <button type="button" class="btn danger" data-remove-opt style="padding:6px 9px;font-size:11px">✕</button>
+              </div>`).join('')}
+          </div>
+          <button type="button" class="btn secondary" id="addOptBtn" style="margin-top:8px">＋ Add option</button>`;
+        document.getElementById('addOptBtn').addEventListener('click', () => {
+          const list = document.getElementById('optList');
+          const idx = list.querySelectorAll('[data-opt]').length + 1;
+          list.insertAdjacentHTML('beforeend', `
+            <div class="opt-row" data-opt>
+              <input type="text" data-opt-text placeholder="Option ${idx}">
+              <label><input type="radio" name="correctOpt" data-opt-correct> Correct</label>
+              <button type="button" class="btn danger" data-remove-opt style="padding:6px 9px;font-size:11px">✕</button>
+            </div>`);
+          bindRemoveOpt();
+        });
+        bindRemoveOpt();
+      }
+      else if(currentType === 'true-false'){
+        wrap.innerHTML = `
+          <label>Correct answer</label>
+          <select name="tfAnswer">
+            <option value="true"  ${existing?.tfAnswer === 'true' ? 'selected' : ''}>True</option>
+            <option value="false" ${existing?.tfAnswer === 'false' ? 'selected' : ''}>False</option>
+          </select>`;
+      }
+      else if(currentType === 'numeric'){
+        wrap.innerHTML = `
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div><label>Target answer</label>
+              <input name="numericAnswer" type="number" step="any" value="${existing?.numericAnswer ?? ''}">
+            </div>
+            <div><label>Tolerance (±)</label>
+              <input name="tolerance" type="number" step="any" min="0" value="${existing?.tolerance || 0}">
+            </div>
+          </div>`;
+      }
+      else if(currentType === 'short-answer'){
+        wrap.innerHTML = `
+          <div><label>Sample correct answer (for the teacher's reference)</label>
+            <textarea name="sampleAnswer" placeholder="Not shown to the student; used during grading.">${E.esc(existing?.sampleAnswer || '')}</textarea>
+          </div>
+          <div style="font-size:11px;color:#7a8498;margin-top:8px">
+            Short answers are graded manually. You'll see them in the Results page.
+          </div>`;
+      }
+      else if(currentType === 'essay'){
+        wrap.innerHTML = `
+          <div><label>Grading guidelines (for the teacher's reference)</label>
+            <textarea name="sampleAnswer" placeholder="Points to look for when grading...">${E.esc(existing?.sampleAnswer || '')}</textarea>
+          </div>
+          <div style="font-size:11px;color:#7a8498;margin-top:8px">
+            Essays are graded manually. You'll see them in the Results page.
+          </div>`;
+      }
+    }
+
+    document.getElementById('qType').addEventListener('change', renderTypeEditor);
+    renderTypeEditor();
+
+    function bindRemoveOpt(){
+      document.querySelectorAll('[data-remove-opt]').forEach(btn => {
+        if(btn.dataset.bound) return;
+        btn.dataset.bound = '1';
+        btn.addEventListener('click', () => {
+          const all = document.querySelectorAll('[data-opt]');
+          if(all.length <= 2){ E.toast('At least 2 options required.'); return; }
+          btn.closest('[data-opt]').remove();
+        });
+      });
+    }
+  }
+
+  function saveQuestionFromForm(existing, d){
+    const type = d.type;
+    const points = Number(d.points) || 1;
+
+    const existingQs = E.questionsForQuiz(quiz.id);
+    const safeOrder = existing?.order ?? (() => {
+      if(!existingQs.length) return 1;
+      return Math.max(...existingQs.map(q => Number(q.order || 0))) + 1;
+    })();
+
+    const payload = {
+      quizId: quiz.id,
+      text: String(d.text || '').trim(),
+      type,
+      points,
+      order: safeOrder
+    };
+    if(existing && existing.id) payload.id = existing.id;
+
+    if(type === 'multiple-choice'){
+      const opts = Array.from(document.querySelectorAll('[data-opt]')).map((row, i) => ({
+        id: 'o' + (i + 1),
+        text: row.querySelector('[data-opt-text]').value.trim(),
+        isCorrect: row.querySelector('[data-opt-correct]').checked
+      }));
+      if(opts.filter(o => o.text).length < 2){ E.toast('Need at least 2 non-empty options.'); return; }
+      if(!opts.some(o => o.isCorrect)){ E.toast('Mark one option as correct.'); return; }
+      payload.options = opts.filter(o => o.text);
+    }
+    else if(type === 'true-false'){ payload.tfAnswer = d.tfAnswer; }
+    else if(type === 'numeric'){
+      payload.numericAnswer = Number(d.numericAnswer);
+      payload.tolerance = Number(d.tolerance) || 0;
+      if(!Number.isFinite(payload.numericAnswer)){ E.toast('Enter a target answer.'); return; }
+    }
+    else if(type === 'short-answer' || type === 'essay'){
+      payload.sampleAnswer = d.sampleAnswer || '';
+    }
+
+    if(!payload.text){ E.toast('Enter the question text.'); return; }
+    E.saveQuestion(payload);
+    E.audit(existing ? 'update' : 'create', `Question ${payload.text.slice(0,40)}`, '', '');
+    E.closeModal();
+    paintQuestions();
+    E.toast(existing ? 'Question saved.' : 'Question added.');
+  }
+
+  /* ---------- INIT ---------- */
+  paintHeader();
+  paintShell();
+})();
+</script>
+</body>
+</html>

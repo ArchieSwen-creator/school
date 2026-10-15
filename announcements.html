@@ -6,9 +6,9 @@
 <title>Announcements | EduCore</title>
 <style>
   :root{
-    --navy:#12315a;--navy2:#14213d;--blue:#3987ee;--pale:#eef5ff;--border:#d8e4f2;
+    --navy:#12315a;--blue:#3987ee;--pale:#eef5ff;--border:#d8e4f2;
     --text:#23354d;--muted:#73849a;--green:#14805e;--orange:#d88922;--red:#d64545;
-    --gold:#c99a2e;--gold2:#fff4d6;--bg:#f5f7fb;--line:#e8ebf2;--white:#fff;
+    --gold:#c99a2e;--gold2:#fff4d6;--line:#e8ebf2;
     --shadow:0 8px 24px rgba(24,42,78,.06);
   }
   *{box-sizing:border-box}
@@ -18,14 +18,12 @@
   button,input,select,textarea{font:inherit}
   button{cursor:pointer}
 
-  .page{width:100%;max-width:1000px;margin:0 auto}
+  .page{width:100%;max-width:1040px;margin:0 auto}
 
-  .band{
-    background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
+  .band{background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
     border-radius:16px;padding:22px 28px;margin-bottom:20px;
     box-shadow:0 18px 50px #16345417;display:flex;justify-content:space-between;
-    align-items:center;gap:16px;flex-wrap:wrap;border-top:5px solid #58a4ff;
-  }
+    align-items:center;gap:16px;flex-wrap:wrap;border-top:5px solid #58a4ff}
   .band-left{display:flex;align-items:center;gap:14px}
   .band-logo{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;place-items:center;
     overflow:hidden;color:var(--navy);font-weight:900;font-size:18px;border:3px solid #d8e8ff;flex:0 0 48px}
@@ -39,9 +37,11 @@
   .toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;
     flex-wrap:wrap;margin-bottom:16px}
   .toolbar-left{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
-  .field{border:1px solid var(--line);border-radius:9px;padding:10px 12px;
-    background:#fff;color:var(--text);font-size:12px;outline:none;min-width:230px}
-  .field:focus{border-color:var(--blue)}
+  .toolbar-right{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .field,.pick{border:1px solid var(--line);border-radius:9px;padding:10px 12px;
+    background:#fff;color:var(--text);font-size:12px;outline:none}
+  .field{min-width:230px}
+  .field:focus,.pick:focus{border-color:var(--blue)}
 
   .btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;
     font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
@@ -49,36 +49,9 @@
   .btn.secondary{background:#eef2fb;color:#34415c}
   .btn.outline{background:#fff;color:#34415c;border:1px solid var(--line)}
   .btn.danger{background:#fff0f1;color:var(--red)}
-  .btn.green{background:#e6f7f0;color:#16835f}
   .btn.warn{background:#fff2dd;color:#a86414}
-
-  .list{display:flex;flex-direction:column;gap:14px}
-  .card{background:#fff;border:1px solid var(--line);border-radius:13px;
-    box-shadow:var(--shadow);padding:22px 24px;position:relative;
-    border-left:4px solid var(--blue);overflow:hidden}
-  .card.pinned{border-left-color:var(--gold)}
-  .card.pinned::after{content:"📌 PINNED";position:absolute;top:14px;right:16px;
-    font-size:9px;font-weight:900;letter-spacing:1.2px;color:#8a6a1a;
-    background:var(--gold2);padding:4px 9px;border-radius:20px}
-  .card-top{display:flex;justify-content:space-between;align-items:flex-start;
-    gap:14px;flex-wrap:wrap;margin-bottom:10px}
-  .card h3{margin:0;font-size:15px;color:var(--navy)}
-  .card .meta{font-size:11px;color:var(--muted);margin-top:4px}
-  .card .meta strong{color:var(--text);font-weight:700}
-  .card .body{font-size:13px;line-height:1.75;color:#33415c;margin:12px 0 0;
-    white-space:pre-wrap}
-  .card .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:16px;
-    padding-top:14px;border-top:1px solid var(--line)}
-  .card .actions .btn{padding:8px 11px;font-size:11px}
-
-  .pill{display:inline-block;padding:5px 8px;border-radius:20px;font-size:10px;font-weight:700}
-  .pill.blue{background:#edf2ff;color:#3b5cc1}
-  .pill.gold{background:var(--gold2);color:#8a6a1a}
-  .pill.grey{background:#eef1f6;color:#59647c}
-
-  .empty-state{background:#fff;border:1px solid var(--line);border-radius:13px;
-    box-shadow:var(--shadow);padding:60px 30px;text-align:center;color:var(--muted);font-size:13px}
-  .empty-state .icon{font-size:48px;margin-bottom:14px;opacity:.5}
+  .btn.green{background:#e6f7f0;color:#16835f}
+  .btn.small{padding:7px 11px;font-size:11px}
 
   .filter-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);
     background:#fff;border-radius:20px;padding:7px 13px;font-size:11px;font-weight:700;
@@ -88,13 +61,109 @@
   .filter-chip .dot{width:6px;height:6px;border-radius:50%;background:#7a8498}
   .filter-chip.active .dot{background:#fff}
 
+  .list{display:flex;flex-direction:column;gap:14px}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);padding:22px 24px;position:relative;
+    border-left:4px solid var(--blue);overflow:hidden}
+  .card.pinned{border-left-color:var(--gold)}
+  .card.urgent{border-left-color:var(--red);background:#fffbfc}
+  .card.important{border-left-color:var(--orange)}
+  .card.deleted{opacity:.6;border-left-color:#94a3b8;background:#f8f9fb}
+  .card.expired{opacity:.7;border-left-color:#94a3b8}
+
+  .card::after{
+    content:"";position:absolute;top:0;right:0;width:0;height:0;
+    border-style:solid;border-width:0 40px 40px 0;
+    border-color:transparent;
+    pointer-events:none;
+  }
+  .card.pinned::before{
+    content:"📌 PINNED";position:absolute;top:14px;right:16px;
+    font-size:9px;font-weight:900;letter-spacing:1.2px;color:#8a6a1a;
+    background:var(--gold2);padding:4px 9px;border-radius:20px;
+  }
+  .card.pinned .card-top{padding-right:110px}
+  .card.urgent::before{
+    content:"⚡ URGENT";position:absolute;top:14px;right:16px;
+    font-size:9px;font-weight:900;letter-spacing:1.2px;color:#a41c28;
+    background:#ffd9dd;padding:4px 9px;border-radius:20px;
+  }
+  .card.urgent .card-top{padding-right:110px}
+  .card.important::before{
+    content:"⚠ IMPORTANT";position:absolute;top:14px;right:16px;
+    font-size:9px;font-weight:900;letter-spacing:1.2px;color:#8a5f22;
+    background:#fbe3c7;padding:4px 9px;border-radius:20px;
+  }
+  .card.important .card-top{padding-right:130px}
+
+  .card-top{display:flex;justify-content:space-between;align-items:flex-start;
+    gap:14px;flex-wrap:wrap;margin-bottom:10px}
+  .card h3{margin:0;font-size:15px;color:var(--navy)}
+  .card .meta{font-size:11px;color:var(--muted);margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .card .meta strong{color:var(--text);font-weight:700}
+  .card .audience-pill{display:inline-block;padding:3px 8px;border-radius:12px;
+    font-size:9.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase}
+  .audience-pill.all{background:#eef2fb;color:#34415c}
+  .audience-pill.staff{background:#e5f8f1;color:#0e6b4a}
+  .audience-pill.students{background:#edf2ff;color:#3b5cc1}
+  .audience-pill.parents{background:#f4eaff;color:#6b3da5}
+  .priority-pill{display:inline-block;padding:3px 8px;border-radius:12px;
+    font-size:9.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase}
+  .priority-pill.normal{background:#eef1f6;color:#59647c}
+  .priority-pill.important{background:#fbe3c7;color:#8a5f22}
+  .priority-pill.urgent{background:#ffd9dd;color:#a41c28}
+
+  .card .body{font-size:13px;line-height:1.75;color:#33415c;margin:12px 0 0;white-space:pre-wrap}
+  .card .link-row{margin-top:14px}
+  .card .link-btn{display:inline-flex;align-items:center;gap:6px;
+    background:linear-gradient(135deg,#f7d97a,#c99a2e);color:#5a3a00;
+    border:0;border-radius:9px;padding:9px 14px;font-size:12px;font-weight:800;
+    cursor:pointer;text-decoration:none}
+  .card .link-btn:hover{filter:brightness(.96)}
+
+  .card-foot{display:flex;justify-content:space-between;align-items:center;
+    gap:10px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid var(--line);
+    font-size:11px;color:var(--muted)}
+  .card-foot .left{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .card-foot .stat{display:inline-flex;align-items:center;gap:5px}
+  .card-foot .stat.read-by{color:#16835f;font-weight:700}
+  .card-foot .stat.ack-by{color:#6b3da5;font-weight:700}
+
+  .card .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;
+    padding-top:12px;border-top:1px solid var(--line)}
+  .card .actions .btn{padding:8px 11px;font-size:11px}
+
+  .ack-btn{display:inline-flex;align-items:center;gap:7px;border:1px solid #d8e7ff;
+    background:#f5f8ff;color:#1d4d82;border-radius:9px;padding:8px 12px;
+    font-size:11px;font-weight:800;cursor:pointer;margin-top:12px}
+  .ack-btn:hover{background:#eaf2ff}
+  .ack-btn.done{background:#e6f7f0;color:#16835f;border-color:#b8e9d3;cursor:default}
+
+  .read-badge{display:inline-flex;align-items:center;gap:5px;
+    background:#e6f7f0;color:#16835f;padding:3px 8px;border-radius:12px;
+    font-size:9.5px;font-weight:800;letter-spacing:.4px}
+
+  .status-pill{display:inline-block;padding:3px 9px;border-radius:12px;
+    font-size:9.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase}
+  .status-pill.scheduled{background:#eef5ff;color:#1d4d82}
+  .status-pill.expired{background:#f0f2f6;color:#59647c}
+  .status-pill.deleted{background:#ffd9dd;color:#a41c28}
+
+  .empty-state{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);padding:60px 30px;text-align:center;color:var(--muted);font-size:13px}
+  .empty-state .icon{font-size:48px;margin-bottom:14px;opacity:.5;display:block}
+
+  /* Modal grid overrides for bigger content */
+  .educore-modal-form textarea{min-height:120px;resize:vertical}
+
   @media (max-width:650px){
     body{padding:64px 8px 24px}
     .band{padding:18px 20px}
     .band h1{font-size:15px}
     .field{min-width:0;width:100%}
     .toolbar{flex-direction:column;align-items:stretch}
-    .toolbar-left{width:100%}
+    .toolbar-left,.toolbar-right{width:100%}
     .card{padding:18px 18px}
   }
 </style>
@@ -105,27 +174,33 @@
 
   <div class="band">
     <div class="band-left">
-      <div class="band-logo" id="bandLogo">DS</div>
+      <div class="band-logo" id="bandLogo">EC</div>
       <div>
         <h1 id="bandSchool">Announcements</h1>
-        <p id="bandSub">School updates for staff and students</p>
+        <p id="bandSub">School updates for staff, students, and parents</p>
       </div>
     </div>
-    <div class="band-user">
-      Signed in as <strong id="bandUser">—</strong>
-    </div>
+    <div class="band-user">Signed in as <strong id="bandUser">—</strong></div>
   </div>
 
   <div class="toolbar">
     <div class="toolbar-left">
-      <input class="field" id="search" placeholder="Search title, message, or author...">
+      <input class="field" id="search" placeholder="Search title, message, author...">
       <div style="display:flex;gap:6px;flex-wrap:wrap">
         <button class="filter-chip active" data-filter="all"><span class="dot"></span> All</button>
         <button class="filter-chip" data-filter="pinned"><span class="dot" style="background:#c99a2e"></span> Pinned</button>
-        <button class="filter-chip" data-filter="recent"><span class="dot" style="background:#3987ee"></span> This week</button>
+        <button class="filter-chip" data-filter="urgent"><span class="dot" style="background:#d64545"></span> Urgent</button>
+        <button class="filter-chip" data-filter="recent"><span class="dot" style="background:#3987ee"></span> Last 7 days</button>
+        <button class="filter-chip" data-filter="unread"><span class="dot" style="background:#14805e"></span> Unread</button>
       </div>
     </div>
-    <div class="toolbar-left">
+    <div class="toolbar-right">
+      <select class="pick" id="authorFilter"><option value="">All authors</option></select>
+      <label id="showHiddenWrap" style="display:none;font-size:11px;color:var(--muted);
+        display:flex;align-items:center;gap:6px;padding:0 6px">
+        <input type="checkbox" id="showHidden">
+        Show scheduled / expired / deleted
+      </label>
       <button class="btn" id="addBtn">＋ New announcement</button>
     </div>
   </div>
@@ -145,15 +220,19 @@
   if(!user) return;
 
   /* ---------- SUB-FEATURE PERMISSIONS ---------- */
+  const isAdmin = user.role === 'Principal' || user.role === 'Registrar';
   const canPublish = E.can('announcements.publish');
   const canEdit    = E.can('announcements.edit');
   const canDelete  = E.can('announcements.delete');
   const canPin     = E.can('announcements.pin');
-
-  const hasAnyAction = canEdit || canDelete || canPin;
+  const isReader   = !isAdmin;   // Teacher, Student, Parent
 
   /* ---------- STATE ---------- */
-  const state = { filter: 'all' };
+  const state = {
+    filter: 'all',
+    author: '',
+    showHidden: false
+  };
 
   /* ---------- HEADER ---------- */
   function paintHeader(){
@@ -166,7 +245,6 @@
         name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
     }
     document.getElementById('bandSchool').textContent = name;
-    document.getElementById('bandSub').textContent = 'School updates for staff and students';
     document.getElementById('bandUser').textContent = user.name || user.username;
   }
 
@@ -176,6 +254,8 @@
     if(!a.at) return false;
     return (Date.now() - new Date(a.at).getTime()) < 7 * 24 * 60 * 60 * 1000;
   }
+  function isUrgent(a){ return String(a.priority || 'Normal').toLowerCase() === 'urgent'; }
+  function isImportant(a){ return String(a.priority || 'Normal').toLowerCase() === 'important'; }
   function shortDate(iso){
     if(!iso) return '';
     try {
@@ -191,91 +271,272 @@
     } catch(e){ return iso; }
   }
 
+  function ensureId(a){
+    if(!a.id){
+      a.id = 'an-legacy-' + Math.random().toString(36).slice(2,10);
+    }
+    return a.id;
+  }
+
+  /* ---------- FILTERS ---------- */
+  function fillAuthors(){
+    const list = E.readStore(E.STORE_KEYS.announcements, []) || [];
+    const set = new Set(list.map(a => a.author).filter(Boolean));
+    const sel = document.getElementById('authorFilter');
+    sel.innerHTML = '<option value="">All authors</option>' +
+      Array.from(set).sort().map(a => `<option>${E.esc(a)}</option>`).join('');
+  }
+
   /* ---------- RENDER ---------- */
   function paintList(){
-    const announcements = E.readStore(E.STORE_KEYS.announcements, []) || [];
+    /* Load + normalize */
+    const raw = E.readStore(E.STORE_KEYS.announcements, []) || [];
+    const normalized = raw.map(a => { ensureId(a); return a; });
+
     const q = document.getElementById('search').value.toLowerCase();
 
-    let arr = announcements.slice();
-    if(state.filter === 'pinned') arr = arr.filter(isPinned);
-    if(state.filter === 'recent') arr = arr.filter(isRecent);
-    if(q) arr = arr.filter(a => (`${a.title} ${a.body} ${a.author||''}`).toLowerCase().includes(q));
+    /* 1) Filter by audience + schedule + deleted */
+    let arr = normalized.filter(a => {
+      if(state.showHidden && isAdmin){
+        /* admins with the checkbox on see EVERYTHING (except only truly blank) */
+        return true;
+      }
+      return E.announcementIsLive(a) && E.announcementVisibleTo(a, user);
+    });
 
+    /* 2) Filter chips */
+    if(state.filter === 'pinned') arr = arr.filter(isPinned);
+    if(state.filter === 'urgent') arr = arr.filter(isUrgent);
+    if(state.filter === 'recent') arr = arr.filter(isRecent);
+    if(state.filter === 'unread') arr = arr.filter(a => !E.hasReadAnnouncement(a.id, user.id));
+
+    /* 3) Author filter */
+    if(state.author) arr = arr.filter(a => a.author === state.author);
+
+    /* 4) Search */
+    if(q) arr = arr.filter(a =>
+      (`${a.title} ${a.body} ${a.author||''}`).toLowerCase().includes(q));
+
+    /* 5) Sort — pinned first, then urgent, then important, then newest */
+    const priorityRank = p => {
+      const s = String(p || 'Normal').toLowerCase();
+      if(s === 'urgent') return 0;
+      if(s === 'important') return 1;
+      return 2;
+    };
     arr.sort((a,b) => {
       if(isPinned(a) !== isPinned(b)) return isPinned(a) ? -1 : 1;
+      const pr = priorityRank(a.priority) - priorityRank(b.priority);
+      if(pr) return pr;
       return new Date(b.at || 0) - new Date(a.at || 0);
     });
 
+    /* ---- Render ---- */
     const list = document.getElementById('list');
 
     if(!arr.length){
       list.innerHTML = `<div class="empty-state">
-        <div class="icon">📭</div>
-        ${q ? 'No announcements match your search.' : 'No announcements yet.'}
-        ${canPublish && !q ? '<div style="margin-top:16px"><button class="btn" onclick="document.getElementById(\'addBtn\').click()">＋ Write the first one</button></div>' : ''}
+        <span class="icon">📭</span>
+        ${q
+          ? 'No announcements match your search.'
+          : state.filter === 'unread'
+            ? 'Nothing unread — you are up to date.'
+            : 'No announcements yet.'}
+        ${canPublish && !q ? `<div style="margin-top:16px">
+          <button class="btn" onclick="document.getElementById('addBtn').click()">
+            ＋ Write the first one
+          </button></div>` : ''}
       </div>`;
       return;
     }
 
-    list.innerHTML = arr.map(a => {
-      const id = a.id || ('a-' + btoa(a.title).replace(/[^a-z0-9]/gi,'').slice(0,8));
-      const pinnedClass = isPinned(a) ? 'pinned' : '';
-      const author = a.author ? `by <strong>${E.esc(a.author)}</strong>` : '';
-      const when = a.at ? shortDate(a.at) : (a.date || '');
-      const dateLine = [author, when].filter(Boolean).join(' · ');
+    list.innerHTML = arr.map(a => buildCard(a)).join('');
+    bindCardEvents();
+  }
 
-      /* Build the actions bar based on sub-permissions */
-      const bits = [];
-      if(canEdit) bits.push(`<button class="btn secondary" data-edit="${E.esc(id)}">Edit</button>`);
-      if(canPin)  bits.push(`<button class="btn ${isPinned(a)?'warn':'outline'}" data-pin="${E.esc(id)}">${isPinned(a) ? '📌 Unpin' : '📌 Pin'}</button>`);
-      if(canDelete) bits.push(`<button class="btn danger" data-delete="${E.esc(id)}">Delete</button>`);
+  /* ---------- CARD BUILDER ---------- */
+  function buildCard(a){
+    const id = a.id;
+    const pinnedClass = isPinned(a) ? 'pinned' : '';
+    const urgentClass = isUrgent(a) ? 'urgent' : '';
+    const importantClass = isImportant(a) && !isUrgent(a) ? 'important' : '';
+    const deletedClass = a.deleted ? 'deleted' : '';
+    const expiredClass = !a.deleted && a.expiresAt && new Date(a.expiresAt).getTime() < Date.now() ? 'expired' : '';
+    const scheduled = a.publishAt && new Date(a.publishAt).getTime() > Date.now();
 
-      const actionsHTML = bits.length
-        ? `<div class="actions">${bits.join(' ')}</div>`
-        : '';
+    const authorLine = a.author ? `by <strong>${E.esc(a.author)}</strong>` : '';
+    const when = a.at ? shortDate(a.at) : (a.date || '');
+    const editedLine = a.updatedAt && a.updatedAt !== a.at
+      ? `<span title="${E.esc(E.fmtDateTime(a.updatedAt))}">· edited ${E.esc(shortDate(a.updatedAt))}</span>`
+      : '';
+    const dateLine = [authorLine, when, editedLine].filter(Boolean).join(' · ');
 
-      return `<div class="card ${pinnedClass}" data-id="${E.esc(id)}">
-        <div class="card-top">
-          <div>
-            <h3>${E.esc(a.title)}</h3>
-            ${dateLine ? `<div class="meta">${dateLine}</div>` : ''}
+    const audience = String(a.audience || 'All').trim();
+    const audienceCls = audience.toLowerCase();
+    const priority = String(a.priority || 'Normal').trim();
+    const priorityCls = priority.toLowerCase();
+
+    /* Read / ack counters */
+    const totalReaders = E.audienceSizeFor(a);
+    const readCount = E.readCountFor(id);
+    const ackCount = E.ackCountFor(id);
+    const alreadyRead = E.hasReadAnnouncement(id, user.id);
+    const alreadyAcked = E.hasAcknowledged(id, user.id);
+    const showAck = audience === 'Parents' || audience === 'Students';
+
+    /* Status pill for admins */
+    let statusPillHTML = '';
+    if(isAdmin){
+      if(a.deleted) statusPillHTML = `<span class="status-pill deleted">Deleted</span>`;
+      else if(scheduled) statusPillHTML = `<span class="status-pill scheduled">Scheduled · ${E.esc(E.fmtDate(a.publishAt))}</span>`;
+      else if(a.expiresAt && new Date(a.expiresAt).getTime() < Date.now()) statusPillHTML = `<span class="status-pill expired">Expired</span>`;
+    }
+
+    /* Link button */
+    const linkRow = a.link && a.link.url
+      ? `<div class="link-row">
+           <a class="link-btn" href="${E.esc(a.link.url)}" target="_blank" rel="noopener">
+             ${E.esc(a.link.label || 'Open link')} →
+           </a>
+         </div>`
+      : '';
+
+    /* Read badge for the reader */
+    const readBadge = (isReader && alreadyRead)
+      ? `<span class="read-badge">✓ Read</span>`
+      : '';
+
+    /* Ack button */
+    const ackButton = showAck
+      ? (alreadyAcked
+          ? `<button class="ack-btn done" disabled>✓ Acknowledged</button>`
+          : `<button class="ack-btn" data-ack="${E.esc(id)}">✓ I have read this</button>`)
+      : '';
+
+    /* Foot stats (admins see read-by counters) */
+    const footStats = isAdmin
+      ? `<div class="left">
+           <span class="stat read-by">👁 Read by ${readCount} of ${totalReaders}</span>
+           ${showAck ? `<span class="stat ack-by">✓ Acknowledged by ${ackCount}</span>` : ''}
+         </div>`
+      : `<div class="left">
+           <span class="stat">${audience === 'All' ? '' : 'Visible to ' + audience}</span>
+         </div>`;
+
+    /* Action buttons for admins */
+    const bits = [];
+    if(isAdmin){
+      if(a.deleted){
+        bits.push(`<button class="btn green small" data-restore="${E.esc(id)}">Restore</button>`);
+      } else {
+        if(canEdit) bits.push(`<button class="btn secondary small" data-edit="${E.esc(id)}">Edit</button>`);
+        if(canPin) bits.push(`<button class="btn ${isPinned(a)?'warn':'outline'} small" data-pin="${E.esc(id)}">${isPinned(a) ? '📌 Unpin' : '📌 Pin'}</button>`);
+        if(canDelete) bits.push(`<button class="btn danger small" data-delete="${E.esc(id)}">Delete</button>`);
+        bits.push(`<button class="btn outline small" data-view-reads="${E.esc(id)}">👁 Who read</button>`);
+        if(showAck) bits.push(`<button class="btn outline small" data-view-acks="${E.esc(id)}">✓ Who acknowledged</button>`);
+      }
+    } else if(!alreadyRead){
+      /* First time a reader sees this card — mark it as read automatically */
+      E.markAnnouncementRead(id);
+    }
+
+    const actionsHTML = bits.length
+      ? `<div class="actions">${bits.join(' ')}</div>`
+      : '';
+
+    return `<div class="card ${pinnedClass} ${urgentClass} ${importantClass} ${deletedClass} ${expiredClass}"
+      data-id="${E.esc(id)}">
+      <div class="card-top">
+        <div>
+          <h3>${E.esc(a.title)}</h3>
+          <div class="meta">
+            ${audience ? `<span class="audience-pill ${audienceCls}">${E.esc(audience)}</span>` : ''}
+            ${priority !== 'Normal' ? `<span class="priority-pill ${priorityCls}">${E.esc(priority)}</span>` : ''}
+            ${readBadge}
+            ${statusPillHTML}
           </div>
+          ${dateLine ? `<div class="meta" style="margin-top:6px">${dateLine}</div>` : ''}
         </div>
-        <div class="body">${E.esc(a.body)}</div>
-        ${actionsHTML}
-      </div>`;
-    }).join('');
+      </div>
+      <div class="body">${E.esc(a.body)}</div>
+      ${linkRow}
+      ${ackButton}
+      <div class="card-foot">
+        ${footStats}
+        <span></span>
+      </div>
+      ${actionsHTML}
+    </div>`;
+  }
+
+  /* ---------- CARD EVENTS ---------- */
+  function bindCardEvents(){
+    const list = document.getElementById('list');
+
+    list.querySelectorAll('[data-edit]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const a = findAnnouncement(btn.dataset.edit);
+        if(a) openAnnouncementModal(a);
+      });
+    });
+    list.querySelectorAll('[data-pin]').forEach(btn => {
+      btn.addEventListener('click', () => togglePin(btn.dataset.pin));
+    });
+    list.querySelectorAll('[data-delete]').forEach(btn => {
+      btn.addEventListener('click', () => deleteAnnouncement(btn.dataset.delete));
+    });
+    list.querySelectorAll('[data-restore]').forEach(btn => {
+      btn.addEventListener('click', () => restoreAnnouncement(btn.dataset.restore));
+    });
+    list.querySelectorAll('[data-ack]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const a = findAnnouncement(btn.dataset.ack);
+        if(!a) return;
+        const row = E.acknowledgeAnnouncement(a.id);
+        if(!row) return;
+        E.audit('update', `Acknowledgment ${a.id}`, '', user.username);
+        paintList();
+        E.toast('Acknowledged.');
+      });
+    });
+    list.querySelectorAll('[data-view-reads]').forEach(btn => {
+      btn.addEventListener('click', () => openReadersModal(btn.dataset.viewReads));
+    });
+    list.querySelectorAll('[data-view-acks]').forEach(btn => {
+      btn.addEventListener('click', () => openAcksModal(btn.dataset.viewAcks));
+    });
   }
 
   /* ---------- LOOKUP ---------- */
   function findAnnouncement(id){
     const list = E.readStore(E.STORE_KEYS.announcements, []) || [];
-    return list.find(a => {
-      const aid = a.id || ('a-' + btoa(a.title).replace(/[^a-z0-9]/gi,'').slice(0,8));
-      return aid === id;
-    });
+    return list.find(a => ensureId(a) === id);
   }
 
-  /* ---------- OPEN EDITOR ---------- */
+  /* ============================================================
+     MODAL — Create / Edit
+     ============================================================ */
   function openAnnouncementModal(existing){
     if(existing && !canEdit){ E.toast("You don't have permission to edit announcements."); return; }
     if(!existing && !canPublish){ E.toast("You don't have permission to publish announcements."); return; }
 
     const a = existing || {};
     const isNew = !existing;
+
+    /* Default publishAt = now for new items */
+    const defaultPublishAt = isNew
+      ? new Date().toISOString().slice(0,16)
+      : (a.publishAt ? new Date(a.publishAt).toISOString().slice(0,16) : '');
+    const expiresAt = a.expiresAt ? new Date(a.expiresAt).toISOString().slice(0,16) : '';
+
     const html = `
       <div class="full"><label>Title</label>
         <input name="title" required maxlength="120" value="${E.esc(a.title||'')}"
           placeholder="e.g. Parent-teacher meeting">
       </div>
       <div class="full"><label>Message</label>
-        <textarea name="body" required rows="6" placeholder="Write the announcement...">${E.esc(a.body||'')}</textarea>
-      </div>
-      <div><label>Pin to top</label>
-        <select name="pinned">
-          <option value="">No</option>
-          <option value="1" ${a.pinned ? 'selected' : ''}>Yes — pin this announcement</option>
-        </select>
+        <textarea name="body" required rows="6"
+          placeholder="Write the announcement...">${E.esc(a.body||'')}</textarea>
       </div>
       <div><label>Audience</label>
         <select name="audience">
@@ -284,83 +545,211 @@
           <option ${a.audience === 'Students' ? 'selected' : ''}>Students</option>
           <option ${a.audience === 'Parents' ? 'selected' : ''}>Parents</option>
         </select>
+      </div>
+      <div><label>Priority</label>
+        <select name="priority">
+          <option ${(!a.priority || a.priority === 'Normal') ? 'selected' : ''}>Normal</option>
+          <option ${a.priority === 'Important' ? 'selected' : ''}>Important</option>
+          <option ${a.priority === 'Urgent' ? 'selected' : ''}>Urgent</option>
+        </select>
+      </div>
+      <div><label>Pin to top</label>
+        <select name="pinned">
+          <option value="">No</option>
+          <option value="1" ${a.pinned ? 'selected' : ''}>Yes — pin this announcement</option>
+        </select>
+      </div>
+      <div><label>Publish on (optional)</label>
+        <input name="publishAt" type="datetime-local" value="${defaultPublishAt}">
+      </div>
+      <div><label>Expires on (optional)</label>
+        <input name="expiresAt" type="datetime-local" value="${expiresAt}">
+      </div>
+      <div class="full"><label>Link URL (optional)</label>
+        <input name="linkUrl" value="${E.esc(a.link?.url || '')}"
+          placeholder="e.g. report-card-ledger.html or https://…">
+      </div>
+      <div class="full"><label>Link button label (optional)</label>
+        <input name="linkLabel" value="${E.esc(a.link?.label || '')}"
+          placeholder="e.g. Open my report card">
+      </div>
+      <div class="full" style="font-size:11px;color:#7a8498;background:#f8faff;
+        border:1px solid #e8ebf2;border-radius:8px;padding:10px 12px;line-height:1.6">
+        Leave <strong>Publish on</strong> blank to publish immediately.
+        <strong>Expires on</strong> hides it from readers but keeps it visible to admins.
+        <strong>Audience</strong> controls who can see it: Staff = teachers only,
+        Students = students, Parents = parents.
       </div>`;
 
     E.openModal(isNew ? 'New announcement' : 'Edit announcement', html,
       isNew ? 'Publish' : 'Save changes',
       d => {
         const list = E.readStore(E.STORE_KEYS.announcements, []) || [];
+
         if(isNew){
-          list.unshift({
+          const row = {
             id: 'an-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6),
             title: d.title.trim(),
             body: d.body.trim(),
             audience: d.audience || 'All',
+            priority: d.priority || 'Normal',
             pinned: !!d.pinned,
-            author: user.name || user.username,
+            publishAt: d.publishAt ? new Date(d.publishAt).toISOString() : new Date().toISOString(),
+            expiresAt: d.expiresAt ? new Date(d.expiresAt).toISOString() : '',
+            link: d.linkUrl ? { url: d.linkUrl.trim(), label: d.linkLabel.trim() || 'Open link' } : null,
+            author: user.username,
             at: new Date().toISOString(),
             date: new Date().toLocaleDateString()
-          });
-          E.audit('create', `Announcement`, '', d.title);
+          };
+          list.unshift(row);
+          E.audit('create', 'Announcement', '', `${d.title} → ${d.audience}`);
         } else {
-          const target = list.find(x => {
-            const aid = x.id || ('a-' + btoa(x.title).replace(/[^a-z0-9]/gi,'').slice(0,8));
-            return aid === (existing.id || ('a-' + btoa(existing.title).replace(/[^a-z0-9]/gi,'').slice(0,8)));
-          });
+          const target = list.find(x => ensureId(x) === ensureId(existing));
           if(!target) return;
           target.title = d.title.trim();
           target.body = d.body.trim();
           target.audience = d.audience || 'All';
+          target.priority = d.priority || 'Normal';
           target.pinned = !!d.pinned;
+          target.publishAt = d.publishAt ? new Date(d.publishAt).toISOString() : (target.publishAt || new Date().toISOString());
+          target.expiresAt = d.expiresAt ? new Date(d.expiresAt).toISOString() : '';
+          target.link = d.linkUrl ? { url: d.linkUrl.trim(), label: d.linkLabel.trim() || 'Open link' } : null;
           target.updatedAt = new Date().toISOString();
-          E.audit('update', `Announcement`, '', d.title);
+          target.updatedBy = user.username;
+          E.audit('update', 'Announcement', '', `${d.title} → ${d.audience}`);
         }
         E.writeStore(E.STORE_KEYS.announcements, list);
         E.closeModal();
+        fillAuthors();
         paintList();
         E.toast(isNew ? 'Announcement published.' : 'Announcement updated.');
       }, true);
   }
 
-  /* ---------- TOGGLE PIN ---------- */
+  /* ============================================================
+     PIN
+     ============================================================ */
   function togglePin(id){
     if(!canPin){ E.toast("You don't have permission to pin announcements."); return; }
     const list = E.readStore(E.STORE_KEYS.announcements, []) || [];
-    const a = list.find(x => {
-      const aid = x.id || ('a-' + btoa(x.title).replace(/[^a-z0-9]/gi,'').slice(0,8));
-      return aid === id;
-    });
+    const a = list.find(x => ensureId(x) === id);
     if(!a) return;
     a.pinned = !a.pinned;
     E.writeStore(E.STORE_KEYS.announcements, list);
-    E.audit('update', `Announcement pin`, '', a.pinned ? 'pinned' : 'unpinned');
+    E.audit('update', 'Announcement pin', '', a.pinned ? 'pinned' : 'unpinned');
     paintList();
     E.toast(a.pinned ? 'Pinned.' : 'Unpinned.');
   }
 
-  /* ---------- DELETE ---------- */
-  function deleteAnnouncement(id){
+  /* ============================================================
+     DELETE (soft)
+     ============================================================ */
+  async function deleteAnnouncement(id){
     if(!canDelete){ E.toast("You don't have permission to delete announcements."); return; }
     const list = E.readStore(E.STORE_KEYS.announcements, []) || [];
-    const a = list.find(x => {
-      const aid = x.id || ('a-' + btoa(x.title).replace(/[^a-z0-9]/gi,'').slice(0,8));
-      return aid === id;
-    });
+    const a = list.find(x => ensureId(x) === id);
     if(!a) return;
-    if(!confirm(`Delete this announcement?\n\n"${a.title}"\n\nThis cannot be undone.`)) return;
 
-    const remaining = list.filter(x => {
-      const aid = x.id || ('a-' + btoa(x.title).replace(/[^a-z0-9]/gi,'').slice(0,8));
-      return aid !== id;
+    const ok = await E.confirmModal({
+      title: 'Delete announcement?',
+      message: `<strong>${E.esc(a.title)}</strong><br><br>
+        This will hide it from everyone. You can restore it later from
+        the "Show scheduled / expired / deleted" view.`,
+      submitText: 'Delete',
+      danger: true
     });
-    E.writeStore(E.STORE_KEYS.announcements, remaining);
-    E.audit('delete', `Announcement`, a.title, '');
+    if(!ok) return;
+
+    a.deleted = true;
+    a.deletedAt = new Date().toISOString();
+    a.deletedBy = user.username;
+    E.writeStore(E.STORE_KEYS.announcements, list);
+    E.audit('delete', 'Announcement', a.title, 'soft-deleted');
     paintList();
-    E.toast('Announcement deleted.');
+    E.toast('Announcement deleted. Restore from the hidden view.');
   }
 
-  /* ---------- EVENTS ---------- */
+  function restoreAnnouncement(id){
+    if(!isAdmin){ E.toast("Only admins can restore."); return; }
+    const list = E.readStore(E.STORE_KEYS.announcements, []) || [];
+    const a = list.find(x => ensureId(x) === id);
+    if(!a) return;
+    delete a.deleted;
+    delete a.deletedAt;
+    delete a.deletedBy;
+    E.writeStore(E.STORE_KEYS.announcements, list);
+    E.audit('update', 'Announcement', a.title, 'restored');
+    paintList();
+    E.toast('Announcement restored.');
+  }
+
+  /* ============================================================
+     READERS / ACKS MODALS
+     ============================================================ */
+  function openReadersModal(id){
+    if(!isAdmin) return;
+    const a = findAnnouncement(id);
+    if(!a) return;
+    const reads = E.getAnnouncementReads().filter(r => r.announcementId === id)
+      .sort((a,b) => new Date(b.readAt) - new Date(a.readAt));
+
+    const rows = reads.length ? reads.map(r => `
+      <div style="display:flex;justify-content:space-between;padding:8px 10px;
+        border-bottom:1px solid #eef2f7;font-size:12px">
+        <span><strong>${E.esc(r.username)}</strong></span>
+        <span style="color:#7a8498">${E.fmtDateTime(r.readAt)}</span>
+      </div>`).join('')
+      : '<div style="padding:20px;text-align:center;color:#7a8498">No reads yet.</div>';
+
+    const html = `
+      <div class="full">
+        <div style="font-size:12px;color:#7a8498;margin-bottom:10px">
+          Read count: <strong>${reads.length}</strong> of <strong>${E.audienceSizeFor(a)}</strong>
+        </div>
+        <div style="max-height:360px;overflow-y:auto;border:1px solid #eef2f7;border-radius:8px">
+          ${rows}
+        </div>
+      </div>`;
+    E.openModal(`Readers — ${E.esc(a.title)}`, html, null, null, true);
+  }
+
+  function openAcksModal(id){
+    if(!isAdmin) return;
+    const a = findAnnouncement(id);
+    if(!a) return;
+    const acks = E.getAnnouncementAcks().filter(r => r.announcementId === id)
+      .sort((a,b) => new Date(b.at) - new Date(a.at));
+
+    const rows = acks.length ? acks.map(r => `
+      <div style="padding:8px 10px;border-bottom:1px solid #eef2f7;font-size:12px">
+        <div style="display:flex;justify-content:space-between">
+          <span><strong>${E.esc(r.name || r.username)}</strong></span>
+          <span style="color:#7a8498">${E.fmtDateTime(r.at)}</span>
+        </div>
+        ${r.note ? `<div style="color:#7a8498;font-size:11px;margin-top:3px">"${E.esc(r.note)}"</div>` : ''}
+      </div>`).join('')
+      : '<div style="padding:20px;text-align:center;color:#7a8498">No acknowledgements yet.</div>';
+
+    const html = `
+      <div class="full">
+        <div style="font-size:12px;color:#7a8498;margin-bottom:10px">
+          Acknowledged: <strong>${acks.length}</strong> of <strong>${E.audienceSizeFor(a)}</strong>
+        </div>
+        <div style="max-height:360px;overflow-y:auto;border:1px solid #eef2f7;border-radius:8px">
+          ${rows}
+        </div>
+      </div>`;
+    E.openModal(`Acknowledgements — ${E.esc(a.title)}`, html, null, null, true);
+  }
+
+  /* ============================================================
+     EVENTS
+     ============================================================ */
   document.getElementById('search').addEventListener('input', paintList);
+  document.getElementById('authorFilter').addEventListener('change', e => {
+    state.author = e.target.value;
+    paintList();
+  });
   document.getElementById('addBtn').addEventListener('click', () => {
     if(!canPublish){ E.toast("You don't have permission to publish announcements."); return; }
     openAnnouncementModal(null);
@@ -374,20 +763,19 @@
     });
   });
 
-  document.getElementById('list').addEventListener('click', e => {
-    const edit = e.target.closest('[data-edit]');
-    const pin  = e.target.closest('[data-pin]');
-    const del  = e.target.closest('[data-delete]');
-    if(edit){
-      const a = findAnnouncement(edit.dataset.edit);
-      if(a) openAnnouncementModal(a);
-    }
-    if(pin) togglePin(pin.dataset.pin);
-    if(del) deleteAnnouncement(del.dataset.delete);
-  });
+  /* Show "hidden" toggle only for admins */
+  if(isAdmin){
+    const wrap = document.getElementById('showHiddenWrap');
+    wrap.style.display = 'flex';
+    document.getElementById('showHidden').addEventListener('change', e => {
+      state.showHidden = e.target.checked;
+      paintList();
+    });
+  }
 
   /* ---------- INIT ---------- */
   paintHeader();
+  fillAuthors();
   paintList();
   if(!canPublish) document.getElementById('addBtn').style.display = 'none';
 })();

@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Take Quiz | EduCore</title>
+<style>
+  :root{--navy:#12315a;--blue:#3987ee;--border:#d8e4f2;--text:#23354d;--muted:#73849a;
+    --green:#14805e;--orange:#d88922;--red:#d64545;--gold:#c99a2e;--gold2:#fff4d6;
+    --line:#e8ebf2;--shadow:0 8px 24px rgba(24,42,78,.06)}
+  *{box-sizing:border-box}
+  body{margin:0;padding:64px 16px 120px;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+  .page{width:100%;max-width:900px;margin:0 auto}
+
+  .band{background:linear-gradient(120deg,#102949,#245d9c);color:#fff;border-radius:16px;
+    padding:22px 28px;margin-bottom:20px;box-shadow:0 18px 50px #16345417;
+    display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
+    border-top:5px solid #58a4ff}
+  .band-left{display:flex;align-items:center;gap:14px}
+  .band-logo{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;
+    place-items:center;overflow:hidden;color:var(--navy);font-weight:900;font-size:18px;
+    border:3px solid #d8e8ff;flex:0 0 48px}
+  .band-logo img{width:100%;height:100%;object-fit:contain}
+  .band h1{margin:0;font-size:19px;letter-spacing:.3px;text-transform:uppercase}
+  .band p{margin:4px 0 0;font-size:11px;color:#cfdcf5}
+  .band-user{display:flex;align-items:center;gap:10px;font-size:11px;color:#cfdcf5;
+    background:#ffffff14;border:1px solid #ffffff36;padding:7px 12px;border-radius:20px}
+  .band-user strong{color:#fff}
+
+  .info-strip{background:#fff;border:1px solid var(--line);border-radius:12px;
+    box-shadow:var(--shadow);padding:14px 20px;margin-bottom:18px;
+    display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .info-strip .item{display:flex;flex-direction:column;font-size:11px;color:var(--muted)}
+  .info-strip .item strong{font-size:15px;color:var(--navy);font-family:monospace;margin-top:3px}
+
+  .timer{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;
+    background:#eaf2ff;color:#1d4d82;font-family:monospace;font-weight:800;font-size:15px}
+  .timer.warning{background:#fff2dd;color:#a86414}
+  .timer.danger{background:#ffeaec;color:#bd3b48;animation:pulse 1s infinite}
+  @keyframes pulse{50%{opacity:.7}}
+
+  /* Pagination strip */
+  .pager-strip{background:#fff;border:1px solid var(--line);border-radius:12px;
+    box-shadow:var(--shadow);padding:14px 18px;margin-bottom:18px;
+    display:flex;flex-direction:column;gap:12px}
+  .pager-info{display:flex;justify-content:space-between;align-items:center;
+    font-size:12px;color:var(--muted)}
+  .pager-info strong{color:var(--navy)}
+  .pager-progress{height:6px;background:#eef1f7;border-radius:20px;overflow:hidden}
+  .pager-progress span{display:block;height:100%;background:linear-gradient(90deg,#3987ee,#14805e);
+    border-radius:20px;transition:width .25s ease}
+  .pager-nav{display:flex;gap:6px;flex-wrap:wrap}
+  .nav-dot{width:32px;height:32px;border-radius:8px;background:#fff;color:#34415c;
+    border:1px solid var(--line);font-size:11px;font-weight:800;cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;position:relative}
+  .nav-dot:hover{background:#f3f6fd}
+  .nav-dot.answered{background:#eafaf1;border-color:#b8e9d3;color:#0e6b4a}
+  .nav-dot.active{background:#14213d;color:#fff;border-color:#14213d;transform:scale(1.05)}
+  .nav-dot.active.answered{background:#14805e;border-color:#14805e;color:#fff}
+
+  .q-card{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);padding:22px 24px;margin-bottom:16px;
+    border-left:4px solid var(--blue)}
+  .q-num{font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:800;
+    color:var(--blue);margin-bottom:6px}
+  .q-text{font-size:15px;color:var(--navy);margin:0 0 16px;font-weight:700;line-height:1.5}
+  .q-points{float:right;font-size:10px;background:#eef2fb;color:#34415c;
+    padding:3px 9px;border-radius:12px;font-weight:800}
+
+  .opt{display:flex;align-items:center;gap:12px;padding:12px 16px;border:1px solid var(--line);
+    border-radius:10px;margin-bottom:8px;cursor:pointer;background:#fbfdff;transition:.15s}
+  .opt:hover{background:#f3f6fd;border-color:#c8d3e3}
+  .opt.selected{background:#eaf2ff;border-color:#b9d1f6}
+  .opt input{margin:0}
+  .opt span{font-size:13px;color:var(--text)}
+
+  .tf-group{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .tf-opt{display:flex;align-items:center;gap:10px;padding:14px 16px;border:1px solid var(--line);
+    border-radius:10px;cursor:pointer;background:#fbfdff;text-align:center;justify-content:center;
+    font-weight:800;color:#34415c}
+  .tf-opt.selected{background:#eaf2ff;border-color:#b9d1f6}
+
+  .text-input,.essay-input{width:100%;border:1px solid #dfe4ee;border-radius:10px;
+    padding:12px 14px;font-size:13px;outline:none;background:#fff;font-family:inherit}
+  .text-input:focus,.essay-input:focus{border-color:var(--blue)}
+  .essay-input{min-height:140px;resize:vertical}
+
+  .save-bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);
+    padding:14px 20px;box-shadow:0 -6px 20px rgba(24,42,78,.06);
+    display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+    z-index:50}
+  .save-bar .progress-note{font-size:11px;color:var(--muted)}
+  .save-bar .progress-note strong{color:var(--navy)}
+  .save-bar .center-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+  .btn{border:0;border-radius:9px;padding:11px 18px;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{filter:brightness(.96)}
+  .btn.secondary{background:#eef2fb;color:#34415c}
+  .btn.outline{background:#fff;color:#34415c;border:1px solid var(--line)}
+  .btn.danger{background:#fff0f1;color:var(--red)}
+  .btn.green{background:#e6f7f0;color:#16835f}
+  .btn.gold{background:linear-gradient(135deg,#f7d97a,#c99a2e);color:#5a3a00}
+  .btn.big{padding:14px 24px;font-size:14px}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  .banner-warn{background:#fff8e6;border:1px solid #f3d999;color:#8a6a1a;
+    padding:12px 16px;border-radius:10px;margin-bottom:16px;font-size:12px;line-height:1.6;
+    display:flex;gap:10px;align-items:flex-start}
+  .banner-warn .icon{font-size:16px;flex:0 0 auto}
+
+  .empty{padding:60px 30px;text-align:center;color:var(--muted);font-size:13px;
+    background:#fff;border:1px solid var(--line);border-radius:13px}
+  .empty .icon{font-size:48px;margin-bottom:14px;opacity:.5;display:block}
+  .empty h1{font-size:18px;color:var(--navy);margin:0 0 10px}
+  .empty a{display:inline-block;background:var(--blue);color:#fff;padding:11px 18px;
+    border-radius:9px;text-decoration:none;font-weight:700;font-size:12px;margin-top:14px}
+
+  .rule-box{background:#f5f8ff;border:1px solid #d6e4ff;color:#1d4d82;
+    padding:14px 16px;border-radius:10px;margin-bottom:16px;font-size:12px;line-height:1.7}
+  .rule-box strong{color:#0e3b6b}
+  .rule-box ol{margin:8px 0 0;padding-left:22px}
+  .rule-box li{margin-bottom:4px}
+
+  @media (max-width:650px){
+    body{padding:64px 8px 120px}
+    .band{padding:18px 20px}
+    .band h1{font-size:15px}
+    .q-card{padding:18px 18px}
+    .nav-dot{width:28px;height:28px;font-size:10px}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="band">
+    <div class="band-left">
+      <div class="band-logo" id="bandLogo">EC</div>
+      <div>
+        <h1 id="bandSchool">Quiz</h1>
+        <p id="bandSub">Online assessment</p>
+      </div>
+    </div>
+    <div class="band-user">Signed in as <strong id="bandUser">—</strong></div>
+  </div>
+
+  <div id="pageBody"></div>
+
+</div>
+
+<script src="educore-shared.js"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  const user = E.requirePerm('quizzes', 'Quizzes');
+  if(!user) return;
+
+  const isStudent = user.role === 'Student';
+  const params = new URLSearchParams(location.search);
+  const quizId = params.get('id');
+
+  const QUESTIONS_PER_PAGE = 5;
+
+  function paintHeader(){
+    const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const name = settings.name || 'EduCore High School';
+    if(settings.logo){
+      document.getElementById('bandLogo').innerHTML = `<img src="${settings.logo}" alt="">`;
+    } else {
+      document.getElementById('bandLogo').textContent =
+        name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
+    }
+    document.getElementById('bandSchool').textContent = name;
+    document.getElementById('bandUser').textContent = user.name || user.username;
+  }
+
+  /* ---------- GUARDS ---------- */
+  if(!isStudent){
+    paintHeader();
+    document.getElementById('pageBody').innerHTML = `
+      <div class="empty">
+        <span class="icon">🛡</span>
+        <h1>Staff preview</h1>
+        This page is only for taking quizzes. Use
+        <a href="quiz-results.html?quiz=${encodeURIComponent(quizId || '')}">Quiz Results</a>
+        to review attempts.
+      </div>`;
+    return;
+  }
+
+  const me = (E.readStore(E.STORE_KEYS.students, []) || [])
+    .find(s => s.id === user.linkedStudentId);
+  if(!me){
+    paintHeader();
+    document.getElementById('pageBody').innerHTML = `
+      <div class="empty">
+        <span class="icon">🔒</span>
+        <h1>Account not linked</h1>
+        Your account is not linked to a student record.
+      </div>`;
+    return;
+  }
+
+  const quiz = E.getQuiz(quizId);
+  if(!quiz){
+    paintHeader();
+    document.getElementById('pageBody').innerHTML = `
+      <div class="empty">
+        <span class="icon">🔍</span>
+        <h1>Quiz not found</h1>
+        <a href="quizzes.html">← Back to Quizzes</a>
+      </div>`;
+    return;
+  }
+
+  /* ---------- PER-STUDENT ASSIGNMENT GATE ---------- */
+  if(!E.quizAssignedToStudent(quiz, me)){
+    paintHeader();
+    document.getElementById('pageBody').innerHTML = `
+      <div class="empty">
+        <span class="icon">🚫</span>
+        <h1>Not assigned to you</h1>
+        <p style="color:var(--muted);line-height:1.7;max-width:520px;margin:0 auto 8px">
+          This quiz was assigned to a specific student and not to you.
+        </p>
+        <a href="quizzes.html">← Back to Quizzes</a>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('bandSub').textContent = quiz.title;
+  document.title = quiz.title + ' | EduCore';
+
+  /* ---------- SINGLE-ATTEMPT RULE ---------- */
+  const existing = E.existingAttemptFor(quiz.id, me.id);
+
+  if(existing){
+    if(existing.status === 'in-progress'){
+      /* Auto-submit the abandoned attempt */
+      const abandonedAt = new Date().toISOString();
+      E.submitAttempt(existing.id, true);
+      const at = E.getQuizAttempts().find(a => a.id === existing.id);
+      if(at){
+        at.autoSubmitted = true;
+        at.abandonedAt = abandonedAt;
+        at.note = 'Auto-submitted because the student left the quiz page without submitting.';
+        E.saveAttempt(at);
+      }
+      E.audit('update', `Quiz ${quiz.title} auto-submitted`, '', 'left page mid-attempt');
+
+      paintHeader();
+      document.getElementById('pageBody').innerHTML = `
+        <div class="empty">
+          <span class="icon">📌</span>
+          <h1>You left this quiz before submitting</h1>
+          <p style="color:var(--muted);line-height:1.7;max-width:520px;margin:0 auto 8px">
+            Because you closed or refreshed the page while the quiz was in progress,
+            your answers were automatically submitted. You cannot take this quiz again.
+          </p>
+          <a href="quiz-results.html?attempt=${encodeURIComponent(existing.id)}">View your result</a>
+          <a href="quizzes.html" style="margin-left:8px;background:#eef2fb;color:#34415c">← Back to Quizzes</a>
+        </div>`;
+      return;
+    }
+
+    paintHeader();
+    document.getElementById('pageBody').innerHTML = `
+      <div class="empty">
+        <span class="icon">✅</span>
+        <h1>You have already submitted this quiz</h1>
+        <p style="color:var(--muted);line-height:1.7;max-width:520px;margin:0 auto 8px">
+          ${existing.status === 'pending-manual'
+            ? 'Your quiz is awaiting manual grading.'
+            : `Your score was ${existing.score} / ${existing.totalMarks} (${existing.percentage}%).`}
+          <br><br>Retaking this quiz is not permitted. Ask your teacher if you need a reset.
+        </p>
+        <a href="quiz-results.html?attempt=${encodeURIComponent(existing.id)}">View result</a>
+        <a href="quizzes.html" style="margin-left:8px;background:#eef2fb;color:#34415c">← Back to Quizzes</a>
+      </div>`;
+    return;
+  }
+
+  const check = E.canTakeQuiz(quiz, me);
+  if(!check.ok){
+    paintHeader();
+    document.getElementById('pageBody').innerHTML = `
+      <div class="empty">
+        <span class="icon">🔒</span>
+        <h1>Quiz not available</h1>
+        <p style="color:var(--muted);line-height:1.7">${E.esc(check.reason)}</p>
+        <a href="quizzes.html">← Back to Quizzes</a>
+      </div>`;
+    return;
+  }
+
+  const attempt = E.createAttempt(quiz, me);
+
+  /* ---------- HELPERS ---------- */
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  const allQuestions = E.questionsForQuiz(quiz.id);
+  const ordered = quiz.shuffleQuestions ? shuffle(allQuestions) : allQuestions;
+  const totalPages = Math.max(1, Math.ceil(ordered.length / QUESTIONS_PER_PAGE));
+
+  const state = {
+    page: 1
+  };
+
+  const shuffledOptionsFor = (q) => {
+    if(q.type !== 'multiple-choice' || !quiz.shuffleOptions) return q.options || [];
+    return shuffle(q.options || []);
+  };
+
+  /* ---------- TIMER ---------- */
+  function remainingSeconds(){
+    const elapsed = Math.floor((Date.now() - new Date(attempt.startedAt).getTime()) / 1000);
+    const duration = Number(quiz.durationMinutes || 30) * 60;
+    return Math.max(0, duration - elapsed);
+  }
+  function fmtTime(sec){
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+
+  /* ---------- RENDER ---------- */
+  function paintShell(){
+    const totalMarks = E.quizTotalMarks(quiz.id);
+    const assignmentNote = Array.isArray(quiz.assignedTo) && quiz.assignedTo.length
+      ? '<div class="item">Assigned to<strong>You</strong></div>'
+      : '';
+
+    document.getElementById('pageBody').innerHTML = `
+      <div class="info-strip">
+        <div class="item">Subject<strong>${E.esc(quiz.subject || '—')}</strong></div>
+        <div class="item">Class<strong>${E.esc(quiz.className || '—')}</strong></div>
+        <div class="item">Questions<strong>${allQuestions.length}</strong></div>
+        <div class="item">Total marks<strong>${totalMarks}</strong></div>
+        ${assignmentNote}
+        <div id="timerWrap"><div class="timer" id="timer">--:--</div></div>
+      </div>
+
+      <div class="rule-box">
+        <strong>⚠ Read before you begin</strong>
+        <ol>
+          <li>Once you start, you cannot pause the timer or resume this quiz.</li>
+          <li>If you close, refresh, or leave this page before submitting,
+            your answers will be <strong>automatically submitted</strong> and you cannot take it again.</li>
+          <li>You may only submit <strong>one attempt</strong>. A teacher must reset your attempt to allow a retake.</li>
+          <li>You will see <strong>${QUESTIONS_PER_PAGE} questions per page</strong>.
+            Use the page numbers at the top to navigate.</li>
+        </ol>
+      </div>
+
+      <div class="banner-warn" id="warningBanner" style="display:none">
+        <span class="icon">⚠</span>
+        <div>You have left the quiz page <strong id="switchCount">0</strong> time(s).
+          This is being logged. Leaving again may auto-submit your quiz.</div>
+      </div>
+
+      <div class="pager-strip">
+        <div class="pager-info">
+          <span>Page <strong><span id="pageNow">1</span> of ${totalPages}</strong></span>
+          <span><strong><span id="answeredCount">0</span></strong> of <strong>${allQuestions.length}</strong> answered</span>
+        </div>
+        <div class="pager-progress"><span id="pagerBar" style="width:0%"></span></div>
+        <div class="pager-nav" id="navDots"></div>
+      </div>
+
+      <div id="qArea"></div>
+
+      <div class="save-bar">
+        <div class="progress-note">
+          Answering page <strong><span id="pageNowFoot">1</span> / ${totalPages}</strong>
+        </div>
+        <div class="center-actions">
+          <button class="btn secondary" id="prevPageBtn">← Previous</button>
+          <button class="btn secondary" id="nextPageBtn">Next →</button>
+          <button class="btn green" id="submitBtn">✔ Submit quiz</button>
+        </div>
+      </div>`;
+
+    paintPage();
+    paintNavDots();
+    updateProgress();
+    bindPagination();
+    bindSubmitEvents();
+    startTimer();
+    installLeaveGuard();
+  }
+
+  function paintPage(){
+    const qArea = document.getElementById('qArea');
+    const responses = E.responsesForAttempt(attempt.id);
+
+    const start = (state.page - 1) * QUESTIONS_PER_PAGE;
+    const slice = ordered.slice(start, start + QUESTIONS_PER_PAGE);
+
+    qArea.innerHTML = slice.map((q, i) => {
+      const globalIdx = start + i;
+      const num = globalIdx + 1;
+      const resp = responses.find(r => r.questionId === q.id) || {};
+      let inner = '';
+
+      if(q.type === 'multiple-choice'){
+        const opts = shuffledOptionsFor(q);
+        inner = opts.map(o => `
+          <label class="opt ${resp.selectedOptionId === o.id ? 'selected' : ''}"
+            data-opt-for="${E.esc(q.id)}" data-opt-id="${E.esc(o.id)}">
+            <input type="radio" name="q_${E.esc(q.id)}" value="${E.esc(o.id)}"
+              ${resp.selectedOptionId === o.id ? 'checked' : ''}>
+            <span>${E.esc(o.text)}</span>
+          </label>`).join('');
+      }
+      else if(q.type === 'true-false'){
+        const cur = String(resp.answerText || '').toLowerCase();
+        inner = `<div class="tf-group">
+          <div class="tf-opt ${cur === 'true' ? 'selected' : ''}"
+            data-tf-for="${E.esc(q.id)}" data-tf-val="true">True</div>
+          <div class="tf-opt ${cur === 'false' ? 'selected' : ''}"
+            data-tf-for="${E.esc(q.id)}" data-tf-val="false">False</div>
+        </div>`;
+      }
+      else if(q.type === 'numeric'){
+        inner = `<input type="number" class="text-input" step="any"
+          data-num-for="${E.esc(q.id)}"
+          value="${E.esc(resp.answerText || '')}"
+          placeholder="Enter a number">`;
+      }
+      else if(q.type === 'short-answer'){
+        inner = `<input type="text" class="text-input"
+          data-text-for="${E.esc(q.id)}"
+          value="${E.esc(resp.answerText || '')}"
+          placeholder="Type your short answer...">`;
+      }
+      else if(q.type === 'essay'){
+        inner = `<textarea class="essay-input"
+          data-text-for="${E.esc(q.id)}"
+          placeholder="Write your essay here...">${E.esc(resp.answerText || '')}</textarea>`;
+      }
+
+      return `<div class="q-card">
+        <span class="q-points">${q.points} mark${q.points === 1 ? '' : 's'}</span>
+        <div class="q-num">Question ${num} of ${allQuestions.length}</div>
+        <h3 class="q-text">${E.esc(q.text)}</h3>
+        ${inner}
+      </div>`;
+    }).join('');
+
+    bindQuestionEvents();
+    const el = document.getElementById('pageNow');
+    if(el) el.textContent = state.page;
+    const el2 = document.getElementById('pageNowFoot');
+    if(el2) el2.textContent = state.page;
+  }
+
+  function paintNavDots(){
+    const wrap = document.getElementById('navDots');
+    const responses = E.responsesForAttempt(attempt.id);
+    wrap.innerHTML = ordered.map((q, i) => {
+      const page = Math.floor(i / QUESTIONS_PER_PAGE) + 1;
+      const r = responses.find(x => x.questionId === q.id);
+      let answered = false;
+      if(r){
+        if(q.type === 'multiple-choice' && r.selectedOptionId) answered = true;
+        else if(q.type === 'true-false' && r.answerText) answered = true;
+        else if(String(r.answerText || '').trim()) answered = true;
+      }
+      const cls = ['nav-dot', answered ? 'answered' : '', page === state.page ? 'active' : '']
+        .filter(Boolean).join(' ');
+      return `<button class="${cls}" data-goto-page="${page}" title="Question ${i+1}">${i+1}</button>`;
+    }).join('');
+  }
+
+  function updateProgress(){
+    const responses = E.responsesForAttempt(attempt.id);
+    let answered = 0;
+    allQuestions.forEach(q => {
+      const r = responses.find(x => x.questionId === q.id);
+      if(!r) return;
+      if(q.type === 'multiple-choice' && r.selectedOptionId) answered++;
+      else if(q.type === 'true-false' && r.answerText) answered++;
+      else if(String(r.answerText || '').trim()) answered++;
+    });
+    const ac = document.getElementById('answeredCount');
+    if(ac) ac.textContent = answered;
+    const pct = allQuestions.length ? Math.round(answered / allQuestions.length * 100) : 0;
+    const bar = document.getElementById('pagerBar');
+    if(bar) bar.style.width = pct + '%';
+  }
+
+  /* ---------- PAGINATION ---------- */
+  function bindPagination(){
+    document.getElementById('prevPageBtn').addEventListener('click', () => {
+      if(state.page > 1){ state.page--; paintPage(); paintNavDots(); }
+    });
+    document.getElementById('nextPageBtn').addEventListener('click', () => {
+      if(state.page < totalPages){ state.page++; paintPage(); paintNavDots(); }
+    });
+    document.getElementById('navDots').addEventListener('click', e => {
+      const btn = e.target.closest('[data-goto-page]');
+      if(!btn) return;
+      state.page = Number(btn.dataset.gotoPage);
+      paintPage(); paintNavDots();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  /* ---------- SAVE INDIVIDUAL ANSWERS ---------- */
+  function saveResponse(questionId, partial){
+    const q = allQuestions.find(x => x.id === questionId);
+    if(!q) return;
+    const resp = Object.assign({ attemptId: attempt.id, questionId }, partial);
+    const grading = E.gradeResponse(q, resp);
+    resp.isCorrect = grading.isCorrect;
+    resp.awardedPoints = grading.awardedPoints;
+    E.saveResponse(resp);
+    updateProgress();
+    paintNavDots();
+  }
+
+  function bindQuestionEvents(){
+    const qArea = document.getElementById('qArea');
+
+    qArea.addEventListener('click', e => {
+      const mcq = e.target.closest('[data-opt-for]');
+      if(mcq){
+        const qid = mcq.dataset.optFor;
+        const oid = mcq.dataset.optId;
+        qArea.querySelectorAll(`[data-opt-for="${qid}"]`)
+          .forEach(el => el.classList.toggle('selected', el === mcq));
+        saveResponse(qid, { selectedOptionId: oid });
+        return;
+      }
+      const tf = e.target.closest('[data-tf-for]');
+      if(tf){
+        const qid = tf.dataset.tfFor;
+        const val = tf.dataset.tfVal;
+        qArea.querySelectorAll(`[data-tf-for="${qid}"]`)
+          .forEach(el => el.classList.toggle('selected', el === tf));
+        saveResponse(qid, { answerText: val });
+      }
+    });
+
+    qArea.addEventListener('input', e => {
+      const num = e.target.closest('[data-num-for]');
+      if(num){ saveResponse(num.dataset.numFor, { answerText: num.value }); return; }
+      const txt = e.target.closest('[data-text-for]');
+      if(txt){ saveResponse(txt.dataset.textFor, { answerText: txt.value }); }
+    });
+  }
+
+  /* ---------- TIMER ---------- */
+  let timerHandle = null;
+  let finalized = false;
+  function startTimer(){
+    const el = document.getElementById('timer');
+    function tick(){
+      const remaining = remainingSeconds();
+      el.textContent = fmtTime(remaining);
+      el.classList.remove('warning','danger');
+      if(remaining <= 60) el.classList.add('danger');
+      else if(remaining <= 300) el.classList.add('warning');
+      if(remaining <= 0){
+        clearInterval(timerHandle);
+        finalizeSubmit(true);
+      }
+    }
+    tick();
+    timerHandle = setInterval(tick, 1000);
+  }
+
+  /* ---------- LEAVE GUARD ---------- */
+  function installLeaveGuard(){
+    document.addEventListener('visibilitychange', () => {
+      if(document.hidden && !finalized){
+        attempt.suspicionEvents = (attempt.suspicionEvents || 0) + 1;
+        E.saveAttempt(attempt);
+        const banner = document.getElementById('warningBanner');
+        const cnt = document.getElementById('switchCount');
+        if(banner){ banner.style.display = 'flex'; cnt.textContent = attempt.suspicionEvents; }
+        finalizeSubmit(true, 'left the quiz page while it was in progress');
+      }
+    });
+    window.addEventListener('pagehide', () => {
+      if(!finalized){
+        try{ finalizeSubmit(true, 'left the quiz page while it was in progress'); }catch(e){}
+      }
+    });
+    window.addEventListener('beforeunload', (e) => {
+      if(!finalized){
+        try{ finalizeSubmit(true, 'left the quiz page while it was in progress'); }catch(err){}
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
+    });
+  }
+
+  /* ---------- SUBMIT ---------- */
+  function bindSubmitEvents(){
+    document.getElementById('submitBtn').addEventListener('click', () => {
+      const responses = E.responsesForAttempt(attempt.id);
+      let answered = 0;
+      allQuestions.forEach(q => {
+        const r = responses.find(x => x.questionId === q.id);
+        if(!r) return;
+        if(String(r.selectedOptionId || r.answerText || '').trim()) answered++;
+      });
+      const unanswered = allQuestions.length - answered;
+      E.confirmModal({
+        title: 'Submit your quiz?',
+        message: `
+          You have answered <strong>${answered}</strong> of <strong>${allQuestions.length}</strong> questions.
+          ${unanswered > 0 ? `<br><br><span style="color:#d64545">${unanswered} question(s) unanswered will be scored as 0.</span>` : ''}
+          <br><br><strong>Once submitted, you cannot change your answers or retake the quiz.</strong>
+        `,
+        submitText: 'Submit'
+      }).then(ok => { if(ok) finalizeSubmit(false); });
+    });
+  }
+
+  function finalizeSubmit(auto, reason){
+    if(finalized) return;
+    finalized = true;
+    clearInterval(timerHandle);
+
+    E.submitAttempt(attempt.id, !!auto);
+    const at = E.getQuizAttempts().find(a => a.id === attempt.id);
+    if(at){
+      at.autoSubmitted = !!auto;
+      if(auto){
+        at.note = reason || 'Auto-submitted.';
+        at.abandonedAt = new Date().toISOString();
+      }
+      E.saveAttempt(at);
+    }
+    E.audit('update', `Quiz ${quiz.title} submitted`, '', auto ? 'auto' : 'manual');
+
+    try{
+      window.location.href = 'quiz-results.html?attempt=' + encodeURIComponent(attempt.id);
+    }catch(e){}
+  }
+
+  /* ---------- INIT ---------- */
+  paintHeader();
+  paintShell();
+})();
+</script>
+</body>
+</html>
