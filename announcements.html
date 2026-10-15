@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Announcements | EduCore</title>
+<style>
+  :root{
+    --navy:#12315a;--navy2:#14213d;--blue:#3987ee;--pale:#eef5ff;--border:#d8e4f2;
+    --text:#23354d;--muted:#73849a;--green:#14805e;--orange:#d88922;--red:#d64545;
+    --gold:#c99a2e;--gold2:#fff4d6;--bg:#f5f7fb;--line:#e8ebf2;--white:#fff;
+    --shadow:0 8px 24px rgba(24,42,78,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:64px 16px 40px;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+
+  .page{width:100%;max-width:1000px;margin:0 auto}
+
+  .band{
+    background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
+    border-radius:16px;padding:22px 28px;margin-bottom:20px;
+    box-shadow:0 18px 50px #16345417;display:flex;justify-content:space-between;
+    align-items:center;gap:16px;flex-wrap:wrap;border-top:5px solid #58a4ff;
+  }
+  .band-left{display:flex;align-items:center;gap:14px}
+  .band-logo{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;place-items:center;
+    overflow:hidden;color:var(--navy);font-weight:900;font-size:18px;border:3px solid #d8e8ff;flex:0 0 48px}
+  .band-logo img{width:100%;height:100%;object-fit:contain}
+  .band h1{margin:0;font-size:19px;letter-spacing:.3px;text-transform:uppercase}
+  .band p{margin:4px 0 0;font-size:11px;color:#cfdcf5}
+  .band-user{display:flex;align-items:center;gap:10px;font-size:11px;color:#cfdcf5;
+    background:#ffffff14;border:1px solid #ffffff36;padding:7px 12px;border-radius:20px}
+  .band-user strong{color:#fff}
+
+  .toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;
+    flex-wrap:wrap;margin-bottom:16px}
+  .toolbar-left{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .field{border:1px solid var(--line);border-radius:9px;padding:10px 12px;
+    background:#fff;color:var(--text);font-size:12px;outline:none;min-width:230px}
+  .field:focus{border-color:var(--blue)}
+
+  .btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{filter:brightness(.96)}
+  .btn.secondary{background:#eef2fb;color:#34415c}
+  .btn.outline{background:#fff;color:#34415c;border:1px solid var(--line)}
+  .btn.danger{background:#fff0f1;color:var(--red)}
+  .btn.green{background:#e6f7f0;color:#16835f}
+  .btn.warn{background:#fff2dd;color:#a86414}
+
+  .list{display:flex;flex-direction:column;gap:14px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);padding:22px 24px;position:relative;
+    border-left:4px solid var(--blue);overflow:hidden}
+  .card.pinned{border-left-color:var(--gold)}
+  .card.pinned::after{content:"📌 PINNED";position:absolute;top:14px;right:16px;
+    font-size:9px;font-weight:900;letter-spacing:1.2px;color:#8a6a1a;
+    background:var(--gold2);padding:4px 9px;border-radius:20px}
+  .card-top{display:flex;justify-content:space-between;align-items:flex-start;
+    gap:14px;flex-wrap:wrap;margin-bottom:10px}
+  .card h3{margin:0;font-size:15px;color:var(--navy)}
+  .card .meta{font-size:11px;color:var(--muted);margin-top:4px}
+  .card .meta strong{color:var(--text);font-weight:700}
+  .card .body{font-size:13px;line-height:1.75;color:#33415c;margin:12px 0 0;
+    white-space:pre-wrap}
+  .card .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:16px;
+    padding-top:14px;border-top:1px solid var(--line)}
+  .card .actions .btn{padding:8px 11px;font-size:11px}
+
+  .pill{display:inline-block;padding:5px 8px;border-radius:20px;font-size:10px;font-weight:700}
+  .pill.blue{background:#edf2ff;color:#3b5cc1}
+  .pill.gold{background:var(--gold2);color:#8a6a1a}
+  .pill.grey{background:#eef1f6;color:#59647c}
+
+  .empty-state{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);padding:60px 30px;text-align:center;color:var(--muted);font-size:13px}
+  .empty-state .icon{font-size:48px;margin-bottom:14px;opacity:.5}
+
+  .filter-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);
+    background:#fff;border-radius:20px;padding:7px 13px;font-size:11px;font-weight:700;
+    color:#34415c;cursor:pointer}
+  .filter-chip:hover{background:#f3f6fd}
+  .filter-chip.active{background:#14213d;color:#fff;border-color:#14213d}
+  .filter-chip .dot{width:6px;height:6px;border-radius:50%;background:#7a8498}
+  .filter-chip.active .dot{background:#fff}
+
+  @media (max-width:650px){
+    body{padding:64px 8px 24px}
+    .band{padding:18px 20px}
+    .band h1{font-size:15px}
+    .field{min-width:0;width:100%}
+    .toolbar{flex-direction:column;align-items:stretch}
+    .toolbar-left{width:100%}
+    .card{padding:18px 18px}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="band">
+    <div class="band-left">
+      <div class="band-logo" id="bandLogo">DS</div>
+      <div>
+        <h1 id="bandSchool">Announcements</h1>
+        <p id="bandSub">School updates for staff and students</p>
+      </div>
+    </div>
+    <div class="band-user">
+      Signed in as <strong id="bandUser">—</strong>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <input class="field" id="search" placeholder="Search title, message, or author...">
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="filter-chip active" data-filter="all"><span class="dot"></span> All</button>
+        <button class="filter-chip" data-filter="pinned"><span class="dot" style="background:#c99a2e"></span> Pinned</button>
+        <button class="filter-chip" data-filter="recent"><span class="dot" style="background:#3987ee"></span> This week</button>
+      </div>
+    </div>
+    <div class="toolbar-left">
+      <button class="btn" id="addBtn">＋ New announcement</button>
+    </div>
+  </div>
+
+  <div class="list" id="list"></div>
+
+</div>
+
+<script src="educore-shared.js"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  /* ---------- GUARD ---------- */
+  const user = E.requirePerm('announcements', 'Announcements');
+  if(!user) return;
+
+  /* ---------- SUB-FEATURE PERMISSIONS ---------- */
+  const canPublish = E.can('announcements.publish');
+  const canEdit    = E.can('announcements.edit');
+  const canDelete  = E.can('announcements.delete');
+  const canPin     = E.can('announcements.pin');
+
+  const hasAnyAction = canEdit || canDelete || canPin;
+
+  /* ---------- STATE ---------- */
+  const state = { filter: 'all' };
+
+  /* ---------- HEADER ---------- */
+  function paintHeader(){
+    const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const name = settings.name || 'EduCore High School';
+    if(settings.logo){
+      document.getElementById('bandLogo').innerHTML = `<img src="${settings.logo}" alt="">`;
+    } else {
+      document.getElementById('bandLogo').textContent =
+        name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
+    }
+    document.getElementById('bandSchool').textContent = name;
+    document.getElementById('bandSub').textContent = 'School updates for staff and students';
+    document.getElementById('bandUser').textContent = user.name || user.username;
+  }
+
+  /* ---------- HELPERS ---------- */
+  function isPinned(a){ return !!a.pinned; }
+  function isRecent(a){
+    if(!a.at) return false;
+    return (Date.now() - new Date(a.at).getTime()) < 7 * 24 * 60 * 60 * 1000;
+  }
+  function shortDate(iso){
+    if(!iso) return '';
+    try {
+      const diff = Date.now() - new Date(iso).getTime();
+      const mins = Math.floor(diff / 60000);
+      if(mins < 1) return 'just now';
+      if(mins < 60) return mins + ' min ago';
+      const hours = Math.floor(mins / 60);
+      if(hours < 24) return hours + ' hr ago';
+      const days = Math.floor(hours / 24);
+      if(days < 7) return days + ' day' + (days === 1 ? '' : 's') + ' ago';
+      return E.fmtDate(iso);
+    } catch(e){ return iso; }
+  }
+
+  /* ---------- RENDER ---------- */
+  function paintList(){
+    const announcements = E.readStore(E.STORE_KEYS.announcements, []) || [];
+    const q = document.getElementById('search').value.toLowerCase();
+
+    let arr = announcements.slice();
+    if(state.filter === 'pinned') arr = arr.filter(isPinned);
+    if(state.filter === 'recent') arr = arr.filter(isRecent);
+    if(q) arr = arr.filter(a => (`${a.title} ${a.body} ${a.author||''}`).toLowerCase().includes(q));
+
+    arr.sort((a,b) => {
+      if(isPinned(a) !== isPinned(b)) return isPinned(a) ? -1 : 1;
+      return new Date(b.at || 0) - new Date(a.at || 0);
+    });
+
+    const list = document.getElementById('list');
+
+    if(!arr.length){
+      list.innerHTML = `<div class="empty-state">
+        <div class="icon">📭</div>
+        ${q ? 'No announcements match your search.' : 'No announcements yet.'}
+        ${canPublish && !q ? '<div style="margin-top:16px"><button class="btn" onclick="document.getElementById(\'addBtn\').click()">＋ Write the first one</button></div>' : ''}
+      </div>`;
+      return;
+    }
+
+    list.innerHTML = arr.map(a => {
+      const id = a.id || ('a-' + btoa(a.title).replace(/[^a-z0-9]/gi,'').slice(0,8));
+      const pinnedClass = isPinned(a) ? 'pinned' : '';
+      const author = a.author ? `by <strong>${E.esc(a.author)}</strong>` : '';
+      const when = a.at ? shortDate(a.at) : (a.date || '');
+      const dateLine = [author, when].filter(Boolean).join(' · ');
+
+      /* Build the actions bar based on sub-permissions */
+      const bits = [];
+      if(canEdit) bits.push(`<button class="btn secondary" data-edit="${E.esc(id)}">Edit</button>`);
+      if(canPin)  bits.push(`<button class="btn ${isPinned(a)?'warn':'outline'}" data-pin="${E.esc(id)}">${isPinned(a) ? '📌 Unpin' : '📌 Pin'}</button>`);
+      if(canDelete) bits.push(`<button class="btn danger" data-delete="${E.esc(id)}">Delete</button>`);
+
+      const actionsHTML = bits.length
+        ? `<div class="actions">${bits.join(' ')}</div>`
+        : '';
+
+      return `<div class="card ${pinnedClass}" data-id="${E.esc(id)}">
+        <div class="card-top">
+          <div>
+            <h3>${E.esc(a.title)}</h3>
+            ${dateLine ? `<div class="meta">${dateLine}</div>` : ''}
+          </div>
+        </div>
+        <div class="body">${E.esc(a.body)}</div>
+        ${actionsHTML}
+      </div>`;
+    }).join('');
+  }
+
+  /* ---------- LOOKUP ---------- */
+  function findAnnouncement(id){
+    const list = E.readStore(E.STORE_KEYS.announcements, []) || [];
+    return list.find(a => {
+      const aid = a.id || ('a-' + btoa(a.title).replace(/[^a-z0-9]/gi,'').slice(0,8));
+      return aid === id;
+    });
+  }
+
+  /* ---------- OPEN EDITOR ---------- */
+  function openAnnouncementModal(existing){
+    if(existing && !canEdit){ E.toast("You don't have permission to edit announcements."); return; }
+    if(!existing && !canPublish){ E.toast("You don't have permission to publish announcements."); return; }
+
+    const a = existing || {};
+    const isNew = !existing;
+    const html = `
+      <div class="full"><label>Title</label>
+        <input name="title" required maxlength="120" value="${E.esc(a.title||'')}"
+          placeholder="e.g. Parent-teacher meeting">
+      </div>
+      <div class="full"><label>Message</label>
+        <textarea name="body" required rows="6" placeholder="Write the announcement...">${E.esc(a.body||'')}</textarea>
+      </div>
+      <div><label>Pin to top</label>
+        <select name="pinned">
+          <option value="">No</option>
+          <option value="1" ${a.pinned ? 'selected' : ''}>Yes — pin this announcement</option>
+        </select>
+      </div>
+      <div><label>Audience</label>
+        <select name="audience">
+          <option ${a.audience === 'All' ? 'selected' : ''}>All</option>
+          <option ${a.audience === 'Staff' ? 'selected' : ''}>Staff</option>
+          <option ${a.audience === 'Students' ? 'selected' : ''}>Students</option>
+          <option ${a.audience === 'Parents' ? 'selected' : ''}>Parents</option>
+        </select>
+      </div>`;
+
+    E.openModal(isNew ? 'New announcement' : 'Edit announcement', html,
+      isNew ? 'Publish' : 'Save changes',
+      d => {
+        const list = E.readStore(E.STORE_KEYS.announcements, []) || [];
+        if(isNew){
+          list.unshift({
+            id: 'an-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6),
+            title: d.title.trim(),
+            body: d.body.trim(),
+            audience: d.audience || 'All',
+            pinned: !!d.pinned,
+            author: user.name || user.username,
+            at: new Date().toISOString(),
+            date: new Date().toLocaleDateString()
+          });
+          E.audit('create', `Announcement`, '', d.title);
+        } else {
+          const target = list.find(x => {
+            const aid = x.id || ('a-' + btoa(x.title).replace(/[^a-z0-9]/gi,'').slice(0,8));
+            return aid === (existing.id || ('a-' + btoa(existing.title).replace(/[^a-z0-9]/gi,'').slice(0,8)));
+          });
+          if(!target) return;
+          target.title = d.title.trim();
+          target.body = d.body.trim();
+          target.audience = d.audience || 'All';
+          target.pinned = !!d.pinned;
+          target.updatedAt = new Date().toISOString();
+          E.audit('update', `Announcement`, '', d.title);
+        }
+        E.writeStore(E.STORE_KEYS.announcements, list);
+        E.closeModal();
+        paintList();
+        E.toast(isNew ? 'Announcement published.' : 'Announcement updated.');
+      }, true);
+  }
+
+  /* ---------- TOGGLE PIN ---------- */
+  function togglePin(id){
+    if(!canPin){ E.toast("You don't have permission to pin announcements."); return; }
+    const list = E.readStore(E.STORE_KEYS.announcements, []) || [];
+    const a = list.find(x => {
+      const aid = x.id || ('a-' + btoa(x.title).replace(/[^a-z0-9]/gi,'').slice(0,8));
+      return aid === id;
+    });
+    if(!a) return;
+    a.pinned = !a.pinned;
+    E.writeStore(E.STORE_KEYS.announcements, list);
+    E.audit('update', `Announcement pin`, '', a.pinned ? 'pinned' : 'unpinned');
+    paintList();
+    E.toast(a.pinned ? 'Pinned.' : 'Unpinned.');
+  }
+
+  /* ---------- DELETE ---------- */
+  function deleteAnnouncement(id){
+    if(!canDelete){ E.toast("You don't have permission to delete announcements."); return; }
+    const list = E.readStore(E.STORE_KEYS.announcements, []) || [];
+    const a = list.find(x => {
+      const aid = x.id || ('a-' + btoa(x.title).replace(/[^a-z0-9]/gi,'').slice(0,8));
+      return aid === id;
+    });
+    if(!a) return;
+    if(!confirm(`Delete this announcement?\n\n"${a.title}"\n\nThis cannot be undone.`)) return;
+
+    const remaining = list.filter(x => {
+      const aid = x.id || ('a-' + btoa(x.title).replace(/[^a-z0-9]/gi,'').slice(0,8));
+      return aid !== id;
+    });
+    E.writeStore(E.STORE_KEYS.announcements, remaining);
+    E.audit('delete', `Announcement`, a.title, '');
+    paintList();
+    E.toast('Announcement deleted.');
+  }
+
+  /* ---------- EVENTS ---------- */
+  document.getElementById('search').addEventListener('input', paintList);
+  document.getElementById('addBtn').addEventListener('click', () => {
+    if(!canPublish){ E.toast("You don't have permission to publish announcements."); return; }
+    openAnnouncementModal(null);
+  });
+
+  document.querySelectorAll('.filter-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c === chip));
+      state.filter = chip.dataset.filter;
+      paintList();
+    });
+  });
+
+  document.getElementById('list').addEventListener('click', e => {
+    const edit = e.target.closest('[data-edit]');
+    const pin  = e.target.closest('[data-pin]');
+    const del  = e.target.closest('[data-delete]');
+    if(edit){
+      const a = findAnnouncement(edit.dataset.edit);
+      if(a) openAnnouncementModal(a);
+    }
+    if(pin) togglePin(pin.dataset.pin);
+    if(del) deleteAnnouncement(del.dataset.delete);
+  });
+
+  /* ---------- INIT ---------- */
+  paintHeader();
+  paintList();
+  if(!canPublish) document.getElementById('addBtn').style.display = 'none';
+})();
+</script>
+</body>
+</html>

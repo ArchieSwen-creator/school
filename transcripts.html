@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transcripts | EduCore</title>
+<style>
+  :root{
+    --navy:#12315a;--navy2:#14213d;--blue:#3987ee;--pale:#eef5ff;--border:#d8e4f2;
+    --text:#23354d;--muted:#73849a;--green:#14805e;--orange:#d88922;--red:#d64545;
+    --gold:#c99a2e;--gold2:#fff4d6;--bg:#f5f7fb;--line:#e8ebf2;--white:#fff;
+    --shadow:0 8px 24px rgba(24,42,78,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:64px 16px 40px;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+
+  .page{width:100%;max-width:1200px;margin:0 auto}
+
+  .band{
+    background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
+    border-radius:16px;padding:22px 28px;margin-bottom:20px;
+    box-shadow:0 18px 50px #16345417;display:flex;justify-content:space-between;
+    align-items:center;gap:16px;flex-wrap:wrap;border-top:5px solid #58a4ff;
+  }
+  .band-left{display:flex;align-items:center;gap:14px}
+  .band-logo{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;place-items:center;
+    overflow:hidden;color:var(--navy);font-weight:900;font-size:18px;border:3px solid #d8e8ff;flex:0 0 48px}
+  .band-logo img{width:100%;height:100%;object-fit:contain}
+  .band h1{margin:0;font-size:19px;letter-spacing:.3px;text-transform:uppercase}
+  .band p{margin:4px 0 0;font-size:11px;color:#cfdcf5}
+  .band-user{display:flex;align-items:center;gap:10px;font-size:11px;color:#cfdcf5;
+    background:#ffffff14;border:1px solid #ffffff36;padding:7px 12px;border-radius:20px}
+  .band-user strong{color:#fff}
+
+  .flow-strip{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);padding:16px 20px;margin-bottom:16px;
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .flow-strip .step{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+  .flow-strip .step .num{width:24px;height:24px;border-radius:50%;background:#eef2fb;
+    color:#34415c;display:grid;place-items:center;font-weight:800;font-size:11px}
+  .flow-strip .step.active{color:var(--navy);font-weight:800}
+  .flow-strip .step.active .num{background:var(--navy);color:#fff}
+  .flow-strip .arrow{color:#c5cee0;font-size:14px}
+
+  .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:16px 18px;
+    box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--blue)}
+  .stat.orange::before{background:var(--orange)}
+  .stat.green::before{background:var(--green)}
+  .stat.red::before{background:var(--red)}
+  .stat small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.8px;
+    color:var(--muted);font-weight:800;margin-bottom:8px}
+  .stat strong{font-size:22px;color:var(--navy);font-weight:800}
+
+  .toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;
+    flex-wrap:wrap;margin-bottom:16px}
+  .toolbar-left{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .field,.pick{border:1px solid var(--line);border-radius:9px;padding:10px 12px;
+    background:#fff;color:var(--text);font-size:12px;outline:none}
+  .field{min-width:230px}
+  .field:focus,.pick:focus{border-color:var(--blue)}
+
+  .btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{filter:brightness(.96)}
+  .btn.secondary{background:#eef2fb;color:#34415c}
+  .btn.outline{background:#fff;color:#34415c;border:1px solid var(--line)}
+  .btn.danger{background:#fff0f1;color:var(--red)}
+  .btn.green{background:#e6f7f0;color:#16835f}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);overflow:hidden}
+  .card-head{display:flex;justify-content:space-between;align-items:center;
+    padding:18px 22px;border-bottom:1px solid var(--line);gap:12px;flex-wrap:wrap}
+  .card-head h3{margin:0;font-size:14px}
+  .card-head .count{padding:4px 9px;border-radius:20px;background:#edf2ff;color:#3b5cc1;
+    font-size:10px;font-weight:800}
+
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;white-space:nowrap}
+  th{text-align:left;background:#fafbfe;color:#7a8498;font-size:10px;
+    text-transform:uppercase;letter-spacing:.6px;padding:13px 18px;
+    border-bottom:1px solid var(--line)}
+  td{padding:13px 18px;border-bottom:1px solid #f0f2f7;font-size:12px}
+  tbody tr:last-child td{border-bottom:0}
+
+  .person{display:flex;align-items:center;gap:10px}
+  .mini-avatar{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;
+    background:#edf2ff;color:#3859b7;font-size:10px;font-weight:700}
+  .person strong{display:block;font-size:12px}
+  .person small{display:block;color:var(--muted);font-size:10px;margin-top:4px}
+
+  .pill{display:inline-block;padding:5px 8px;border-radius:20px;font-size:10px;font-weight:700}
+  .pill.green{background:#e6f7f0;color:#16835f}
+  .pill.orange{background:#fff2dd;color:#aa6c14}
+  .pill.red{background:#ffeaec;color:#bd3b48}
+  .pill.blue{background:#edf2ff;color:#3b5cc1}
+  .pill.grey{background:#eef1f6;color:#59647c}
+
+  .row-actions{display:flex;gap:5px;flex-wrap:wrap}
+  .row-actions .btn{padding:7px 10px;font-size:11px}
+
+  .empty{padding:40px 20px;text-align:center;color:var(--muted);font-size:13px}
+  .purpose-cell{max-width:260px;white-space:normal;font-size:11px;color:#54637d;line-height:1.5}
+
+  @media (max-width:850px){
+    .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .flow-strip{font-size:11px;padding:12px 14px}
+  }
+  @media (max-width:650px){
+    body{padding:64px 8px 24px}
+    .band{padding:18px 20px}
+    .band h1{font-size:15px}
+    .field,.pick{min-width:0;width:100%}
+    .toolbar{flex-direction:column;align-items:stretch}
+    .toolbar-left{width:100%}
+    .stats{grid-template-columns:1fr}
+    .flow-strip .arrow{display:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="band">
+    <div class="band-left">
+      <div class="band-logo" id="bandLogo">DS</div>
+      <div>
+        <h1 id="bandSchool">Transcripts</h1>
+        <p id="bandSub">Request, approve, and issue cumulative academic transcripts</p>
+      </div>
+    </div>
+    <div class="band-user">
+      Signed in as <strong id="bandUser">—</strong>
+    </div>
+  </div>
+
+  <div class="flow-strip">
+    <div class="step" id="flowPending"><span class="num">1</span><span>Requested</span></div>
+    <span class="arrow">→</span>
+    <div class="step" id="flowApproved"><span class="num">2</span><span>Approved</span></div>
+    <span class="arrow">→</span>
+    <div class="step" id="flowIssued"><span class="num">3</span><span>Issued &amp; printable</span></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><small>Total requests</small><strong id="kTotal">0</strong></div>
+    <div class="stat orange"><small>Pending</small><strong id="kPending">0</strong></div>
+    <div class="stat green"><small>Approved (awaiting issue)</small><strong id="kApproved">0</strong></div>
+    <div class="stat red"><small>Issued</small><strong id="kIssued">0</strong></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <input class="field" id="search" placeholder="Search student, purpose...">
+      <select class="pick" id="statusFilter">
+        <option value="">All statuses</option>
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="issued">Issued</option>
+        <option value="rejected">Rejected</option>
+      </select>
+    </div>
+    <div class="toolbar-left">
+      <button class="btn" id="addBtn">＋ Request transcript</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h3>Transcript requests <span class="count" id="count">0</span></h3>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Purpose</th>
+            <th>Requested by</th>
+            <th>Requested</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script src="educore-shared.js"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  /* ---------- GUARD ---------- */
+  const user = E.requirePerm('transcripts', 'Transcripts');
+  if(!user) return;
+
+  /* ---------- SUB-FEATURE PERMISSIONS ---------- */
+  const canRequest = E.can('transcripts.request');
+  const canApprove = E.can('transcripts.approve');
+  const canReject  = E.can('transcripts.reject');
+  const canIssue   = E.can('transcripts.issue');
+  const canPrint   = E.can('transcripts.print');
+  const canDelete  = E.can('transcripts.delete');
+
+  /* ---------- HEADER ---------- */
+  function paintHeader(){
+    const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const name = settings.name || 'EduCore High School';
+    if(settings.logo){
+      document.getElementById('bandLogo').innerHTML = `<img src="${settings.logo}" alt="">`;
+    } else {
+      document.getElementById('bandLogo').textContent =
+        name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
+    }
+    document.getElementById('bandSchool').textContent = name;
+    document.getElementById('bandSub').textContent = 'Request, approve, and issue cumulative academic transcripts';
+    document.getElementById('bandUser').textContent = user.name || user.username;
+  }
+
+  /* ---------- STATUS PILL ---------- */
+  function statusPill(s){
+    const t = (s === 'issued')   ? 'green'
+            : (s === 'approved') ? 'blue'
+            : (s === 'pending')  ? 'orange'
+            : (s === 'rejected') ? 'red'
+            : 'grey';
+    const label = (s || '').charAt(0).toUpperCase() + (s || '').slice(1);
+    return `<span class="pill ${t}">${label}</span>`;
+  }
+
+  /* ---------- WORKFLOW STRIP ---------- */
+  function paintFlow(scoped){
+    const pending  = scoped.filter(t => t.status === 'pending').length;
+    const approved = scoped.filter(t => t.status === 'approved').length;
+    const issued   = scoped.filter(t => t.status === 'issued').length;
+    document.getElementById('flowPending').classList.toggle('active', pending > 0);
+    document.getElementById('flowApproved').classList.toggle('active', approved > 0);
+    document.getElementById('flowIssued').classList.toggle('active', issued > 0);
+  }
+
+  /* ---------- RENDER ---------- */
+  function paintTable(){
+    const list = E.readStore(E.STORE_KEYS.transcripts, []) || [];
+    const q = document.getElementById('search').value.toLowerCase();
+    const st = document.getElementById('statusFilter').value;
+
+    /* Scope by role */
+    let scoped = list;
+    if(user.role === 'Student'){
+      scoped = list.filter(t => t.studentId === user.linkedStudentId);
+    } else if(user.role === 'Parent'){
+      const ids = new Set(E.childrenOf(user).map(k => k.id));
+      scoped = list.filter(t => ids.has(t.studentId));
+    } else if(user.role === 'Teacher'){
+      const visible = new Set(E.visibleStudentsFor(user).map(s => s.id));
+      scoped = list.filter(t => visible.has(t.studentId));
+    }
+
+    const arr = scoped.filter(t =>
+      (!q || (`${t.studentName} ${t.studentId} ${t.purpose||''}`).toLowerCase().includes(q)) &&
+      (!st || t.status === st)
+    ).sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    document.getElementById('kTotal').textContent = scoped.length;
+    document.getElementById('kPending').textContent = scoped.filter(t => t.status === 'pending').length;
+    document.getElementById('kApproved').textContent = scoped.filter(t => t.status === 'approved').length;
+    document.getElementById('kIssued').textContent = scoped.filter(t => t.status === 'issued').length;
+
+    paintFlow(scoped);
+
+    const tb = document.getElementById('tbody');
+    tb.innerHTML = arr.map(t => {
+      /* Build actions based on sub-permissions */
+      const bits = [];
+      if(canApprove && t.status === 'pending') bits.push(`<button class="btn green" data-approve="${E.esc(t.id)}">✓ Approve</button>`);
+      if(canReject  && t.status === 'pending') bits.push(`<button class="btn danger" data-reject="${E.esc(t.id)}">Reject</button>`);
+      if(canIssue   && t.status === 'approved') bits.push(`<button class="btn" data-issue="${E.esc(t.id)}">Issue</button>`);
+      if(canPrint   && t.status === 'issued') bits.push(`<button class="btn secondary" data-print="${E.esc(t.id)}">🖶 Transcript</button>`);
+      if(canDelete  && t.status !== 'issued') bits.push(`<button class="btn danger" data-delete="${E.esc(t.id)}">Delete</button>`);
+
+      const actionCell = bits.length
+        ? `<td><div class="row-actions">${bits.join(' ')}</div></td>`
+        : `<td style="color:#c5cee0">—</td>`;
+
+      return `<tr>
+        <td>
+          <div class="person">
+            <div class="mini-avatar">${E.initials(t.studentName)}</div>
+            <div><strong>${E.esc(t.studentName)}</strong><small>${E.esc(t.studentId)}</small></div>
+          </div>
+        </td>
+        <td class="purpose-cell">${E.esc(t.purpose || '—')}</td>
+        <td>${E.esc(t.requestedBy || '—')}</td>
+        <td>${E.fmtDate(t.createdAt)}</td>
+        <td>${statusPill(t.status)}</td>
+        ${actionCell}
+      </tr>`;
+    }).join('') || '<tr><td colspan="6" class="empty">No transcript requests match your filters.</td></tr>';
+
+    document.getElementById('count').textContent = arr.length;
+  }
+
+  /* ---------- REQUEST MODAL ---------- */
+  function openRequestModal(){
+    if(!canRequest){ E.toast("You don't have permission to request transcripts."); return; }
+
+    const students = E.readStore(E.STORE_KEYS.students, []) || [];
+    if(!students.length){ E.toast('Add some students first.'); return; }
+
+    /* Students can only request for themselves */
+    const isStudent = user.role === 'Student';
+    const linkedId = user.linkedStudentId;
+
+    /* Parents can only request for their children */
+    const isParent = user.role === 'Parent';
+    const childIds = isParent ? E.childrenOf(user).map(k => k.id) : [];
+    const childSet = new Set(childIds);
+
+    let pool = students;
+    if(isStudent){
+      pool = students.filter(s => s.id === linkedId);
+    } else if(isParent){
+      pool = students.filter(s => childSet.has(s.id));
+    }
+
+    if(!pool.length){
+      E.toast('No eligible students for you to request a transcript for.');
+      return;
+    }
+
+    const studentOptions = pool.map(s =>
+      `<option value="${E.esc(s.id)}" ${s.id === linkedId ? 'selected' : ''}>${E.esc(s.name)} — ${E.esc(s.id)} (${E.esc(s.class)})</option>`).join('');
+
+    const html = `
+      <div class="full"><label>Student</label>
+        <select name="studentId" required ${(isStudent || pool.length === 1) ? 'disabled style="background:#f4f6fb;color:#7a8498"' : ''}>
+          ${studentOptions}
+        </select>
+        ${(isStudent || pool.length === 1) ? `<input type="hidden" name="studentId" value="${E.esc(pool[0].id)}">` : ''}
+      </div>
+      <div class="full"><label>Purpose</label>
+        <input name="purpose" required placeholder="e.g. University application, scholarship, visa">
+      </div>
+      <div class="full"><label>Send to (optional)</label>
+        <input name="sendTo" placeholder="Institution name / address">
+      </div>
+      <div class="full"><label>Notes for the office</label>
+        <textarea name="notes" rows="3" placeholder="Additional instructions..."></textarea>
+      </div>
+      <div class="full" style="font-size:11px;color:var(--muted);background:#f8faff;
+        border:1px solid var(--line);border-radius:8px;padding:10px 12px;line-height:1.6">
+        The request will be sent to the Principal for approval. Once approved, the Registrar can issue and print it.
+      </div>`;
+
+    E.openModal('Request transcript', html, 'Submit request', d => {
+      const sid = d.studentId || pool[0].id;
+      const s = students.find(x => x.id === sid);
+      if(!s){ E.toast('Pick a student.'); return; }
+      if(!d.purpose || !d.purpose.trim()){ E.toast('Enter a purpose.'); return; }
+
+      const list = E.readStore(E.STORE_KEYS.transcripts, []) || [];
+      list.push({
+        id: 'tr-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6),
+        studentId: s.id,
+        studentName: s.name,
+        className: s.class,
+        purpose: d.purpose.trim(),
+        sendTo: (d.sendTo || '').trim(),
+        notes: (d.notes || '').trim(),
+        requestedBy: user.username,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        approvedAt: null,
+        approvedBy: null,
+        issuedAt: null,
+        issuedBy: null
+      });
+      E.writeStore(E.STORE_KEYS.transcripts, list);
+      E.audit('create', `Transcript request ${s.id}`, '', d.purpose);
+      E.closeModal();
+      paintTable();
+      E.toast('Transcript requested.');
+    }, true);
+  }
+
+  /* ---------- APPROVE ---------- */
+  function approveTranscript(id){
+    if(!canApprove){ E.toast("You don't have permission to approve transcripts."); return; }
+    const list = E.readStore(E.STORE_KEYS.transcripts, []) || [];
+    const t = list.find(x => x.id === id);
+    if(!t) return;
+    if(!confirm(`Approve the transcript request for ${t.studentName}?\n\nPurpose: ${t.purpose}`)) return;
+    t.status = 'approved';
+    t.approvedAt = new Date().toISOString();
+    t.approvedBy = user.username;
+    E.writeStore(E.STORE_KEYS.transcripts, list);
+    E.audit('update', `Transcript ${t.studentId}`, 'pending', 'approved');
+    paintTable();
+    E.toast('Transcript approved — ready for issue.');
+  }
+
+  /* ---------- REJECT ---------- */
+  function rejectTranscript(id){
+    if(!canReject){ E.toast("You don't have permission to reject transcripts."); return; }
+    const list = E.readStore(E.STORE_KEYS.transcripts, []) || [];
+    const t = list.find(x => x.id === id);
+    if(!t) return;
+    const reason = prompt(`Reject this transcript request for ${t.studentName}?\n\nOptional reason:`);
+    if(reason === null) return;
+    t.status = 'rejected';
+    t.rejectedAt = new Date().toISOString();
+    t.rejectedBy = user.username;
+    t.rejectReason = reason || '';
+    E.writeStore(E.STORE_KEYS.transcripts, list);
+    E.audit('update', `Transcript ${t.studentId}`, 'pending', 'rejected');
+    paintTable();
+    E.toast('Transcript rejected.');
+  }
+
+  /* ---------- ISSUE ---------- */
+  function issueTranscript(id){
+    if(!canIssue){ E.toast("You don't have permission to issue transcripts."); return; }
+    const list = E.readStore(E.STORE_KEYS.transcripts, []) || [];
+    const t = list.find(x => x.id === id);
+    if(!t) return;
+    if(!confirm(`Issue the transcript for ${t.studentName}?\n\nThis will open it for printing and mark it as issued.`)) return;
+    t.status = 'issued';
+    t.issuedAt = new Date().toISOString();
+    t.issuedBy = user.username;
+    E.writeStore(E.STORE_KEYS.transcripts, list);
+    E.audit('update', `Transcript ${t.studentId}`, 'approved', 'issued');
+    paintTable();
+    window.open('transcript-print.html?id=' + encodeURIComponent(id), '_blank');
+    E.toast('Transcript issued.');
+  }
+
+  /* ---------- PRINT ---------- */
+  function printTranscript(id){
+    if(!canPrint){ E.toast("You don't have permission to print transcripts."); return; }
+    window.open('transcript-print.html?id=' + encodeURIComponent(id), '_blank');
+  }
+
+  /* ---------- DELETE ---------- */
+  function deleteTranscript(id){
+    if(!canDelete){ E.toast("You don't have permission to delete transcripts."); return; }
+    const list = E.readStore(E.STORE_KEYS.transcripts, []) || [];
+    const t = list.find(x => x.id === id);
+    if(!t) return;
+    if(!confirm(`Delete this transcript request?\n\n${t.studentName} · ${t.purpose}\n\nThis cannot be undone.`)) return;
+    const remaining = list.filter(x => x.id !== id);
+    E.writeStore(E.STORE_KEYS.transcripts, remaining);
+    E.audit('delete', `Transcript ${t.studentId}`, t.purpose, '');
+    paintTable();
+    E.toast('Request deleted.');
+  }
+
+  /* ---------- EVENTS ---------- */
+  document.getElementById('search').addEventListener('input', paintTable);
+  document.getElementById('statusFilter').addEventListener('change', paintTable);
+  document.getElementById('addBtn').addEventListener('click', openRequestModal);
+
+  document.getElementById('tbody').addEventListener('click', e => {
+    const approve = e.target.closest('[data-approve]');
+    const reject  = e.target.closest('[data-reject]');
+    const issue   = e.target.closest('[data-issue]');
+    const print   = e.target.closest('[data-print]');
+    const del     = e.target.closest('[data-delete]');
+    if(approve) approveTranscript(approve.dataset.approve);
+    if(reject)  rejectTranscript(reject.dataset.reject);
+    if(issue)   issueTranscript(issue.dataset.issue);
+    if(print)   printTranscript(print.dataset.print);
+    if(del)     deleteTranscript(del.dataset.delete);
+  });
+
+  /* ---------- INIT ---------- */
+  paintHeader();
+  paintTable();
+  if(!canRequest) document.getElementById('addBtn').style.display = 'none';
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Classes | EduCore</title>
+<style>
+  :root{
+    --navy:#12315a;--navy2:#14213d;--blue:#3987ee;--pale:#eef5ff;--border:#d8e4f2;
+    --text:#23354d;--muted:#73849a;--green:#14805e;--orange:#d88922;--red:#d64545;
+    --gold:#c99a2e;--gold2:#fff4d6;--bg:#f5f7fb;--line:#e8ebf2;--white:#fff;
+    --shadow:0 8px 24px rgba(24,42,78,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:64px 16px 40px;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+
+  .page{width:100%;max-width:1240px;margin:0 auto}
+
+  .band{
+    background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
+    border-radius:16px;padding:22px 28px;margin-bottom:20px;
+    box-shadow:0 18px 50px #16345417;display:flex;justify-content:space-between;
+    align-items:center;gap:16px;flex-wrap:wrap;border-top:5px solid #58a4ff;
+  }
+  .band-left{display:flex;align-items:center;gap:14px}
+  .band-logo{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;place-items:center;
+    overflow:hidden;color:var(--navy);font-weight:900;font-size:18px;border:3px solid #d8e8ff;flex:0 0 48px}
+  .band-logo img{width:100%;height:100%;object-fit:contain}
+  .band h1{margin:0;font-size:19px;letter-spacing:.3px;text-transform:uppercase}
+  .band p{margin:4px 0 0;font-size:11px;color:#cfdcf5}
+  .band-user{display:flex;align-items:center;gap:10px;font-size:11px;color:#cfdcf5;
+    background:#ffffff14;border:1px solid #ffffff36;padding:7px 12px;border-radius:20px}
+  .band-user strong{color:#fff}
+
+  .scope-note{background:#eef5ff;border:1px solid #c4d8f5;color:#2e4a7e;
+    border-radius:10px;padding:11px 16px;margin-bottom:16px;font-size:12px;line-height:1.6;
+    display:flex;gap:10px;align-items:flex-start}
+  .scope-note .icon{font-size:16px;flex:0 0 auto;padding-top:1px}
+
+  .toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;
+    flex-wrap:wrap;margin-bottom:16px}
+  .toolbar-left{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .field,.pick{border:1px solid var(--line);border-radius:9px;padding:10px 12px;
+    background:#fff;color:var(--text);font-size:12px;outline:none}
+  .field{min-width:230px}
+  .field:focus,.pick:focus{border-color:var(--blue)}
+
+  .btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{filter:brightness(.96)}
+  .btn.secondary{background:#eef2fb;color:#34415c}
+  .btn.outline{background:#fff;color:#34415c;border:1px solid var(--line)}
+  .btn.danger{background:#fff0f1;color:var(--red)}
+  .btn.green{background:#e6f7f0;color:#16835f}
+  .btn.warn{background:#fff2dd;color:#a86414}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+  .class-card{background:#fff;border:1px solid var(--line);border-radius:14px;
+    box-shadow:var(--shadow);padding:20px;display:flex;flex-direction:column}
+  .class-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .class-symbol{width:42px;height:42px;border-radius:12px;background:#edf2ff;color:#4565cf;
+    display:grid;place-items:center;font-weight:800;font-size:18px}
+  .class-card h3{font-size:16px;margin:0 0 6px;color:var(--navy)}
+  .class-card .sponsor{font-size:12px;color:var(--muted);margin:0 0 14px}
+  .class-card .sponsor strong{color:var(--text)}
+
+  .subj-tbl{width:100%;border-collapse:collapse;margin:6px 0 14px;font-size:11px}
+  .subj-tbl th{background:#f6f8fd;font-size:9px;padding:8px 10px;border-bottom:1px solid var(--line);
+    text-transform:uppercase;letter-spacing:.5px;color:#7a8498;text-align:left}
+  .subj-tbl td{padding:8px 10px;border-bottom:1px solid #f0f2f7;font-size:11px}
+  .subj-tbl tbody tr:last-child td{border-bottom:0}
+  .subj-tbl .unassigned{color:#c07d1d;font-style:italic}
+  .subj-tbl .load{text-align:right;color:var(--muted)}
+  .subj-tbl tr.you-teach{background:#fffbe6}
+  .subj-tbl tr.you-teach td:first-child{font-weight:800;color:var(--navy)}
+
+  .class-actions{display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid var(--line);
+    padding-top:12px;margin-top:auto}
+  .class-actions .btn{padding:8px 10px;font-size:11px}
+
+  .pill{display:inline-block;padding:5px 8px;border-radius:20px;font-size:10px;font-weight:700}
+  .pill.blue{background:#edf2ff;color:#3b5cc1}
+  .pill.gold{background:var(--gold2);color:#8a6a1a;font-weight:800}
+  .pill.yours{background:#fff2dd;color:#a86414;font-weight:800}
+  .pill.category{background:#eef7f3;color:#0f6b4b;font-weight:800;letter-spacing:.4px}
+  .pill.nursery{background:#fdeef6;color:#9c2a63;font-weight:800;letter-spacing:.4px}
+
+  .empty{padding:60px 20px;text-align:center;color:var(--muted);font-size:13px;
+    background:#fff;border:1px solid var(--line);border-radius:13px}
+  .empty-state{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);padding:60px 30px;text-align:center;color:var(--muted);font-size:13px}
+  .empty-state .icon{font-size:52px;margin-bottom:16px;opacity:.5;display:block}
+  .empty-state strong{display:block;color:var(--navy);font-size:16px;margin-bottom:8px}
+  .empty-state .hint{max-width:420px;margin:12px auto 0;line-height:1.7}
+
+  .subj-check{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--line);
+    border-radius:9px;margin-bottom:6px;cursor:pointer;background:#fbfcff}
+  .subj-check:hover{background:#f3f6fd}
+  .subj-check input{width:16px;height:16px}
+  .subj-check .meta{margin-left:auto;font-size:10px;color:var(--muted)}
+
+  /* Category group header in the grid */
+  .cat-group{margin-bottom:6px}
+  .cat-group-head{display:flex;align-items:center;gap:10px;margin:18px 0 10px;padding:0 4px}
+  .cat-group-head .ordinal{width:28px;height:28px;border-radius:8px;background:#eef2fb;color:#2f4d8a;
+    display:grid;place-items:center;font-weight:800;font-size:11px}
+  .cat-group-head strong{font-size:13px;color:var(--navy);letter-spacing:.3px}
+  .cat-group-head small{color:var(--muted);font-size:11px;margin-left:auto}
+
+  @media (max-width:850px){
+    .grid{grid-template-columns:1fr}
+  }
+  @media (max-width:650px){
+    body{padding:64px 8px 24px}
+    .band{padding:18px 20px}
+    .band h1{font-size:15px}
+    .field{min-width:0;width:100%}
+    .toolbar{flex-direction:column;align-items:stretch}
+    .toolbar-left{width:100%}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="band">
+    <div class="band-left">
+      <div class="band-logo" id="bandLogo">DS</div>
+      <div>
+        <h1 id="bandSchool">Classes</h1>
+        <p id="bandSub">Class registry, categories, sections, sponsors, and subject teachers</p>
+      </div>
+    </div>
+    <div class="band-user">
+      Signed in as <strong id="bandUser">—</strong>
+    </div>
+  </div>
+
+  <div id="scopeNote"></div>
+
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <input class="field" id="search" placeholder="Search class, sponsor, or category...">
+      <select class="pick" id="categoryFilter">
+        <option value="">All categories</option>
+      </select>
+      <select class="pick" id="semesterFilter">
+        <option value="1">Semester One</option>
+        <option value="2">Semester Two</option>
+      </select>
+    </div>
+    <div class="toolbar-left" id="addWrap">
+      <button class="btn" id="addBtn">＋ Add class</button>
+    </div>
+  </div>
+
+  <div id="gridWrap"></div>
+
+</div>
+
+<script src="educore-shared.js"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  /* ---------- GUARD ---------- */
+  const user = E.requirePerm('classes', 'Classes');
+  if(!user) return;
+
+  /* ---------- SCOPE ---------- */
+  const canSeeAll = (user.role === 'Principal' || user.role === 'Registrar');
+
+  /* ---------- SUB-FEATURE PERMISSIONS ---------- */
+  const canAdd            = canSeeAll && E.can('classes.add');
+  const canEdit           = canSeeAll && E.can('classes.add');
+  const canDelete         = canSeeAll && E.can('classes.delete');
+  const canManageSubjects = canSeeAll && E.can('classes.manage_subjects');
+  const canSponsorship    = E.can('teachers.sponsorship');
+
+  /* ---------- HEADER ---------- */
+  function paintHeader(){
+    const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const name = settings.name || 'EduCore High School';
+    if(settings.logo){
+      document.getElementById('bandLogo').innerHTML = `<img src="${settings.logo}" alt="">`;
+    } else {
+      document.getElementById('bandLogo').textContent =
+        name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
+    }
+    document.getElementById('bandSchool').textContent = name;
+    document.getElementById('bandSub').textContent = canSeeAll
+      ? 'Class registry, categories, sections, sponsors, and subject teachers'
+      : 'The classes you teach or sponsor';
+    document.getElementById('bandUser').textContent = user.name || user.username;
+  }
+
+  /* ---------- SCOPE NOTE ---------- */
+  function paintScopeNote(){
+    const el = document.getElementById('scopeNote');
+    if(canSeeAll){ el.innerHTML = ''; return; }
+    const tid = E.currentTeacherId();
+    const sponsored = tid ? E.sponsorClassOf(tid) : null;
+    const taught = E.assignmentsForTeacher(tid);
+    const classCount = new Set(taught.map(a => a.className)).size;
+
+    const lines = [];
+    if(classCount) lines.push(`you teach in <strong>${classCount}</strong> class${classCount===1?'':'es'}`);
+    if(sponsored) lines.push(`you sponsor <strong>${E.esc(sponsored)}</strong>`);
+
+    el.innerHTML = `
+      <div class="scope-note">
+        <span class="icon">📚</span>
+        <div>
+          <strong>You are viewing only the classes assigned to you.</strong>
+          ${lines.length
+            ? `Currently ${lines.join(' and ')}.`
+            : `You currently have no classes assigned. Ask the Registrar or Principal to assign you to classes and subjects.`}
+        </div>
+      </div>`;
+  }
+
+  /* ---------- SCOPE FILTER ---------- */
+  function scopedClasses(){
+    const all = E.getClasses();
+    if(canSeeAll) return all;
+    const visible = new Set(E.visibleClassNamesFor(user));
+    return all.filter(c => visible.has(c.name));
+  }
+
+  /* ---------- CATEGORY FILTER DROPDOWN ---------- */
+  function fillCategoryFilter(){
+    const sel = document.getElementById('categoryFilter');
+    sel.innerHTML = '<option value="">All categories</option>' +
+      E.CATEGORY_LIST.map(c => `<option>${E.esc(c)}</option>`).join('');
+  }
+
+  /* ---------- RENDER ---------- */
+  function paintGrid(){
+    const semester = Number(document.getElementById('semesterFilter').value) || 1;
+    const catFilter = document.getElementById('categoryFilter').value;
+    const q = document.getElementById('search').value.toLowerCase();
+    const allStudents = E.readStore(E.STORE_KEYS.students, []) || [];
+
+    const arr = scopedClasses().filter(c => {
+      const sponsor = E.classSponsor(c.name);
+      const hay = `${c.name} ${c.category||''} ${sponsor ? sponsor.name : ''} ${c.room||''}`.toLowerCase();
+      if(q && !hay.includes(q)) return false;
+      if(catFilter && c.category !== catFilter) return false;
+      return true;
+    });
+
+    const wrap = document.getElementById('gridWrap');
+
+    if(!arr.length && !canSeeAll){
+      wrap.innerHTML = `
+        <div class="empty-state">
+          <span class="icon">📚</span>
+          <strong>No assigned classes yet</strong>
+          <div class="hint">
+            You are not currently assigned to teach or sponsor any classes.
+            Once the Registrar or Principal assigns you to classes and subjects,
+            they will appear here.
+          </div>
+        </div>`;
+      return;
+    }
+
+    if(!arr.length){
+      wrap.innerHTML = `<div class="empty">No classes match your search.</div>`;
+      return;
+    }
+
+    /* Group by category, preserving CATEGORY_LIST order */
+    const groups = {};
+    arr.forEach(c => {
+      const key = c.category || '(No category)';
+      if(!groups[key]) groups[key] = [];
+      groups[key].push(c);
+    });
+
+    const orderedKeys = E.CATEGORY_LIST
+      .filter(k => groups[k])
+      .concat(Object.keys(groups).filter(k => !E.CATEGORY_LIST.includes(k)));
+
+    const sections = orderedKeys.map((catKey, idx) => {
+      const isNursery = E.isNurseryCategory(catKey);
+      const catPill = isNursery
+        ? `<span class="pill nursery">Letter grading</span>`
+        : `<span class="pill category">Numeric grading</span>`;
+      const cards = groups[catKey].map(c => buildClassCard(c, allStudents, semester)).join('');
+      return `
+        <div class="cat-group">
+          <div class="cat-group-head">
+            <span class="ordinal">${idx + 1}</span>
+            <strong>${E.esc(catKey)}</strong>
+            <span class="pill ${isNursery ? 'nursery' : 'category'}" style="margin-left:8px">${isNursery ? 'Letter' : 'Numeric'}</span>
+            <small>${groups[catKey].length} class${groups[catKey].length===1?'':'es'}</small>
+          </div>
+          <div class="grid">${cards}</div>
+        </div>`;
+    }).join('');
+
+    wrap.innerHTML = sections;
+  }
+
+  function buildClassCard(c, allStudents, semester){
+    const sponsor = E.classSponsor(c.name);
+    const roster = allStudents.filter(s => s.class === c.name).length;
+    const taught = canSeeAll ? [] : E.taughtSubjectsInClass(user, c.name);
+    const taughtSet = new Set(taught);
+    const isMySponsoredClass = !canSeeAll && E.isSponsorOfClass(user, c.name);
+    const catPillClass = E.isNurseryCategory(c.category) ? 'nursery' : 'category';
+
+    const subjectRows = (c.subjects||[]).map(code => {
+      const subjectName = E.subjectName(code);
+      const matching = E.getAssignments({ className: c.name, subject: code });
+      const teacherNames = matching.length
+        ? matching.map(a => {
+            const t = (E.readStore(E.STORE_KEYS.teachers, []) || []).find(x => x.id === a.teacherId);
+            return t ? t.name : a.teacherName;
+          }).join(', ')
+        : null;
+
+      const youTeach = taughtSet.has(subjectName) || taughtSet.has(code);
+      const rowClass = youTeach ? 'you-teach' : '';
+
+      return `<tr class="${rowClass}">
+        <td>${E.esc(subjectName)}</td>
+        <td>${teacherNames ? E.esc(teacherNames) : '<span class="unassigned">Unassigned</span>'}</td>
+        <td class="load">${matching[0]?.periodsPerWeek || '-'} p/w</td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--muted)">No subjects assigned</td></tr>';
+
+    const actionBits = [];
+    if(canManageSubjects) actionBits.push(`<button class="btn secondary" data-manage-subjects="${E.esc(c.name)}">Manage subjects</button>`);
+    if(canEdit) actionBits.push(`<button class="btn secondary" data-edit-class="${E.esc(c.name)}">Edit details</button>`);
+    if(sponsor && (canSeeAll || E.currentTeacherId() === sponsor.id)){
+      actionBits.push(`<button class="btn secondary" data-open-sponsor="${E.esc(sponsor.id)}">Sponsor's assignments</button>`);
+    }
+    if(canDelete) actionBits.push(`<button class="btn danger" data-delete-class="${E.esc(c.name)}">Delete class</button>`);
+
+    const actionBar = actionBits.length
+      ? `<div class="class-actions">${actionBits.join(' ')}</div>` : '';
+
+    const badges = [];
+    if(isMySponsoredClass) badges.push(`<span class="pill gold">👑 You sponsor this</span>`);
+    if(taught.length && !isMySponsoredClass) badges.push(`<span class="pill yours">📘 You teach ${taught.length} subject${taught.length===1?'':'s'}</span>`);
+    if(isMySponsoredClass && taught.length) badges.push(`<span class="pill yours">📘 You teach ${taught.length}</span>`);
+
+    return `<div class="class-card">
+      <div class="class-top">
+        <div class="class-symbol">▤</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+          ${badges.join(' ')}
+          <span class="pill ${catPillClass}">${E.esc(c.category || 'No category')}</span>
+          <span class="pill blue">${roster} student${roster===1?'':'s'}</span>
+        </div>
+      </div>
+      <h3>${E.esc(c.name)}</h3>
+      <p class="sponsor">
+        Class sponsor:
+        ${sponsor
+          ? `<strong>👑 ${E.esc(sponsor.name)}</strong>`
+          : '<span class="unassigned" style="color:#c07d1d;font-style:italic">Not assigned</span>'}
+      </p>
+
+      <table class="subj-tbl">
+        <thead><tr><th>Subject</th><th>Teacher(s)</th><th style="text-align:right">Load</th></tr></thead>
+        <tbody>${subjectRows}</tbody>
+      </table>
+
+      ${actionBar}
+    </div>`;
+  }
+
+  /* ---------- ADD / EDIT CLASS ---------- */
+  function openClassModal(existingName){
+    if(!canAdd){ E.toast("You don't have permission to add or edit classes."); return; }
+    const isNew = !existingName;
+    const c = isNew
+      ? { name:'', category:'', room:'', subjects:[] }
+      : E.classByName(existingName);
+    if(!c) return;
+
+    const subjects = E.getSubjects();
+    const subjOptions = subjects.map(x => `
+      <label class="subj-check">
+        <input type="checkbox" name="subject_${E.esc(x.code)}" value="${E.esc(x.code)}"
+          ${c.subjects.includes(x.code) ? 'checked' : ''}>
+        <span><strong>${E.esc(x.name)}</strong> <small style="color:#7a8498">(${E.esc(x.code)})</small></span>
+        <span class="meta">${E.esc(x.department||'')}</span>
+      </label>`).join('') || '<div style="color:#7a8498;font-size:12px;padding:8px">No subjects in registry yet. Add subjects first, then return here.</div>';
+
+    const html = `
+      <div><label>Class name</label>
+        <input name="name" required value="${E.esc(c.name)}"
+          ${isNew ? '' : 'readonly style="background:#f4f6fb;color:#7a8498"'}
+          placeholder="e.g. Grade 10A, Nursery B, K-1 A">
+        <small style="color:#7a8498;font-size:10px;display:block;margin-top:4px">
+          Free text — use this to name sections/streams (e.g. "Grade 10A").
+        </small>
+      </div>
+      <div><label>Class category</label>
+        <select name="category" required>
+          <option value="">— Pick a category —</option>
+          ${E.CATEGORY_LIST.map(cat => `<option ${c.category === cat ? 'selected' : ''}>${E.esc(cat)}</option>`).join('')}
+        </select>
+        <small style="color:#7a8498;font-size:10px;display:block;margin-top:4px">
+          Determines the grading scale. Nursery uses letters; K-1 through Grade 12 use numbers.
+        </small>
+      </div>
+      <div class="full"><label>Room</label>
+        <input name="room" value="${E.esc(c.room||'')}" placeholder="e.g. Room 10">
+      </div>
+      <div class="full"><label>Subjects offered</label>
+        <div style="max-height:280px;overflow-y:auto;margin-top:6px;padding-right:4px">
+          ${subjOptions}
+        </div>
+      </div>`;
+
+    E.openModal(isNew ? 'Add class' : `Edit class · ${c.name}`, html,
+      isNew ? 'Create class' : 'Save changes',
+      d => {
+        const chosen = Array.from(document.querySelectorAll('input[name^="subject_"]:checked')).map(x => x.value);
+        const list = E.getClasses();
+
+        if(!d.name || !d.name.trim()){ E.toast('Enter a class name.'); return; }
+        if(!d.category){ E.toast('Pick a class category.'); return; }
+
+        if(isNew){
+          if(list.some(x => x.name === d.name.trim())){ E.toast('That class name already exists.'); return; }
+          list.push({ name: d.name.trim(), category: d.category, room: (d.room||'').trim(), subjects: chosen });
+          E.audit('create', `Class ${d.name}`, '', `${d.category} · ${chosen.length} subjects`);
+        } else {
+          const target = list.find(x => x.name === existingName);
+          if(!target) return;
+          target.category = d.category;
+          target.room = (d.room||'').trim();
+          target.subjects = chosen;
+          E.audit('update', `Class ${existingName}`, '', `${d.category} · ${chosen.length} subjects`);
+        }
+        E.writeStore(E.STORE_KEYS.classes, list);
+        E.closeModal();
+        paintGrid();
+        E.toast('Class saved.');
+      }, true);
+  }
+
+  /* ---------- MANAGE SUBJECTS QUICK PICKER ---------- */
+  function openSubjectPicker(className){
+    if(!canManageSubjects){ E.toast("You don't have permission to manage class subjects."); return; }
+    const classes = E.getClasses();
+    const c = classes.find(x => x.name === className);
+    if(!c) return;
+    const subjects = E.getSubjects();
+    if(!subjects.length){ E.toast('Add some subjects first.'); return; }
+
+    const html = subjects.map(x => `
+      <label class="subj-check full">
+        <input type="checkbox" data-subj-check="${E.esc(x.code)}"
+          ${c.subjects.includes(x.code) ? 'checked' : ''}>
+        <span><strong>${E.esc(x.name)}</strong> <small style="color:#7a8498">(${E.esc(x.code)})</small></span>
+        <span class="meta">${E.esc(x.department||'')}</span>
+      </label>`).join('');
+
+    E.openModal(`Subjects for ${c.name}`,
+      `<div class="full"><label>Choose subjects offered in this class</label>${html}</div>`,
+      'Save subjects',
+      () => {
+        const chosen = Array.from(document.querySelectorAll('[data-subj-check]'))
+          .filter(x => x.checked).map(x => x.dataset.subjCheck);
+        c.subjects = chosen;
+        E.writeStore(E.STORE_KEYS.classes, classes);
+        E.audit('update', `Class ${c.name} subjects`, '', chosen.join(', '));
+        E.closeModal();
+        paintGrid();
+        E.toast('Class subjects saved.');
+      }, true);
+  }
+
+  /* ---------- DELETE CLASS ---------- */
+  function deleteClass(className){
+    if(!canDelete){ E.toast("You don't have permission to delete classes."); return; }
+    const roster = (E.readStore(E.STORE_KEYS.students, []) || []).filter(s => s.class === className).length;
+    const asn = E.getAssignments({ className }).length;
+    const sponsor = E.classSponsor(className);
+
+    if(roster > 0){
+      alert(`Cannot delete ${className} — ${roster} student${roster===1?'':'s'} are still enrolled.\n\nMove them to another class first.`);
+      return;
+    }
+
+    const lines = [];
+    if(asn) lines.push(`• teaching assignments: ${asn}`);
+    if(sponsor) lines.push(`• class sponsor: ${sponsor.name}`);
+
+    const msg = `Delete class ${className}?\n\n` +
+      (lines.length ? `This will also remove:\n${lines.join('\n')}\n\n` : '') +
+      `This action cannot be undone.`;
+    if(!confirm(msg)) return;
+
+    const typed = prompt(`Type the class name (${className}) to confirm:`);
+    if(typed !== className){ E.toast('Confirmation did not match.'); return; }
+
+    E.writeStore(E.STORE_KEYS.classes, E.getClasses().filter(x => x.name !== className));
+    E.writeStore(E.STORE_KEYS.assignments,
+      (E.readStore(E.STORE_KEYS.assignments, []) || []).filter(x => x.className !== className));
+
+    const sponsors = E.getSponsors();
+    delete sponsors[className];
+    E.writeStore(E.STORE_KEYS.sponsors, sponsors);
+
+    const structures = E.readStore(E.STORE_KEYS.feeStructures, {}) || {};
+    delete structures[className];
+    E.writeStore(E.STORE_KEYS.feeStructures, structures);
+
+    E.audit('delete', `Class ${className}`, '', '');
+    paintGrid();
+    E.toast(`Class ${className} deleted.`);
+  }
+
+  /* ---------- SPONSOR ASSIGNMENTS (read-only) ---------- */
+  function openSponsorAssignments(teacherId){
+    const teachers = E.readStore(E.STORE_KEYS.teachers, []) || [];
+    const t = teachers.find(x => x.id === teacherId);
+    if(!t) return;
+    if(!canSeeAll && E.currentTeacherId() !== teacherId){
+      E.toast("You can only view your own profile.");
+      return;
+    }
+    const asn = E.assignmentsForTeacher(teacherId);
+    const sponsored = E.sponsorClassOf(teacherId);
+
+    const rows = asn.length ? asn.map(a => `
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;
+        padding:10px 12px;background:#f8faff;border:1px solid var(--line);border-radius:9px;margin-bottom:8px">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--navy)">${E.esc(E.subjectName(a.subject))} · ${E.esc(a.className)}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:3px">${a.periodsPerWeek || '-'} periods/week</div>
+        </div>
+      </div>`).join('') : '<div class="empty" style="padding:16px">No assignments.</div>';
+
+    E.openModal(`${t.name} · teaching profile`,
+      `<div class="full">
+        ${sponsored ? `
+          <div style="padding:12px;background:linear-gradient(135deg,#fff9e6,#fef3d4);border:1px solid #e4cd86;
+            border-radius:10px;margin-bottom:12px">
+            <strong style="color:#8a6a1a">👑 Class Sponsor of ${E.esc(sponsored)}</strong>
+          </div>` : ''}
+        <label style="font-size:12px;color:#34415c;letter-spacing:.5px;text-transform:uppercase">Teaching assignments</label>
+        <div style="margin-top:8px">${rows}</div>
+      </div>`, null, null, true);
+  }
+
+  /* ---------- EVENTS ---------- */
+  document.getElementById('search').addEventListener('input', paintGrid);
+  document.getElementById('categoryFilter').addEventListener('change', paintGrid);
+  document.getElementById('semesterFilter').addEventListener('change', paintGrid);
+  document.getElementById('addBtn').addEventListener('click', () => openClassModal(null));
+
+  document.getElementById('gridWrap').addEventListener('click', e => {
+    const manage = e.target.closest('[data-manage-subjects]');
+    const edit   = e.target.closest('[data-edit-class]');
+    const del    = e.target.closest('[data-delete-class]');
+    const spon   = e.target.closest('[data-open-sponsor]');
+
+    if(manage) openSubjectPicker(manage.dataset.manageSubjects);
+    if(edit)   openClassModal(edit.dataset.editClass);
+    if(del)    deleteClass(del.dataset.deleteClass);
+    if(spon)   openSponsorAssignments(spon.dataset.openSponsor);
+  });
+
+  /* ---------- INIT ---------- */
+  paintHeader();
+  paintScopeNote();
+  fillCategoryFilter();
+  paintGrid();
+  if(!canAdd) document.getElementById('addWrap').style.display = 'none';
+})();
+</script>
+</body>
+</html>

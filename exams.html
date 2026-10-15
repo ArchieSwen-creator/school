@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exams & Results | EduCore</title>
+<style>
+  :root{
+    --navy:#12315a;--navy2:#14213d;--blue:#3987ee;--pale:#eef5ff;--border:#d8e4f2;
+    --text:#23354d;--muted:#73849a;--green:#14805e;--orange:#d88922;--red:#d64545;
+    --gold:#c99a2e;--gold2:#fff4d6;--bg:#f5f7fb;--line:#e8ebf2;--white:#fff;
+    --shadow:0 8px 24px rgba(24,42,78,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:64px 16px 40px;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+
+  .page{width:100%;max-width:1200px;margin:0 auto}
+
+  .band{
+    background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
+    border-radius:16px;padding:22px 28px;margin-bottom:20px;
+    box-shadow:0 18px 50px #16345417;display:flex;justify-content:space-between;
+    align-items:center;gap:16px;flex-wrap:wrap;border-top:5px solid #58a4ff;
+  }
+  .band-left{display:flex;align-items:center;gap:14px}
+  .band-logo{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;place-items:center;
+    overflow:hidden;color:var(--navy);font-weight:900;font-size:18px;border:3px solid #d8e8ff;flex:0 0 48px}
+  .band-logo img{width:100%;height:100%;object-fit:contain}
+  .band h1{margin:0;font-size:19px;letter-spacing:.3px;text-transform:uppercase}
+  .band p{margin:4px 0 0;font-size:11px;color:#cfdcf5}
+  .band-user{display:flex;align-items:center;gap:10px;font-size:11px;color:#cfdcf5;
+    background:#ffffff14;border:1px solid #ffffff36;padding:7px 12px;border-radius:20px}
+  .band-user strong{color:#fff}
+
+  .summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:16px 18px;
+    box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--blue)}
+  .stat.green::before{background:var(--green)}
+  .stat.red::before{background:var(--red)}
+  .stat.orange::before{background:var(--orange)}
+  .stat small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.8px;
+    color:var(--muted);font-weight:800;margin-bottom:8px}
+  .stat strong{font-size:24px;color:var(--navy);font-weight:800}
+
+  .toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;
+    flex-wrap:wrap;margin-bottom:16px}
+  .toolbar-left{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .field,.pick{border:1px solid var(--line);border-radius:9px;padding:10px 12px;
+    background:#fff;color:var(--text);font-size:12px;outline:none}
+  .field{min-width:230px}
+  .field:focus,.pick:focus{border-color:var(--blue)}
+
+  .btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{filter:brightness(.96)}
+  .btn.secondary{background:#eef2fb;color:#34415c}
+  .btn.outline{background:#fff;color:#34415c;border:1px solid var(--line)}
+  .btn.danger{background:#fff0f1;color:var(--red)}
+  .btn.green{background:#e6f7f0;color:#16835f}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);overflow:hidden}
+  .card-head{display:flex;justify-content:space-between;align-items:center;
+    padding:18px 22px;border-bottom:1px solid var(--line);gap:12px;flex-wrap:wrap}
+  .card-head h3{margin:0;font-size:14px}
+  .card-head .count{padding:4px 9px;border-radius:20px;background:#edf2ff;color:#3b5cc1;
+    font-size:10px;font-weight:800}
+
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;white-space:nowrap}
+  th{text-align:left;background:#fafbfe;color:#7a8498;font-size:10px;
+    text-transform:uppercase;letter-spacing:.6px;padding:13px 18px;
+    border-bottom:1px solid var(--line)}
+  td{padding:13px 18px;border-bottom:1px solid #f0f2f7;font-size:12px}
+  tbody tr:last-child td{border-bottom:0}
+
+  .person{display:flex;align-items:center;gap:10px}
+  .mini-avatar{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;
+    background:#edf2ff;color:#3859b7;font-size:10px;font-weight:700}
+  .person strong{display:block;font-size:12px}
+  .person small{display:block;color:var(--muted);font-size:10px;margin-top:4px}
+
+  .pill{display:inline-block;padding:5px 8px;border-radius:20px;font-size:10px;font-weight:700}
+  .pill.green{background:#e6f7f0;color:#16835f}
+  .pill.orange{background:#fff2dd;color:#aa6c14}
+  .pill.red{background:#ffeaec;color:#bd3b48}
+  .pill.blue{background:#edf2ff;color:#3b5cc1}
+  .pill.grey{background:#eef1f6;color:#59647c}
+
+  .score-cell{font-family:monospace;font-weight:700;color:var(--navy);font-size:13px}
+  .score-bar{height:6px;background:#eef1f7;border-radius:20px;overflow:hidden;width:60px;
+    display:inline-block;vertical-align:middle;margin-right:8px}
+  .score-bar span{display:block;height:100%;background:#3b82f6;border-radius:20px}
+  .score-bar span.green{background:#14805e}
+  .score-bar span.orange{background:#d88922}
+  .score-bar span.red{background:#d64545}
+
+  .row-actions{display:flex;gap:5px;flex-wrap:wrap}
+  .row-actions .btn{padding:7px 10px;font-size:11px}
+
+  .empty{padding:40px 20px;text-align:center;color:var(--muted);font-size:13px}
+
+  /* Friendly empty state for teachers with no assignments */
+  .empty-state{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);padding:60px 30px;text-align:center;color:var(--muted);font-size:13px}
+  .empty-state .icon{font-size:52px;margin-bottom:16px;opacity:.5;display:block}
+  .empty-state strong{display:block;color:var(--navy);font-size:16px;margin-bottom:8px}
+  .empty-state .hint{max-width:420px;margin:12px auto 0;line-height:1.7}
+
+  @media (max-width:850px){
+    .summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:650px){
+    body{padding:64px 8px 24px}
+    .band{padding:18px 20px}
+    .band h1{font-size:15px}
+    .field,.pick{min-width:0;width:100%}
+    .toolbar{flex-direction:column;align-items:stretch}
+    .toolbar-left{width:100%}
+    .summary-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="band">
+    <div class="band-left">
+      <div class="band-logo" id="bandLogo">DS</div>
+      <div>
+        <h1 id="bandSchool">Exams &amp; Results</h1>
+        <p id="bandSub">Enter and review examination scores</p>
+      </div>
+    </div>
+    <div class="band-user">
+      Signed in as <strong id="bandUser">—</strong>
+    </div>
+  </div>
+
+  <div id="pageBody"></div>
+
+</div>
+
+<script src="educore-shared.js"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  /* ---------- GUARD ---------- */
+  const user = E.requirePerm('exams', 'Exams & Results');
+  if(!user) return;
+
+  /* ---------- SUB-FEATURE PERMISSIONS ---------- */
+  const canAdd    = E.can('exams.add');
+  const canEdit   = E.can('exams.edit');
+  const canDelete = E.can('exams.delete');
+
+  /* ---------- HEADER ---------- */
+  function paintHeader(){
+    const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const name = settings.name || 'EduCore High School';
+    if(settings.logo){
+      document.getElementById('bandLogo').innerHTML = `<img src="${settings.logo}" alt="">`;
+    } else {
+      document.getElementById('bandLogo').textContent =
+        name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
+    }
+    document.getElementById('bandSchool').textContent = name;
+    document.getElementById('bandSub').textContent = 'Enter and review examination scores';
+    document.getElementById('bandUser').textContent = user.name || user.username;
+  }
+
+  /* ---------- TEACHER-AWARE SCOPE CHECK ----------
+     A teacher can only act on a result if:
+       - The student is in a class they teach (via assignments), AND
+       - The subject matches one of their assignments in that class.
+     Non-teachers (Registrar / Principal) can act on anything within scope. */
+  function teacherCanTouchResult(r){
+    if(user.role !== 'Teacher') return true;
+    return E.canEditSubject(user, r.class, r.subject);
+  }
+
+  /* ---------- FIRST PAINT: decide layout ---------- */
+  function paintPageShell(){
+    const isTeacher = user.role === 'Teacher';
+    const classes = E.visibleClassNamesFor(user);
+    const hasScope = !isTeacher || classes.length > 0;
+    const pageBody = document.getElementById('pageBody');
+
+    if(!hasScope){
+      /* Friendly empty state for teachers with no assignments */
+      pageBody.innerHTML = `
+        <div class="empty-state">
+          <span class="icon">📚</span>
+          <strong>No assigned subjects or classes yet</strong>
+          <div class="hint">
+            You haven't been assigned to any subjects or classes this term.
+            Once the Registrar or Principal assigns you to classes and subjects,
+            they will appear here and you'll be able to enter results.
+          </div>
+        </div>`;
+      return;
+    }
+
+    /* Normal layout */
+    pageBody.innerHTML = `
+      <div class="summary-grid">
+        <div class="stat"><small>Total results</small><strong id="kTotal">0</strong></div>
+        <div class="stat green"><small>Pass rate</small><strong id="kPass">0%</strong></div>
+        <div class="stat"><small>Class average</small><strong id="kAvg">—</strong></div>
+        <div class="stat orange"><small>Distinctions</small><strong id="kDist">0</strong></div>
+      </div>
+
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <input class="field" id="search" placeholder="Search student or subject...">
+          <select class="pick" id="classFilter"><option value="">All classes</option></select>
+          <select class="pick" id="termFilter">
+            <option value="">All terms</option>
+            <option>First Term</option>
+            <option>Second Term</option>
+            <option>Third Term</option>
+          </select>
+          <select class="pick" id="subjectFilter"><option value="">All subjects</option></select>
+        </div>
+        <div class="toolbar-left">
+          <button class="btn" id="addBtn">＋ Add result</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Examination results <span class="count" id="count">0</span></h3>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Class</th>
+                <th>Subject</th>
+                <th>Score</th>
+                <th>Grade</th>
+                <th>Term</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </div>`;
+
+    /* Populate filters */
+    fillFilters();
+    paintTable();
+
+    if(!canAdd) document.getElementById('addBtn').style.display = 'none';
+  }
+
+  /* ---------- FILTERS ---------- */
+  function fillFilters(){
+    const visible = E.visibleClassNamesFor(user);
+    const allClasses = (E.readStore(E.STORE_KEYS.classes, []) || []).map(c => c.name);
+    const classes = (user.role === 'Teacher' || user.role === 'Parent' || user.role === 'Student')
+      ? visible
+      : allClasses;
+
+    const classSel = document.getElementById('classFilter');
+    classSel.innerHTML = '<option value="">All classes</option>' +
+      classes.map(c => `<option>${E.esc(c)}</option>`).join('');
+
+    /* Subjects: teachers see only subjects they teach; others see all */
+    let subjList;
+    if(user.role === 'Teacher'){
+      const set = new Set();
+      visible.forEach(cls => {
+        E.taughtSubjectsInClass(user, cls).forEach(s => set.add(s));
+      });
+      subjList = Array.from(set).sort();
+    } else {
+      subjList = E.getSubjects().map(s => s.name);
+    }
+    const subjSel = document.getElementById('subjectFilter');
+    subjSel.innerHTML = '<option value="">All subjects</option>' +
+      subjList.map(s => `<option value="${E.esc(s)}">${E.esc(s)}</option>`).join('');
+  }
+
+  /* ---------- GRADE HELPERS ---------- */
+  function gradeClass(g){
+    return ({ A: 'green', B: 'blue', C: 'orange', D: 'orange', F: 'red' }[g] || 'blue');
+  }
+
+  /* ---------- RENDER ---------- */
+  function paintTable(){
+    const scope = E.visibleResultsFor(user);
+    const q  = document.getElementById('search').value.toLowerCase();
+    const cl = document.getElementById('classFilter').value;
+    const tm = document.getElementById('termFilter').value;
+    const sb = document.getElementById('subjectFilter').value;
+
+    const arr = scope.filter(r =>
+      (!q  || (`${r.student} ${r.subject}`).toLowerCase().includes(q)) &&
+      (!cl || r.class === cl) &&
+      (!tm || r.term === tm) &&
+      (!sb || r.subject === sb)
+    ).sort((a,b) => {
+      if(a.class !== b.class) return a.class.localeCompare(b.class);
+      if(a.student !== b.student) return a.student.localeCompare(b.student);
+      return a.subject.localeCompare(b.subject);
+    });
+
+    const total = arr.length;
+    const pass = arr.filter(r => Number(r.score) >= 50).length;
+    const dist = arr.filter(r => Number(r.score) >= 90).length;
+    const avg = total ? (arr.reduce((a,r) => a + Number(r.score||0), 0) / total) : null;
+    document.getElementById('kTotal').textContent = total;
+    document.getElementById('kPass').textContent = total ? Math.round(pass / total * 100) + '%' : '0%';
+    document.getElementById('kAvg').textContent = avg != null ? avg.toFixed(1) + '%' : '—';
+    document.getElementById('kDist').textContent = dist;
+
+    const tb = document.getElementById('tbody');
+    tb.innerHTML = arr.map(r => {
+      const g = E.grade(r.score);
+      const width = Math.max(4, Math.min(100, Number(r.score) || 0));
+      const barCls = ({ A:'green', B:'', C:'orange', D:'orange', F:'red' }[g] || '');
+
+      /* Per-row permission: teacher must teach this subject in this class */
+      const rowEditable = teacherCanTouchResult(r);
+      const showEdit = canEdit && rowEditable;
+      const showDel  = canDelete && rowEditable;
+
+      const actionCell = (showEdit || showDel)
+        ? `<td>
+             <div class="row-actions">
+               ${showEdit ? `<button class="btn secondary" data-edit="${E.esc(r.student)}|${E.esc(r.class)}|${E.esc(r.subject)}|${E.esc(r.term)}">Edit</button>` : ''}
+               ${showDel ? `<button class="btn danger" data-delete="${E.esc(r.student)}|${E.esc(r.class)}|${E.esc(r.subject)}|${E.esc(r.term)}">Delete</button>` : ''}
+             </div>
+           </td>`
+        : `<td style="color:#c5cee0" title="${rowEditable ? '' : 'You can only edit subjects you teach'}">—</td>`;
+
+      return `<tr>
+        <td>
+          <div class="person">
+            <div class="mini-avatar">${E.initials(r.student)}</div>
+            <div><strong>${E.esc(r.student)}</strong><small>${E.esc(r.class)}</small></div>
+          </div>
+        </td>
+        <td>${E.esc(r.class)}</td>
+        <td>${E.esc(r.subject)}</td>
+        <td>
+          <span class="score-bar"><span class="${barCls}" style="width:${width}%"></span></span>
+          <span class="score-cell">${r.score}%</span>
+        </td>
+        <td><span class="pill ${gradeClass(g)}">${g}</span></td>
+        <td>${E.esc(r.term)}</td>
+        ${actionCell}
+      </tr>`;
+    }).join('') || '<tr><td colspan="7" class="empty">No results match your filters.</td></tr>';
+
+    document.getElementById('count').textContent = arr.length + ' record' + (arr.length === 1 ? '' : 's');
+  }
+
+  /* ---------- ADD / EDIT SINGLE RESULT ---------- */
+  function openResultModal(key){
+    const terms = ['First Term','Second Term','Third Term'];
+
+    /* Scope students to those the teacher can see */
+    const allowedStudents = E.visibleStudentsFor(user);
+
+    if(!allowedStudents.length){
+      E.toast('You have no students in scope. Ask the Registrar to assign you to classes.');
+      return;
+    }
+
+    let existing = null;
+    if(key){
+      const [student, cls, subject, term] = key.split('|');
+      existing = E.visibleResultsFor(user).find(r =>
+        r.student === student && r.class === cls && r.subject === subject && r.term === term);
+      if(!existing) return;
+      /* Final sanity check for teachers */
+      if(user.role === 'Teacher' && !E.canEditSubject(user, existing.class, existing.subject)){
+        E.toast("You can only edit subjects you teach.");
+        return;
+      }
+    }
+
+    /* Student options: only students in scope. If editing, pre-select existing. */
+    const studentOptions = allowedStudents.map(s =>
+      `<option value="${E.esc(s.name)}|${E.esc(s.class)}"
+        ${existing && existing.student === s.name && existing.class === s.class ? 'selected' : ''}>
+        ${E.esc(s.name)} — ${E.esc(s.class)}
+      </option>`).join('');
+
+    /* Subject options: depend on the selected student's class. We render all possible,
+       then the JS filters them on student change. For teachers, only their taught subjects. */
+    let allSubjectNames = [];
+    if(user.role === 'Teacher'){
+      const set = new Set();
+      const classes = E.visibleClassNamesFor(user);
+      classes.forEach(cls => {
+        E.taughtSubjectsInClass(user, cls).forEach(s => set.add(s));
+      });
+      allSubjectNames = Array.from(set).sort();
+    } else {
+      allSubjectNames = E.getSubjects().map(s => s.name);
+    }
+
+    /* Build the subject list per student class. The modal filters them live. */
+    function subjectsForClass(className){
+      if(user.role === 'Teacher'){
+        return E.taughtSubjectsInClass(user, className);
+      }
+      /* Non-teachers: use the class's subjects if defined, else all registry subjects */
+      const cls = (E.readStore(E.STORE_KEYS.classes, []) || []).find(c => c.name === className);
+      if(cls && cls.subjects && cls.subjects.length){
+        return cls.subjects.map(code => E.subjectName(code));
+      }
+      return allSubjectNames;
+    }
+
+    const html = `
+      <div class="full"><label>Student</label>
+        <select name="studentKey" id="studentKey" required ${existing ? 'disabled style="background:#f4f6fb;color:#7a8498"' : ''}>
+          ${studentOptions}
+        </select>
+        ${existing ? `<input type="hidden" name="studentKey" value="${E.esc(existing.student)}|${E.esc(existing.class)}">` : ''}
+      </div>
+      <div><label>Subject</label>
+        <select name="subject" id="subjectSelect" required ${existing ? 'disabled style="background:#f4f6fb;color:#7a8498"' : ''}>
+          ${subjectsForClass(existing ? existing.class : allowedStudents[0].class).map(s =>
+            `<option ${existing && existing.subject === s ? 'selected' : ''}>${E.esc(s)}</option>`
+          ).join('')}
+        </select>
+        ${existing ? `<input type="hidden" name="subject" value="${E.esc(existing.subject)}">` : ''}
+      </div>
+      <div><label>Score (%)</label>
+        <input name="score" type="number" min="0" max="100" required
+          value="${existing ? existing.score : ''}" placeholder="0 – 100">
+      </div>
+      <div class="full"><label>Term</label>
+        <select name="term" required>
+          ${terms.map(t => `<option ${existing && existing.term === t ? 'selected' : ''}>${t}</option>`).join('')}
+        </select>
+      </div>`;
+
+    E.openModal(existing ? 'Edit result' : 'Add examination result', html, 'Save result', d => {
+      const score = Number(d.score);
+      if(!Number.isFinite(score) || score < 0 || score > 100){
+        E.toast('Enter a score between 0 and 100.');
+        return;
+      }
+
+      const [studentName, classFromKey] = (d.studentKey || '').split('|');
+      const students = E.readStore(E.STORE_KEYS.students, []) || [];
+      const st = students.find(s => s.name === studentName);
+      const cls = st ? st.class : (classFromKey || '');
+
+      /* Final permission gate for teachers */
+      if(user.role === 'Teacher' && !E.canEditSubject(user, cls, d.subject)){
+        E.toast("You can only enter scores for subjects you teach.");
+        return;
+      }
+
+      const results = E.readStore(E.STORE_KEYS.results, []) || [];
+
+      if(existing){
+        const target = results.find(r =>
+          r.student === existing.student && r.class === existing.class &&
+          r.subject === existing.subject && r.term === existing.term);
+        if(!target) return;
+        const before = target.score;
+        target.score = score;
+        E.audit('update', `${existing.student} · ${existing.subject} · ${existing.term}`, String(before), String(score));
+      } else {
+        const dup = results.find(r =>
+          r.student === studentName && r.class === cls &&
+          r.subject === d.subject && r.term === d.term);
+        if(dup){ E.toast('A result for that student, subject, and term already exists.'); return; }
+        results.push({ student: studentName, class: cls, subject: d.subject, score, term: d.term });
+        E.audit('create', `${studentName} · ${d.subject} · ${d.term}`, '', String(score));
+      }
+
+      E.writeStore(E.STORE_KEYS.results, results);
+      E.closeModal();
+      paintTable();
+      E.toast('Result saved.');
+    });
+
+    /* Live-update the subject dropdown when the student changes */
+    const studentSel = document.getElementById('studentKey');
+    const subjectSel = document.getElementById('subjectSelect');
+    if(studentSel && subjectSel && !existing){
+      studentSel.addEventListener('change', () => {
+        const [name, fromKey] = studentSel.value.split('|');
+        const cls = fromKey || (E.readStore(E.STORE_KEYS.students, []) || []).find(s => s.name === name)?.class || '';
+        const subjects = subjectsForClass(cls);
+        subjectSel.innerHTML = subjects.length
+          ? subjects.map(s => `<option>${E.esc(s)}</option>`).join('')
+          : '<option value="">— No subjects available —</option>';
+      });
+    }
+  }
+
+  /* ---------- DELETE RESULT ---------- */
+  function deleteResult(key){
+    const [student, cls, subject, term] = key.split('|');
+
+    if(user.role === 'Teacher' && !E.canEditSubject(user, cls, subject)){
+      E.toast("You can only delete results for subjects you teach.");
+      return;
+    }
+
+    if(!confirm(`Delete this result?\n\n${student} · ${subject} · ${term}`)) return;
+    let results = E.readStore(E.STORE_KEYS.results, []) || [];
+    const target = results.find(r => r.student === student && r.class === cls && r.subject === subject && r.term === term);
+    if(!target) return;
+    const before = target.score;
+    results = results.filter(r => !(r.student === student && r.class === cls && r.subject === subject && r.term === term));
+    E.writeStore(E.STORE_KEYS.results, results);
+    E.audit('delete', `${student} · ${subject} · ${term}`, String(before), '');
+    paintTable();
+    E.toast('Result deleted.');
+  }
+
+  /* ---------- EVENTS ---------- */
+  function bindEvents(){
+    document.getElementById('search').addEventListener('input', paintTable);
+    document.getElementById('classFilter').addEventListener('change', paintTable);
+    document.getElementById('termFilter').addEventListener('change', paintTable);
+    document.getElementById('subjectFilter').addEventListener('change', paintTable);
+    document.getElementById('addBtn').addEventListener('click', () => openResultModal(null));
+
+    document.getElementById('tbody').addEventListener('click', e => {
+      const edit = e.target.closest('[data-edit]');
+      const del  = e.target.closest('[data-delete]');
+      if(edit) openResultModal(edit.dataset.edit);
+      if(del)  deleteResult(del.dataset.delete);
+    });
+  }
+
+  /* ---------- INIT ---------- */
+  paintHeader();
+  paintPageShell();
+  if(document.getElementById('tbody')) bindEvents();
+})();
+</script>
+</body>
+</html>

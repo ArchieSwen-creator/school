@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gradesheet | EduCore</title>
+<style>
+  :root{
+    --navy:#12315a;--navy2:#14213d;--blue:#3987ee;--pale:#eef5ff;--border:#d8e4f2;
+    --text:#23354d;--muted:#73849a;--green:#14805e;--orange:#d88922;--red:#d64545;
+    --gold:#c99a2e;--gold2:#fff4d6;--line:#e8ebf2;
+    --shadow:0 8px 24px rgba(24,42,78,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:64px 16px 40px;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button,input,select{font:inherit}
+  button{cursor:pointer}
+  .page{width:100%;max-width:1320px;margin:0 auto}
+  .band{background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
+    border-radius:16px;padding:22px 28px;margin-bottom:20px;
+    box-shadow:0 18px 50px #16345417;display:flex;justify-content:space-between;
+    align-items:center;gap:16px;flex-wrap:wrap;border-top:5px solid #58a4ff}
+  .band-left{display:flex;align-items:center;gap:14px}
+  .band-logo{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;place-items:center;
+    overflow:hidden;color:var(--navy);font-weight:900;font-size:18px;border:3px solid #d8e8ff;flex:0 0 48px}
+  .band-logo img{width:100%;height:100%;object-fit:contain}
+  .band h1{margin:0;font-size:19px;letter-spacing:.3px;text-transform:uppercase}
+  .band p{margin:4px 0 0;font-size:11px;color:#cfdcf5}
+  .band-user{display:flex;align-items:center;gap:10px;font-size:11px;color:#cfdcf5;
+    background:#ffffff14;border:1px solid #ffffff36;padding:7px 12px;border-radius:20px}
+  .band-user strong{color:#fff}
+
+  .selector-strip{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);padding:18px 22px;margin-bottom:18px;
+    display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+  .sel-block{display:flex;flex-direction:column;gap:6px;min-width:0}
+  .sel-block label{font-size:10px;font-weight:800;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.8px}
+  .sel-block select,.sel-block input{border:1px solid var(--line);border-radius:9px;
+    padding:11px 12px;font-size:12px;background:#fff;outline:none;color:var(--text)}
+  .sel-block select:focus,.sel-block input:focus{border-color:var(--blue)}
+
+  .period-strip{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);padding:16px 22px;margin-bottom:18px;
+    display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+  .period-strip .left{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .period-chip{padding:8px 14px;border-radius:10px;background:#fff;color:#34415c;
+    font-size:11.5px;font-weight:700;border:1px solid var(--line);cursor:pointer}
+  .period-chip:hover{background:#f6f9ff}
+  .period-chip.active{background:#eaf2ff;color:#1d4d82;border-color:#b9d1f6}
+  .period-chip.has-data::after{content:"●";margin-left:6px;color:#1c9b72;font-size:9px}
+  .period-chip.exam{background:#fff9ec;border-color:#f3d999}
+  .period-chip.exam.active{background:#fff4d6;color:#8a6a1a;border-color:#e4cd86}
+
+  .meta-bar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;font-size:11px}
+  .meta-chip{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;
+    background:#fff;border:1px solid var(--line);border-radius:20px;color:#34415c;font-weight:700}
+  .meta-chip .dot{width:7px;height:7px;border-radius:50%;background:#94a3b8}
+  .meta-chip.cat-nursery .dot{background:#9c2a63}
+  .meta-chip.cat-numeric .dot{background:#0f6b4b}
+  .meta-chip.locked{background:#fff4d6;color:#8a6a1a;border-color:#e4cd86}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);overflow:hidden}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;white-space:nowrap}
+  th{text-align:left;background:#fafbfe;color:#7a8498;font-size:10px;
+    text-transform:uppercase;letter-spacing:.6px;padding:13px 18px;
+    border-bottom:1px solid var(--line)}
+  td{padding:11px 18px;border-bottom:1px solid #f0f2f7;font-size:12px}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:hover{background:#fbfdff}
+
+  .person{display:flex;align-items:center;gap:10px}
+  .mini-avatar{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;
+    background:#edf2ff;color:#3859b7;font-size:10px;font-weight:700}
+  .person strong{display:block;font-size:12px}
+  .person small{display:block;color:var(--muted);font-size:10px;margin-top:4px}
+
+  .score-input{width:90px;border:1px solid #dfe4ee;border-radius:7px;padding:8px 10px;
+    font-size:13px;text-align:center;font-family:monospace;font-weight:700;
+    color:var(--navy);outline:none;background:#fff}
+  .score-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(57,135,238,.12)}
+  .score-input.invalid{border-color:#d64545;background:#fff0f1}
+  .score-input:disabled{background:#f6f8fd;color:#94a3b8;cursor:not-allowed}
+  .score-input.letter{width:52px;text-transform:uppercase}
+
+  .score-readonly{display:inline-block;font-family:monospace;font-weight:800;font-size:13px;
+    color:var(--navy);min-width:60px;text-align:center;
+    padding:8px 10px;background:#f6f8fd;border-radius:7px}
+
+  .avg-cell{font-family:monospace;font-weight:800;color:var(--navy);font-size:13px;
+    display:inline-flex;align-items:center;gap:6px}
+  .grade-pill{display:inline-block;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:800}
+  .grade-pill.a{background:#e6f7f0;color:#16835f}
+  .grade-pill.b{background:#edf2ff;color:#3b5cc1}
+  .grade-pill.c{background:#fff2dd;color:#a86414}
+  .grade-pill.d{background:#fff2dd;color:#a86414}
+  .grade-pill.f{background:#ffeaec;color:#bd3b48}
+
+  .btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{filter:brightness(.96)}
+  .btn.green{background:#e6f7f0;color:#16835f}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  .save-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;
+    padding:16px 22px;background:#f8faff;border-top:1px solid var(--line);flex-wrap:wrap}
+  .save-bar .note{font-size:11.5px;color:var(--muted)}
+
+  .empty{padding:60px 30px;text-align:center;color:var(--muted);font-size:13px;
+    background:#fff;border:1px solid var(--line);border-radius:13px}
+  .empty .icon{font-size:48px;margin-bottom:14px;opacity:.5;display:block}
+
+  @media (max-width:900px){.selector-strip{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media (max-width:650px){
+    body{padding:64px 8px 24px}
+    .band{padding:18px 20px}
+    .band h1{font-size:15px}
+    .selector-strip{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="band">
+    <div class="band-left">
+      <div class="band-logo" id="bandLogo">EC</div>
+      <div>
+        <h1 id="bandSchool">Gradesheet</h1>
+        <p id="bandSub">Assessment scores</p>
+      </div>
+    </div>
+    <div class="band-user">Signed in as <strong id="bandUser">—</strong></div>
+  </div>
+
+  <div class="selector-strip">
+    <div class="sel-block"><label>Academic session</label><select id="yearSelect"></select></div>
+    <div class="sel-block"><label>Class</label><select id="classSelect"></select></div>
+    <div class="sel-block"><label>Subject</label><select id="subjectSelect"></select></div>
+    <div class="sel-block"><label>Semester</label>
+      <select id="semesterSelect">
+        <option value="1">Semester One</option>
+        <option value="2">Semester Two</option>
+      </select>
+    </div>
+    <div class="sel-block"><label>Assessment period</label><select id="periodSelect"></select></div>
+  </div>
+
+  <div class="period-strip">
+    <div class="left" id="periodChips"></div>
+    <div class="meta-bar" id="metaBar"></div>
+  </div>
+
+  <div id="pageBody"></div>
+
+</div>
+
+<script src="educore-shared.js"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  /* ---------- GUARD ---------- */
+  const user = E.requirePerm('exams', 'Gradesheet');
+  if(!user) return;
+
+  /* ---------- FEE THRESHOLD GATE (viewer-level) ---------- */
+  const gsAccess = E.viewerGradesheetAccess();
+  if(!gsAccess.allowed){
+    E.renderGradesheetLocked(gsAccess, 'Gradesheet');
+    return;
+  }
+
+  /* ---------- ROLE SCOPE ----------
+     Teacher / Principal / Registrar : full class roster, editable
+     Student / Parent                 : only their own (or their children's) rows, read-only
+  --------------------------------- */
+  const isStudent = user.role === 'Student';
+  const isParent  = user.role === 'Parent';
+  const isTeacher = user.role === 'Teacher';
+  const isStaff   = user.role === 'Principal' || user.role === 'Registrar';
+  const canEditAny = !isStudent && !isParent;   // students/parents never edit scores
+
+  /* ---------- SUB-FEATURE PERMISSIONS ---------- */
+  const canAdd  = E.can('exams.add');
+  const canEdit = E.can('exams.edit');
+  const canSave = canEditAny && (canAdd || canEdit);
+
+  /* ---------- HEADER ---------- */
+  function paintHeader(){
+    const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const name = settings.name || 'EduCore High School';
+    if(settings.logo){
+      document.getElementById('bandLogo').innerHTML = `<img src="${settings.logo}" alt="">`;
+    } else {
+      document.getElementById('bandLogo').textContent =
+        name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
+    }
+    document.getElementById('bandSchool').textContent = name;
+    document.getElementById('bandSub').textContent = isStudent
+      ? 'Your assessment scores'
+      : isParent
+      ? "Your children's assessment scores"
+      : 'Enter assessment scores period by period';
+    document.getElementById('bandUser').textContent = user.name || user.username;
+  }
+
+  /* ---------- STATE ---------- */
+  const state = {
+    year: E.currentAcademicYear(),
+    className: '', subject: '', semester: 1, period: 1,
+    marks: {}, original: {}, dirty: false
+  };
+
+  /* ============================================================
+     SCOPED STUDENT LIST
+     Returns the students this viewer is allowed to see in this class.
+     ============================================================ */
+  function scopedStudents(className){
+    const all = (E.readStore(E.STORE_KEYS.students, []) || [])
+      .filter(s => s.class === className)
+      .sort((a,b) => a.name.localeCompare(b.name));
+
+    if(isStudent){
+      return all.filter(s => s.id === user.linkedStudentId);
+    }
+    if(isParent){
+      const ids = new Set(E.childrenOf(user).map(k => k.id));
+      return all.filter(s => ids.has(s.id));
+    }
+    if(isTeacher){
+      /* Teacher: restrict to classes they teach — the class already
+         came from visibleClassNamesFor so we don't need to filter further. */
+      return all;
+    }
+    return all;  // Principal / Registrar
+  }
+
+  /* ---------- SELECTORS ---------- */
+  function fillYears(){
+    const s = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const year = s.academicYear || '2025/2026';
+    document.getElementById('yearSelect').innerHTML = `<option>${E.esc(year)}</option>`;
+    state.year = year;
+  }
+
+  function fillClasses(){
+    const sel = document.getElementById('classSelect');
+    let classes = E.visibleClassNamesFor(user);
+
+    /* Student: only their own class */
+    if(isStudent){
+      const me = (E.readStore(E.STORE_KEYS.students, []) || []).find(s => s.id === user.linkedStudentId);
+      classes = me ? [me.class] : [];
+    }
+
+    if(!classes.length){
+      sel.innerHTML = '<option value="">No classes available</option>';
+      sel.disabled = true;
+      return;
+    }
+    sel.disabled = false;
+    sel.innerHTML = classes.map(c => {
+      const cat = E.classCategoryFor(c);
+      return `<option value="${E.esc(c)}">${E.esc(c)}${cat ? ' — ' + E.esc(cat) : ''}</option>`;
+    }).join('');
+    const saved = sessionStorage.getItem('educoreGradesheetClass');
+    state.className = (saved && classes.includes(saved)) ? saved : classes[0];
+    sel.value = state.className;
+  }
+
+  function fillSubjects(){
+    const sel = document.getElementById('subjectSelect');
+    let subjectNames;
+    if(user.role === 'Teacher'){
+      subjectNames = Array.from(new Set(E.taughtSubjectsInClass(user, state.className)));
+    } else {
+      const cls = E.classByName(state.className);
+      if(cls && Array.isArray(cls.subjects) && cls.subjects.length){
+        subjectNames = cls.subjects.map(code => E.subjectName(code));
+      } else {
+        subjectNames = E.getSubjects().map(s => s.name);
+      }
+    }
+
+    /* Students/parents: only show subjects that have any recorded score
+       for their linked student(s) in this class — no empty subject list.
+       Fallback to the full list if nothing has been recorded yet. */
+    if((isStudent || isParent) && subjectNames.length){
+      const scoped = scopedStudents(state.className);
+      const namesSet = new Set(scoped.map(s => s.name));
+      const recorded = new Set();
+      (E.readStore(E.STORE_KEYS.results, []) || [])
+        .filter(r => r.class === state.className && namesSet.has(r.student))
+        .forEach(r => recorded.add(r.subject));
+      if(recorded.size){
+        subjectNames = subjectNames.filter(n => recorded.has(n));
+      }
+    }
+
+    if(!subjectNames.length){
+      sel.innerHTML = '<option value="">No subjects available</option>';
+      sel.disabled = true;
+      return;
+    }
+    sel.disabled = false;
+    sel.innerHTML = subjectNames.map(s => `<option>${E.esc(s)}</option>`).join('');
+    const saved = sessionStorage.getItem('educoreGradesheetSubject');
+    state.subject = (saved && subjectNames.includes(saved)) ? saved : subjectNames[0];
+    sel.value = state.subject;
+  }
+
+  function fillPeriods(){
+    const sem = Number(document.getElementById('semesterSelect').value) || 1;
+    state.semester = sem;
+    const periods = E.periodsForSemester(sem);
+    const sel = document.getElementById('periodSelect');
+    sel.innerHTML = periods.map(p =>
+      `<option value="${p.key}">${p.isExam ? 'Semester ' + sem + ' Examinations' : p.label}</option>`
+    ).join('');
+    state.period = periods[0].key;
+    sel.value = state.period;
+  }
+
+  /* ---------- CHIPS + META ---------- */
+  function paintPeriodChips(){
+    const periods = E.periodsForSemester(state.semester);
+    document.getElementById('periodChips').innerHTML = periods.map(p => {
+      const active = String(p.key) === String(state.period);
+      const hasData = hasDataFor(p.key);
+      const cls = ['period-chip', p.isExam ? 'exam' : '', active ? 'active' : '', hasData ? 'has-data' : ''].filter(Boolean).join(' ');
+      return `<button class="${cls}" data-period="${E.esc(p.key)}">${p.isExam ? 'Exam' : p.label}</button>`;
+    }).join('');
+  }
+  function hasDataFor(periodKey){
+    const students = scopedStudents(state.className);
+    return students.some(s => E.scoreFor(s.name, s.class, state.subject, state.semester, periodKey, state.year) !== '');
+  }
+  function paintMeta(){
+    const cat = E.classCategoryFor(state.className);
+    const isNursery = E.isNurseryCategory(cat);
+    const locked = E.isSemesterLocked(state.semester, state.year);
+    const bits = [];
+    bits.push(`<span class="meta-chip ${isNursery ? 'cat-nursery' : 'cat-numeric'}">
+      <span class="dot"></span>${isNursery ? 'Nursery · Letter grading' : (cat || 'No category') + ' · Numeric grading'}</span>`);
+    bits.push(`<span class="meta-chip">Year: <strong>${E.esc(state.year)}</strong></span>`);
+    if(locked) bits.push(`<span class="meta-chip locked">🔒 Semester locked</span>`);
+    if(isStudent || isParent) bits.push(`<span class="meta-chip">View only</span>`);
+    document.getElementById('metaBar').innerHTML = bits.join('');
+  }
+
+  /* ---------- LOAD + RENDER ---------- */
+  function loadMarks(){
+    state.marks = {}; state.original = {}; state.dirty = false;
+    scopedStudents(state.className).forEach(s => {
+      const v = E.scoreFor(s.name, s.class, state.subject, state.semester, state.period, state.year);
+      state.marks[s.id] = v === '' ? '' : v;
+      state.original[s.id] = v === '' ? '' : v;
+    });
+  }
+
+  function paintTable(){
+    const body = document.getElementById('pageBody');
+    const students = scopedStudents(state.className);
+
+    if(!students.length){
+      if(isStudent){
+        body.innerHTML = `<div class="empty"><span class="icon">🔒</span>
+          Your student record could not be located in <strong>${E.esc(state.className)}</strong>.</div>`;
+      } else if(isParent){
+        body.innerHTML = `<div class="empty"><span class="icon">👨‍👩‍👧</span>
+          None of your children are enrolled in <strong>${E.esc(state.className)}</strong>.</div>`;
+      } else {
+        body.innerHTML = `<div class="empty"><span class="icon">👥</span>
+          No students are enrolled in <strong>${E.esc(state.className)}</strong>.</div>`;
+      }
+      return;
+    }
+
+    const cat = E.classCategoryFor(state.className);
+    const isNursery = E.isNurseryCategory(cat);
+    const locked = E.isSemesterLocked(state.semester, state.year);
+    const editable = canSave && !locked;
+    const period = E.periodMeta(state.period);
+    const periodLabel = period ? (period.isExam ? `Semester ${state.semester} Examinations` : period.label) : '';
+
+    body.innerHTML = `
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:56px">#</th>
+                <th>Student</th>
+                <th>ID</th>
+                <th>${E.esc(periodLabel)} score</th>
+                <th>Semester Avg</th>
+                <th>Yearly Avg</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+        <div class="save-bar">
+          <div class="note" id="saveNote"></div>
+          <div>
+            ${editable
+              ? `<button class="btn green" id="saveBtn" disabled>💾 Save scores</button>`
+              : `<span style="font-size:11.5px;color:var(--muted);padding:8px 0">${
+                  (isStudent || isParent)
+                    ? 'View only — you can only see your own scores.'
+                    : locked
+                      ? '🔒 Semester is locked — scores cannot be edited.'
+                      : 'View only.'
+                }</span>`}
+          </div>
+        </div>
+      </div>`;
+
+    const tb = document.getElementById('tbody');
+    tb.innerHTML = students.map((s, i) => {
+      const cur = state.marks[s.id] ?? '';
+      const s1 = E.semesterAverageFor(s.name, s.class, state.subject, 1, cat, state.year);
+      const s2 = E.semesterAverageFor(s.name, s.class, state.subject, 2, cat, state.year);
+      const yr = E.yearlyAverageFor(s.name, s.class, state.subject, cat, state.year);
+      const semAvg = state.semester === 1 ? s1 : s2;
+      const semTxt = semAvg ? `${semAvg.number.toFixed(1)}% <span class="grade-pill ${gradeCls(semAvg.letter)}">${semAvg.letter}</span>` : '—';
+      const yrTxt  = yr ? `${yr.number.toFixed(1)}% <span class="grade-pill ${gradeCls(yr.letter)}">${yr.letter}</span>` : '—';
+
+      /* Editable input for staff, read-only span for students/parents */
+      const scoreCell = editable
+        ? `<input class="score-input ${isNursery ? 'letter' : ''}" type="text"
+              inputmode="${isNursery ? 'text' : 'decimal'}"
+              maxlength="${isNursery ? 1 : 5}"
+              placeholder="${isNursery ? 'A–F' : '0–100'}"
+              data-student-id="${E.esc(s.id)}"
+              value="${cur === '' ? '' : E.esc(String(cur))}">`
+        : `<span class="score-readonly">${cur === '' ? '—' : E.esc(String(cur))}</span>`;
+
+      return `<tr>
+        <td style="color:var(--muted)">${i + 1}</td>
+        <td><div class="person">
+          <div class="mini-avatar">${E.initials(s.name)}</div>
+          <div><strong>${E.esc(s.name)}</strong><small>${E.esc(s.class)}</small></div>
+        </div></td>
+        <td style="font-family:monospace;font-size:11px;color:var(--muted)">${E.esc(s.id)}</td>
+        <td>${scoreCell}</td>
+        <td><span class="avg-cell">${semTxt}</span></td>
+        <td><span class="avg-cell">${yrTxt}</span></td>
+      </tr>`;
+    }).join('');
+
+    bindTableEvents(editable, cat);
+    updateSaveNote();
+  }
+
+  function gradeCls(letter){ return ({ A:'a', B:'b', C:'c', D:'d', F:'f' }[letter] || 'b'); }
+
+  function bindTableEvents(editable, cat){
+    const tb = document.getElementById('tbody');
+    if(!tb) return;
+    if(!editable) return;   /* students/parents never see inputs */
+
+    tb.querySelectorAll('.score-input').forEach(inp => {
+      inp.addEventListener('input', () => {
+        const id = inp.dataset.studentId;
+        const raw = inp.value;
+        const v = E.validateScore(raw, cat);
+        inp.classList.toggle('invalid', raw !== '' && !v.ok);
+        state.marks[id] = raw;
+        state.dirty = state.dirty || String(raw) !== String(state.original[id] ?? '');
+        updateSaveNote();
+      });
+      inp.addEventListener('blur', () => {
+        const id = inp.dataset.studentId;
+        const v = E.validateScore(inp.value, cat);
+        if(v.ok && v.normalized !== ''){
+          inp.value = v.normalized;
+          state.marks[id] = v.normalized;
+        }
+        updateSaveNote();
+      });
+    });
+    document.getElementById('saveBtn')?.addEventListener('click', saveAll);
+  }
+
+  function updateSaveNote(){
+    const btn = document.getElementById('saveBtn');
+    const note = document.getElementById('saveNote');
+    if(!btn || !note) return;
+    let changedCount = 0, invalidCount = 0;
+    const cat = E.classCategoryFor(state.className);
+    Object.keys(state.marks).forEach(id => {
+      const cur = String(state.marks[id] ?? '');
+      const orig = String(state.original[id] ?? '');
+      if(cur !== orig) changedCount++;
+      if(!E.validateScore(state.marks[id], cat).ok) invalidCount++;
+    });
+    state.dirty = changedCount > 0;
+    btn.disabled = changedCount === 0 || invalidCount > 0;
+    if(invalidCount){ note.textContent = `${invalidCount} invalid score${invalidCount===1?'':'s'} — fix highlighted fields before saving.`; note.style.color = '#bd3b48'; }
+    else if(changedCount === 0){ note.textContent = 'No changes yet. Enter scores to enable saving.'; note.style.color = ''; }
+    else { note.textContent = `${changedCount} unsaved change${changedCount===1?'':'s'}.`; note.style.color = '#a86414'; }
+  }
+
+  function saveAll(){
+    if(!canSave){ E.toast("You don't have permission to save scores."); return; }
+    if(E.isSemesterLocked(state.semester, state.year)){ E.toast('This semester is locked.'); return; }
+    const cat = E.classCategoryFor(state.className);
+    let saved = 0, skipped = 0, errors = 0;
+    const students = scopedStudents(state.className);
+    students.forEach(s => {
+      const raw = state.marks[s.id];
+      const orig = state.original[s.id] ?? '';
+      if(String(raw ?? '') === String(orig)) return;
+      const v = E.validateScore(raw, cat);
+      if(!v.ok){ errors++; return; }
+      if(user.role === 'Teacher' && !E.canEditSubject(user, s.class, state.subject)){ skipped++; return; }
+      const res = E.saveScore({ student: s.name, className: s.class, subject: state.subject,
+        semester: state.semester, period: state.period, score: v.normalized, year: state.year });
+      if(!res.ok){ if(res.skipped) skipped++; else errors++; return; }
+      E.audit('update', `${s.name} · ${state.subject} · S${state.semester} · ${state.period}`, String(orig ?? ''), String(v.normalized ?? ''));
+      saved++;
+    });
+    loadMarks(); paintPeriodChips(); paintTable();
+    if(saved) E.toast(`Saved ${saved} score change${saved===1?'':'s'}.`);
+    else E.toast('Nothing to save.');
+    if(errors) E.toast(`${errors} score${errors===1?'':'s'} skipped (invalid).`);
+    if(skipped) E.toast(`${skipped} value${skipped===1?'':'s'} skipped (not your subject).`);
+  }
+
+  function bindSelectors(){
+    document.getElementById('classSelect').addEventListener('change', e => {
+      if(state.dirty && !confirm('You have unsaved changes. Discard and switch class?')){ e.target.value = state.className; return; }
+      state.className = e.target.value;
+      sessionStorage.setItem('educoreGradesheetClass', state.className);
+      fillSubjects(); fillPeriods(); refreshAll();
+    });
+    document.getElementById('subjectSelect').addEventListener('change', e => {
+      if(state.dirty && !confirm('You have unsaved changes. Discard and switch subject?')){ e.target.value = state.subject; return; }
+      state.subject = e.target.value;
+      sessionStorage.setItem('educoreGradesheetSubject', state.subject);
+      refreshAll();
+    });
+    document.getElementById('semesterSelect').addEventListener('change', e => {
+      if(state.dirty && !confirm('You have unsaved changes. Discard and switch semester?')){ e.target.value = String(state.semester); return; }
+      state.semester = Number(e.target.value);
+      fillPeriods(); refreshAll();
+    });
+    document.getElementById('periodSelect').addEventListener('change', e => {
+      if(state.dirty && !confirm('You have unsaved changes. Discard and switch period?')){ e.target.value = String(state.period); return; }
+      state.period = e.target.value; refreshAll();
+    });
+    document.getElementById('yearSelect').addEventListener('change', e => {
+      if(state.dirty && !confirm('You have unsaved changes. Discard and switch year?')){ e.target.value = state.year; return; }
+      state.year = e.target.value; refreshAll();
+    });
+    document.getElementById('periodChips').addEventListener('click', e => {
+      const chip = e.target.closest('.period-chip'); if(!chip) return;
+      if(state.dirty && !confirm('You have unsaved changes. Discard and switch period?')) return;
+      state.period = chip.dataset.period;
+      document.getElementById('periodSelect').value = state.period;
+      refreshAll();
+    });
+  }
+  function refreshAll(){ loadMarks(); paintPeriodChips(); paintMeta(); paintTable(); }
+
+  /* ---------- INIT ---------- */
+  paintHeader();
+  fillYears();
+  fillClasses();
+  if(!document.getElementById('classSelect').disabled){
+    fillSubjects();
+    if(!document.getElementById('subjectSelect').disabled){
+      fillPeriods(); refreshAll(); bindSelectors();
+    } else {
+      document.getElementById('pageBody').innerHTML = `
+        <div class="empty"><span class="icon">📚</span>
+          No scores have been recorded for you in <strong>${E.esc(state.className)}</strong> yet.</div>`;
+    }
+  } else {
+    document.getElementById('pageBody').innerHTML = `
+      <div class="empty"><span class="icon">📚</span>
+        No classes are available to you. Ask the Registrar to assign you to a class.</div>`;
+  }
+})();
+</script>
+</body>
+</html>

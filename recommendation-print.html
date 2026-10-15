@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recommendation Letter | EduCore</title>
+<style>
+  :root{--navy:#12315a;--blue:#3987ee;--border:#d8e4f2;--text:#23354d;--muted:#73849a}
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px 16px;background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button{font:inherit;cursor:pointer}
+
+  .bar{width:100%;max-width:850px;margin:0 auto 16px;display:flex;justify-content:space-between;
+    gap:10px;flex-wrap:wrap}
+  .btn{border:0;border-radius:8px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-weight:700;font-size:12px}
+  .btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--border)}
+
+  .sheet{position:relative;width:100%;max-width:850px;margin:0 auto;background:#fff;
+    border-radius:14px;padding:44px 52px;box-shadow:0 18px 50px #16345417}
+  .serial{position:absolute;right:48px;top:44px;font-size:9px;color:#9aa4b6;font-family:monospace}
+
+  .head{display:flex;align-items:center;gap:18px;padding-bottom:18px;
+    border-bottom:3px double #273c63;margin-bottom:26px}
+  .logo{width:74px;height:74px;border-radius:50%;border:3px solid #d8e8ff;background:#fff;
+    display:grid;place-items:center;overflow:hidden;color:var(--navy);font-weight:800;flex:0 0 74px}
+  .logo img{width:100%;height:100%;object-fit:contain}
+  .head-info h1{margin:0;font-size:20px;color:var(--navy);text-transform:uppercase}
+  .head-info p{margin:4px 0 0;color:#657089;font-size:11px;line-height:1.5}
+
+  .meta{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);
+    margin-bottom:22px;gap:12px;flex-wrap:wrap}
+
+  .subject{font-weight:800;color:var(--navy);letter-spacing:.6px;font-size:13px;
+    margin-bottom:14px;text-transform:uppercase}
+
+  .addressed-to{font-size:12px;color:var(--navy);font-weight:700;margin-bottom:14px}
+
+  p.para{font-size:13px;line-height:1.9;margin:0 0 14px;text-align:justify}
+
+  .sig{display:grid;grid-template-columns:1fr;gap:0;margin-top:48px;max-width:280px}
+  .sig .img{height:44px;display:flex;align-items:center;margin-bottom:6px}
+  .sig .img img{max-height:44px;max-width:200px;object-fit:contain}
+  .sig .line{border-top:1px solid #526079;margin-bottom:8px}
+  .sig strong{display:block;color:var(--navy);font-size:12px}
+  .sig small{color:var(--muted);font-size:10px}
+
+  .notfound{max-width:520px;margin:80px auto;padding:36px;text-align:center;background:#fff;
+    border:1px solid var(--border);border-radius:16px;box-shadow:0 18px 50px #16345417}
+  .notfound .icon{font-size:44px;margin-bottom:12px}
+  .notfound h1{font-size:18px;color:var(--navy);margin:0 0 8px}
+  .notfound p{font-size:13px;color:var(--muted);line-height:1.6;margin:0 0 20px}
+  .notfound a{display:inline-block;background:var(--blue);color:#fff;padding:11px 18px;
+    border-radius:9px;text-decoration:none;font-weight:700;font-size:12px}
+
+  @media print{
+    @page{size:A4 portrait;margin:14mm}
+    body{padding:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .bar,#educoreBackPill{display:none!important}
+    .sheet{box-shadow:none;border-radius:0;padding:0;max-width:none}
+  }
+  @media (max-width:650px){
+    body{padding:64px 8px 24px}
+    .sheet{padding:24px 20px}
+    .head{flex-direction:column;align-items:flex-start;gap:10px}
+    .serial{position:static;text-align:right;margin-bottom:6px}
+    .meta{flex-direction:column;gap:4px}
+  }
+</style>
+</head>
+<body>
+
+<div class="bar no-print">
+  <button class="btn ghost" onclick="window.close()">Close</button>
+  <button class="btn" onclick="window.print()">🖶 Print letter</button>
+</div>
+
+<div id="content"></div>
+
+<script src="educore-shared.js"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  /* ---------- PARAMS ---------- */
+  const params = new URLSearchParams(location.search);
+  const id       = params.get('id');        // recommendation request id
+  const sidParam = params.get('student');   // or raw student id (ad-hoc preview)
+  const purposeParam = params.get('purpose') || '';
+
+  /* ---------- DATA ---------- */
+  const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+  const students = E.readStore(E.STORE_KEYS.students, []) || [];
+  const results  = E.readStore(E.STORE_KEYS.results, []) || [];
+  const requests = E.readStore(E.STORE_KEYS.recommendations, []) || [];
+
+  const request   = id ? requests.find(r => r.id === id) : null;
+  const studentId = request ? request.studentId : sidParam;
+  const student   = studentId ? students.find(s => s.id === studentId) : null;
+
+  /* ---------- NOT FOUND ---------- */
+  if(!student){
+    document.getElementById('content').innerHTML = `
+      <div class="notfound">
+        <div class="icon">✉</div>
+        <h1>Recommendation letter not found</h1>
+        <p>We couldn't find the student this letter link points to. It may have been removed or the URL was mistyped.</p>
+        <a href="educore.html">← Back to Dashboard</a>
+      </div>`;
+    return;
+  }
+
+  /* ---------- SCHOOL HEADER ---------- */
+  const schoolName = settings.name || 'EduCore High School';
+  const logoHTML = settings.logo
+    ? `<img src="${settings.logo}" alt="">`
+    : schoolName.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase();
+  const principalSigHTML = settings.principalSignature
+    ? `<img src="${settings.principalSignature}" alt="">`
+    : '';
+
+  /* ---------- SERIAL + DATES ---------- */
+  const serial = 'REC-' + (id || student.id || 'X').slice(-8).toUpperCase();
+  const issuedAt = new Date(request?.issuedAt || request?.createdAt || Date.now());
+  const todayLine = issuedAt.toLocaleDateString(undefined,
+    { year:'numeric', month:'long', day:'numeric' });
+  const refLine = 'Ref: ' + serial;
+
+  /* ---------- PURPOSE + ADDRESSEE ---------- */
+  const purposeText = request?.purpose || purposeParam || '';
+  const addressedTo = request?.addressedTo || '';
+
+  /* ---------- STUDENT AVERAGE ---------- */
+  const myResults = results.filter(r => r.student === student.name && r.class === student.class);
+  const subjects = Array.from(new Set(myResults.map(r => r.subject))).sort();
+  const subjectAverages = subjects.map(subj => {
+    const rows = myResults.filter(r => r.subject === subj);
+    if(!rows.length) return null;
+    return { subj, avg: rows.reduce((a,r) => a + Number(r.score||0), 0) / rows.length };
+  }).filter(Boolean);
+  const overall = subjectAverages.length
+    ? subjectAverages.reduce((a,b) => a + b.avg, 0) / subjectAverages.length
+    : null;
+  const overallGrade = overall != null ? E.grade(overall) : null;
+
+  /* ---------- PRONOUNS ---------- */
+  const pronoun    = student.gender === 'Male' ? 'He'   : student.gender === 'Female' ? 'She'   : 'They';
+  const pronounObj = student.gender === 'Male' ? 'him'  : student.gender === 'Female' ? 'her'   : 'them';
+  const possessive = student.gender === 'Male' ? 'his'  : student.gender === 'Female' ? 'her'   : 'their';
+  const verb       = pronoun === 'They' ? 'have' : 'has';
+  const pronounLC  = pronoun.toLowerCase();
+
+  /* ---------- PARAGRAPHS ---------- */
+  const purposePhrase = purposeText
+    ? ` for <strong>${E.esc(purposeText)}</strong>`
+    : '';
+
+  const addressedHTML = addressedTo
+    ? `<div class="addressed-to">To: ${E.esc(addressedTo)}</div>`
+    : '';
+
+  const p1 = 'To Whom It May Concern,';
+
+  const p2 = `I am pleased to write this letter of recommendation on behalf of
+    <strong>${E.esc(student.name)}</strong> (Student ID: <strong>${E.esc(student.id)}</strong>),
+    a student in <strong>${E.esc(student.class)}</strong> at
+    <strong>${E.esc(schoolName)}</strong>${purposePhrase}.`;
+
+  const p3 = overall != null
+    ? `${pronoun} ${verb} maintained an overall academic average of
+       <strong>${overall.toFixed(1)}%</strong> (grade <strong>${overallGrade}</strong>)
+       across ${subjectAverages.length} subject${subjectAverages.length === 1 ? '' : 's'} this
+       academic year. ${pronoun} ${verb} consistently demonstrated intellectual curiosity,
+       responsibility, and a commendable work ethic in both coursework and school activities.`
+    : `${pronoun} ${verb} demonstrated responsibility, intellectual curiosity, and a strong work
+       ethic throughout ${possessive} time at our school.`;
+
+  const p4 = `Based on our experience with ${pronounObj}, we are confident that ${pronounLC}
+    will continue to excel and make meaningful contributions wherever ${pronounLC === 'they' ? 'they go' : pronounLC + ' goes'}.
+    I therefore recommend ${pronounObj} without reservation.`;
+
+  const closing = `If you require any further information, please do not hesitate to contact the
+    school office.`;
+
+  /* ---------- RENDER ---------- */
+  document.getElementById('content').innerHTML = `
+    <div class="sheet">
+      <div class="serial">${E.esc(serial)}</div>
+
+      <div class="head">
+        <div class="logo">${logoHTML}</div>
+        <div class="head-info">
+          <h1>${E.esc(schoolName)}</h1>
+          ${settings.motto ? `<p>${E.esc(settings.motto)}</p>` : ''}
+          ${settings.location ? `<p>${E.esc(settings.location)}</p>` : ''}
+        </div>
+      </div>
+
+      <div class="meta">
+        <span>${E.esc(todayLine)}</span>
+        <span>${E.esc(refLine)}</span>
+      </div>
+
+      <div class="subject">Letter of Recommendation</div>
+      ${addressedHTML}
+
+      <p class="para">${p1}</p>
+      <p class="para">${p2}</p>
+      <p class="para">${p3}</p>
+      <p class="para">${p4}</p>
+      <p class="para">${closing}</p>
+      <p class="para" style="margin-top:22px">Yours sincerely,</p>
+
+      <div class="sig">
+        <div class="img">${principalSigHTML}</div>
+        <div class="line"></div>
+        <strong>${E.esc(settings.principal || 'Principal')}</strong>
+        <small>Principal / Head Teacher</small>
+      </div>
+    </div>`;
+
+  /* ---------- PAGE TITLE ---------- */
+  document.title = `Recommendation · ${student.name} | ${schoolName}`;
+})();
+</script>
+</body>
+</html>

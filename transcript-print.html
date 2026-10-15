@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Academic Transcript | EduCore</title>
+<style>
+  :root{--navy:#12315a;--blue:#3987ee;--border:#d8e4f2;--text:#23354d;--muted:#73849a;
+    --green:#14805e;--gold:#c99a2e}
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px 16px;background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button{font:inherit;cursor:pointer}
+
+  .bar{width:100%;max-width:1000px;margin:0 auto 16px;display:flex;justify-content:space-between;
+    gap:10px;flex-wrap:wrap}
+  .btn{border:0;border-radius:8px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-weight:700;font-size:12px}
+  .btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--border)}
+
+  .sheet{position:relative;width:100%;max-width:1000px;margin:0 auto;background:#fff;
+    border-radius:14px;padding:40px 46px;box-shadow:0 18px 50px #16345417}
+
+  .watermark{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;
+    overflow:hidden;border-radius:14px}
+  .watermark span{font-size:120px;color:#eff3fb;font-weight:900;letter-spacing:6px;
+    transform:rotate(-24deg);white-space:nowrap}
+
+  .head{position:relative;z-index:1;display:flex;gap:16px;align-items:center;
+    padding-bottom:16px;border-bottom:3px double #273c63;margin-bottom:22px}
+  .logo{width:72px;height:72px;border-radius:50%;border:3px solid #d8e8ff;background:#fff;
+    display:grid;place-items:center;overflow:hidden;color:var(--navy);font-weight:800;flex:0 0 72px}
+  .logo img{width:100%;height:100%;object-fit:contain}
+  .head-info h1{margin:0;font-size:19px;color:var(--navy);text-transform:uppercase}
+  .head-info p{margin:3px 0 0;font-size:11px;color:#657089}
+
+  .title{text-align:center;margin:20px 0 22px;position:relative;z-index:1}
+  .title h2{margin:0;color:var(--navy);letter-spacing:4px;font-size:15px;text-transform:uppercase}
+  .title small{color:var(--muted);letter-spacing:1px;font-size:10px}
+
+  .info{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;
+    padding:14px 18px;background:#f8faff;border:1px solid var(--border);border-radius:10px;
+    margin-bottom:18px;font-size:12px}
+  .info div{display:flex;justify-content:space-between;gap:10px}
+  .info span{color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.6px;font-size:10px}
+  .info strong{color:var(--navy)}
+
+  .tbl{position:relative;z-index:1;width:100%;border-collapse:collapse;margin-bottom:6px;font-size:11px}
+  .tbl th,.tbl td{border:1px solid #e2e7f0;padding:8px 9px;text-align:center}
+  .tbl thead th{background:#eaf0fb;color:#263b61;text-transform:uppercase;letter-spacing:.5px;font-size:10px}
+  .tbl td.subj{text-align:left;font-weight:700;color:var(--navy);background:#fbfdff}
+  .tbl td.grade{font-weight:800}
+  .tbl td.grade.a{color:#16835f}
+  .tbl td.grade.b{color:#3b5cc1}
+  .tbl td.grade.c{color:#a86414}
+  .tbl td.grade.d{color:#a86414}
+  .tbl td.grade.f{color:#bd3b48}
+
+  .summary{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;
+    margin:22px 0 6px}
+  .summary .box{background:#f6f8fc;border:1px solid #e3e8f1;border-radius:8px;padding:10px}
+  .summary .box small{display:block;font-size:10px;color:var(--muted);margin-bottom:5px;
+    text-transform:uppercase;letter-spacing:.5px}
+  .summary .box strong{font-size:15px;color:var(--navy)}
+
+  .remark{margin-top:16px;position:relative;z-index:1;background:#f5f8ff;
+    border-left:4px solid var(--blue);padding:12px 14px;border-radius:0 8px 8px 0;
+    font-size:12px;line-height:1.7;color:#33415c}
+
+  .sign{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:60px;margin-top:44px}
+  .sign .img{height:44px;display:flex;align-items:center;margin-bottom:6px}
+  .sign .img img{max-height:44px;max-width:200px;object-fit:contain}
+  .sign .line{border-top:1px solid #526079;margin-bottom:8px}
+  .sign strong{display:block;color:var(--navy);font-size:12px}
+  .sign small{color:var(--muted);font-size:10px}
+
+  .serial{position:absolute;right:44px;top:40px;font-size:9px;color:#9aa4b6;font-family:monospace}
+  .notice{margin-top:18px;font-size:10px;color:var(--muted);line-height:1.7;position:relative;z-index:1}
+
+  .notfound{max-width:520px;margin:80px auto;padding:36px;text-align:center;background:#fff;
+    border:1px solid var(--border);border-radius:16px;box-shadow:0 18px 50px #16345417}
+  .notfound .icon{font-size:44px;margin-bottom:12px}
+  .notfound h1{font-size:18px;color:var(--navy);margin:0 0 8px}
+  .notfound p{font-size:13px;color:var(--muted);line-height:1.6;margin:0 0 20px}
+  .notfound a{display:inline-block;background:var(--blue);color:#fff;padding:11px 18px;
+    border-radius:9px;text-decoration:none;font-weight:700;font-size:12px}
+
+  @media print{
+    @page{size:A4 portrait;margin:12mm}
+    body{padding:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .bar,#educoreBackPill{display:none!important}
+    .sheet{box-shadow:none;border-radius:0;padding:0;max-width:none}
+    .watermark{opacity:.6}
+  }
+  @media (max-width:700px){
+    body{padding:64px 8px 24px}
+    .sheet{padding:22px 16px}
+    .info{grid-template-columns:1fr}
+    .summary{grid-template-columns:1fr 1fr}
+    .sign{grid-template-columns:1fr;gap:26px}
+    .watermark span{font-size:64px}
+  }
+</style>
+</head>
+<body>
+
+<div class="bar no-print">
+  <button class="btn ghost" onclick="window.close()">Close</button>
+  <button class="btn" onclick="window.print()">🖶 Print transcript</button>
+</div>
+
+<div id="content"></div>
+
+<script src="educore-shared.js"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  /* ---------- PARAMS ---------- */
+  const params = new URLSearchParams(location.search);
+  const id       = params.get('id');        // transcript request id (from transcripts.html)
+  const sidParam = params.get('student');   // or a raw student id (for ad-hoc preview)
+  const purposeParam = params.get('purpose') || '';
+
+  /* ---------- DATA ---------- */
+  const settings  = E.readStore(E.STORE_KEYS.settings, {}) || {};
+  const students  = E.readStore(E.STORE_KEYS.students, []) || [];
+  const results   = E.readStore(E.STORE_KEYS.results, []) || [];
+  const requests  = E.readStore(E.STORE_KEYS.transcripts, []) || [];
+
+  const request   = id ? requests.find(r => r.id === id) : null;
+  const studentId = request ? request.studentId : sidParam;
+  const student   = studentId ? students.find(s => s.id === studentId) : null;
+
+  /* ---------- NOT FOUND ---------- */
+  if(!student){
+    document.getElementById('content').innerHTML = `
+      <div class="notfound">
+        <div class="icon">🎓</div>
+        <h1>Transcript not found</h1>
+        <p>We couldn't find the student this transcript link points to. It may have been removed or the URL was mistyped.</p>
+        <a href="educore.html">← Back to Dashboard</a>
+      </div>`;
+    return;
+  }
+
+  /* ---------- SCHOOL HEADER ---------- */
+  const schoolName = settings.name || 'EduCore High School';
+  const logoHTML = settings.logo
+    ? `<img src="${settings.logo}" alt="">`
+    : schoolName.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase();
+  const principalSigHTML = settings.principalSignature
+    ? `<img src="${settings.principalSignature}" alt="">`
+    : '';
+
+  /* ---------- SERIAL ---------- */
+  const serialPart = (id || student.id || 'X').slice(-10).toUpperCase();
+  const serial = 'TR-' + serialPart + '-' + Date.now().toString(36).slice(-4).toUpperCase();
+  const watermarkText = 'TRANSCRIPT · ' + student.id;
+
+  /* ---------- META ---------- */
+  const issuedLine = 'Issued ' + new Date().toLocaleDateString(undefined,
+    { year:'numeric', month:'long', day:'numeric' });
+
+  const purposeText = request?.purpose || purposeParam || '—';
+  const requestedBy = request?.requestedBy || '—';
+
+  /* ---------- BUILD SUBJECT × TERM MATRIX ---------- */
+  const terms = ['First Term', 'Second Term', 'Third Term'];
+  const myResults = results.filter(r => r.student === student.name && r.class === student.class);
+  const subjects = Array.from(new Set(myResults.map(r => r.subject))).sort();
+
+  let tableHTML = '';
+  const rowsData = [];
+
+  if(!subjects.length){
+    tableHTML = `<tr><td colspan="6" style="text-align:center;color:#7a8498;padding:30px">
+      No examination results on record.
+    </td></tr>`;
+  } else {
+    tableHTML = subjects.map(subj => {
+      const cells = terms.map(t => {
+        const r = myResults.find(x => x.subject === subj && x.term === t);
+        return r ? r.score : '';
+      });
+      const valid = cells.filter(v => v !== '');
+      const yearAvg = valid.length ? valid.reduce((a,b) => a + b, 0) / valid.length : null;
+      const yg = yearAvg != null ? E.grade(yearAvg) : '—';
+      const gradeCls = ({A:'a',B:'b',C:'c',D:'d',F:'f'}[yg] || '');
+      if(yearAvg != null) rowsData.push({ subject: subj, avg: yearAvg });
+
+      return `<tr>
+        <td class="subj">${E.esc(subj)}</td>
+        ${cells.map(v => `<td>${v === '' ? '—' : v}</td>`).join('')}
+        <td><strong>${yearAvg != null ? yearAvg.toFixed(1) : '—'}</strong></td>
+        <td class="grade ${gradeCls}">${yg}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  /* ---------- SUMMARY ---------- */
+  const subjectCount = rowsData.length;
+  const overallAvg = subjectCount
+    ? rowsData.reduce((a,b) => a + b.avg, 0) / subjectCount
+    : null;
+  const overallGrade = overallAvg != null ? E.grade(overallAvg) : '—';
+
+  /* ---------- CLASS POSITION ---------- */
+  let position = '—';
+  const classPeers = {};
+  results.filter(r => r.class === student.class).forEach(r => {
+    const key = r.student;
+    if(!classPeers[key]) classPeers[key] = { total:0, count:0 };
+    classPeers[key].total += Number(r.score) || 0;
+    classPeers[key].count += 1;
+  });
+  const ranked = Object.keys(classPeers)
+    .map(n => ({ n, avg: classPeers[n].total / classPeers[n].count }))
+    .sort((a,b) => b.avg - a.avg);
+  const pos = ranked.findIndex(x => x.n === student.name) + 1;
+  if(pos > 0){
+    const suffix = n => n===1?'st':n===2?'nd':n===3?'rd':'th';
+    position = `${pos}${suffix(pos)} of ${ranked.length}`;
+  }
+
+  /* ---------- REMARK ---------- */
+  const remarkHTML = overallAvg != null
+    ? `The candidate has completed the terms listed above with an overall year average of
+       <strong>${overallAvg.toFixed(1)}%</strong> (grade <strong>${overallGrade}</strong>).
+       This document is a cumulative record of the candidate's academic performance across all
+       terms of the school year.`
+    : 'Insufficient data on file to compute an overall average.';
+
+  /* ---------- RENDER ---------- */
+  document.getElementById('content').innerHTML = `
+    <div class="sheet">
+      <div class="watermark"><span>${E.esc(watermarkText)}</span></div>
+      <div class="serial">${E.esc(serial)}</div>
+
+      <div class="head">
+        <div class="logo">${logoHTML}</div>
+        <div class="head-info">
+          <h1>${E.esc(schoolName)}</h1>
+          ${settings.motto ? `<p>${E.esc(settings.motto)}</p>` : ''}
+          ${settings.location ? `<p>${E.esc(settings.location)}</p>` : ''}
+        </div>
+      </div>
+
+      <div class="title">
+        <h2>Official Academic Transcript</h2>
+        <small>${issuedLine}</small>
+      </div>
+
+      <div class="info">
+        <div><span>Student</span><strong>${E.esc(student.name)}</strong></div>
+        <div><span>Student ID</span><strong>${E.esc(student.id)}</strong></div>
+        <div><span>Class</span><strong>${E.esc(student.class)}</strong></div>
+        <div><span>Enrollment</span><strong>${E.esc(student.status || 'Active')}</strong></div>
+        <div><span>Purpose</span><strong>${E.esc(purposeText)}</strong></div>
+        <div><span>Requested by</span><strong>${E.esc(requestedBy)}</strong></div>
+      </div>
+
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th style="width:26%">Subject</th>
+            <th>First Term</th>
+            <th>Second Term</th>
+            <th>Third Term</th>
+            <th>Year Average</th>
+            <th>Grade</th>
+          </tr>
+        </thead>
+        <tbody>${tableHTML}</tbody>
+      </table>
+
+      <div class="summary">
+        <div class="box"><small>Subjects</small><strong>${subjectCount}</strong></div>
+        <div class="box"><small>Year average</small><strong>${overallAvg != null ? overallAvg.toFixed(1) + '%' : '—'}</strong></div>
+        <div class="box"><small>Overall grade</small><strong>${overallGrade}</strong></div>
+        <div class="box"><small>Class position</small><strong>${E.esc(position)}</strong></div>
+      </div>
+
+      <div class="remark">${remarkHTML}</div>
+
+      <div class="sign">
+        <div class="blk">
+          <div class="img">${principalSigHTML}</div>
+          <div class="line"></div>
+          <strong>${E.esc(settings.principal || 'Principal')}</strong>
+          <small>Principal / Head Teacher</small>
+        </div>
+        <div class="blk">
+          <div class="img"></div>
+          <div class="line"></div>
+          <strong>School Stamp</strong>
+          <small>Official seal</small>
+        </div>
+      </div>
+
+      <div class="notice">
+        This transcript is issued for the purpose stated above. Any alteration renders it invalid.
+        For verification, contact the school office quoting the serial number above.
+      </div>
+    </div>`;
+
+  /* ---------- PAGE TITLE ---------- */
+  document.title = `Transcript · ${student.name} | ${schoolName}`;
+})();
+</script>
+</body>
+</html>

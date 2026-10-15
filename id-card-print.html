@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ID Card Print | EduCore</title>
+<style>
+  :root{
+    --navy:#12315a;--navy2:#1d3158;--blue:#3987ee;--border:#d8e4f2;
+    --text:#23354d;--muted:#73849a;--gold:#c99a2e;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px 16px;background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button{font:inherit;cursor:pointer}
+
+  /* top bar */
+  .bar{width:100%;max-width:1100px;margin:0 auto 18px;display:flex;
+    justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .bar h2{margin:0;font-size:17px;color:var(--navy)}
+  .bar-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{border:0;border-radius:8px;padding:10px 14px;background:var(--blue);color:#fff;
+    font-weight:700;font-size:12px}
+  .btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--border)}
+
+  /* sheet */
+  .sheet{width:100%;max-width:1100px;margin:0 auto;background:#fff;border-radius:14px;
+    padding:20px;box-shadow:0 18px 50px #16345417}
+  .sheet h3{margin:0 0 10px;font-size:11px;letter-spacing:1.4px;color:var(--muted);
+    text-transform:uppercase}
+
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px}
+  .pair:last-child{margin-bottom:0}
+
+  /* the ID card */
+  .id-card{position:relative;width:100%;aspect-ratio:85/54;border-radius:9px;overflow:hidden;
+    background:linear-gradient(135deg,#0f2a4f,#1c4a86);color:#fff;
+    box-shadow:0 6px 18px #0b173340;page-break-inside:avoid}
+  .id-card.back{background:linear-gradient(135deg,#f6f9ff,#eaf1fd);color:var(--navy);
+    box-shadow:0 6px 18px #0b173320}
+
+  .id-bar{position:absolute;top:0;left:0;right:0;height:5px;
+    background:linear-gradient(90deg,#58a4ff,#c99a2e)}
+  .id-inner{position:relative;height:100%;padding:14px 16px;display:flex;flex-direction:column}
+
+  /* front */
+  .id-top{display:flex;align-items:center;gap:10px}
+  .id-logo{width:34px;height:34px;border-radius:50%;background:#fff;display:grid;place-items:center;
+    overflow:hidden;flex:0 0 34px}
+  .id-logo img{width:100%;height:100%;object-fit:contain}
+  .id-school{font-size:11px;font-weight:900;letter-spacing:.4px;text-transform:uppercase;line-height:1.2}
+  .id-school small{display:block;font-size:8px;color:#a9c2e8;font-weight:600;
+    letter-spacing:1.2px;margin-top:2px}
+
+  .id-body{display:flex;gap:12px;margin-top:10px;flex:1;min-height:0}
+  .id-photo{width:66px;height:82px;background:#0b1e3b;border:2px solid #ffffff40;
+    border-radius:5px;overflow:hidden;display:grid;place-items:center;flex:0 0 66px}
+  .id-photo img{width:100%;height:100%;object-fit:cover}
+  .id-photo small{font-size:7px;color:#8ba6d4;text-align:center;padding:6px}
+
+  .id-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+  .id-name{font-size:14px;font-weight:900;letter-spacing:.2px;color:#fff;margin-bottom:1px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .id-row{display:flex;justify-content:space-between;font-size:8.5px;gap:6px;
+    border-bottom:1px dotted #ffffff26;padding-bottom:2px}
+  .id-row span{color:#a9c2e8;text-transform:uppercase;letter-spacing:.6px;font-weight:700}
+  .id-row strong{color:#fff;font-weight:700;text-align:right;max-width:60%;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  .id-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px}
+  .barcode{height:28px;background:#fff;border-radius:3px;padding:3px 6px;display:flex;
+    align-items:center}
+  .barcode svg{display:block}
+  .id-stamp{font-size:7.5px;color:#a9c2e8;text-align:right;line-height:1.3}
+  .id-stamp strong{display:block;color:#fff;font-size:8.5px;letter-spacing:.5px}
+
+  /* back */
+  .id-back-inner{display:flex;flex-direction:column;gap:6px}
+  .id-back-title{font-size:11px;font-weight:900;letter-spacing:1.2px;text-transform:uppercase;
+    color:#1d3158;margin-bottom:2px}
+  .id-terms{font-size:7.5px;line-height:1.5;color:#4c5b74}
+  .id-back-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;margin-top:6px}
+  .id-back-grid .id-row{border-bottom:1px dotted #c7d2e3}
+  .id-back-grid .id-row span{color:#7c8aa3}
+  .id-back-grid .id-row strong{color:#1d3158}
+  .id-back-footer{margin-top:auto;font-size:7px;color:#7c8aa3;text-align:center;
+    border-top:1px solid #e4eaf3;padding-top:5px;letter-spacing:.3px}
+
+  /* not found */
+  .notfound{max-width:520px;margin:80px auto;padding:36px;text-align:center;background:#fff;
+    border:1px solid var(--border);border-radius:16px;box-shadow:0 18px 50px #16345417}
+  .notfound .icon{font-size:44px;margin-bottom:12px}
+  .notfound h1{font-size:18px;color:var(--navy);margin:0 0 8px}
+  .notfound p{font-size:13px;color:var(--muted);line-height:1.6;margin:0 0 20px}
+  .notfound a{display:inline-block;background:var(--blue);color:#fff;padding:11px 18px;
+    border-radius:9px;text-decoration:none;font-weight:700;font-size:12px}
+
+  /* print */
+  @media print{
+    @page{size:A4 portrait;margin:8mm}
+    body{padding:0;background:#fff}
+    .bar,#educoreBackPill{display:none!important}
+    .sheet{box-shadow:none;border-radius:0;padding:0;max-width:none}
+    .sheet h3{display:none}
+    .pair{gap:10mm;margin-bottom:8mm}
+    .id-card{border:1px dashed #d5dce6;border-radius:6px;box-shadow:none;
+      -webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .id-card *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+
+  @media (max-width:700px){
+    body{padding:64px 8px 24px}
+    .pair{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="bar no-print">
+  <h2>ID Cards</h2>
+  <div class="bar-actions">
+    <button class="btn ghost" onclick="window.close()">Close</button>
+    <button class="btn" onclick="window.print()">🖶 Print cards</button>
+  </div>
+</div>
+
+<div id="content"></div>
+
+<script src="educore-shared.js"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  /* ---------- PARAMS ---------- */
+  const params = new URLSearchParams(location.search);
+  const singleId = params.get('student');
+  const batchIds = params.get('students');
+
+  /* ---------- DATA ---------- */
+  const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+  const students = E.readStore(E.STORE_KEYS.students, []) || [];
+  const photos   = E.readStore(E.STORE_KEYS.photos, {}) || {};
+
+  /* ---------- RESOLVE TARGETS ---------- */
+  let targets = [];
+  if(batchIds){
+    const ids = batchIds.split(',').map(s => s.trim()).filter(Boolean);
+    targets = ids.map(id => students.find(s => s.id === id)).filter(Boolean);
+  } else if(singleId){
+    const s = students.find(x => x.id === singleId);
+    if(s) targets = [s];
+  }
+
+  if(!targets.length){
+    document.getElementById('content').innerHTML = `
+      <div class="notfound">
+        <div class="icon">🪪</div>
+        <h1>ID card not found</h1>
+        <p>We couldn't find the student this ID card link points to. It may have been removed or the URL was mistyped.</p>
+        <a href="educore.html">← Back to Dashboard</a>
+      </div>`;
+    return;
+  }
+
+  /* ---------- SCHOOL ---------- */
+  const schoolName = settings.name || 'EduCore High School';
+  const logoHTML = settings.logo
+    ? `<img src="${settings.logo}" alt="">`
+    : `<span style="font-size:11px;font-weight:900;color:#12315a">${schoolName.split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase()}</span>`;
+
+  /* ============================================================
+     CODE 39 BARCODE (SVG)
+     ============================================================ */
+  const CODE39 = {
+    '0':'101001101101','1':'110100101011','2':'101100101011','3':'110110010101',
+    '4':'101001101011','5':'110100110101','6':'101100110101','7':'101001011011',
+    '8':'110100101101','9':'101100101101',
+    'A':'110101001011','B':'101101001011','C':'110110100101','D':'101011001011',
+    'E':'110101100101','F':'101101100101','G':'101010011011','H':'110101001101',
+    'I':'101101001101','J':'101011001101','K':'110101010011','L':'101101010011',
+    'M':'110110101001','N':'101011010011','O':'110101101001','P':'101101101001',
+    'Q':'101010110011','R':'110101011001','S':'101101011001','T':'101011011001',
+    'U':'110010101011','V':'100110101011','W':'110011010101','X':'100101101011',
+    'Y':'110010110101','Z':'100110110101',
+    '-':'100101011011','.':'110010101101',' ':'100110101101','$':'100100100101',
+    '/':'100100101001','+':'100101001001','%':'101001001001','*':'100101101101'
+  };
+  function code39SVG(text){
+    const t = String(text).toUpperCase().replace(/[^0-9A-Z\-. $/+%]/g,'-');
+    const seq = '*' + t + '*';
+    let bars = '', x = 0;
+    for(const ch of seq){
+      const pattern = CODE39[ch] || CODE39['-'];
+      for(let i = 0; i < pattern.length; i++){
+        const isBar = i % 2 === 0;
+        if(isBar){
+          bars += `<rect x="${x}" y="0" width="1" height="22" fill="#0b1e3b"/>`;
+        }
+        x += pattern[i] === '0' ? 1 : 2;
+      }
+      x += 1;
+    }
+    return `<svg viewBox="0 0 ${x} 22" preserveAspectRatio="none" style="height:22px;width:auto">${bars}</svg>`;
+  }
+
+  /* ============================================================
+     CARD BUILDERS
+     ============================================================ */
+  function esc(s){ return E.esc(s); }
+
+  function frontCard(s){
+    const photo = photos[s.id];
+    const dob = s.dob || '—';
+    const today = new Date();
+    const issue = today.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'2-digit' });
+    const expiry = new Date(today.setFullYear(today.getFullYear() + 2))
+      .toLocaleDateString(undefined, { year:'numeric', month:'short', day:'2-digit' });
+
+    return `
+      <div class="id-card front">
+        <div class="id-bar"></div>
+        <div class="id-inner">
+          <div class="id-top">
+            <div class="id-logo">${logoHTML}</div>
+            <div>
+              <div class="id-school">${esc(schoolName)}</div>
+              <small>STUDENT IDENTIFICATION</small>
+            </div>
+          </div>
+          <div class="id-body">
+            <div class="id-photo">
+              ${photo
+                ? `<img src="${photo}" alt="">`
+                : `<small>PHOTO</small>`}
+            </div>
+            <div class="id-info">
+              <div class="id-name">${esc(s.name)}</div>
+              <div class="id-row"><span>ID</span><strong>${esc(s.id)}</strong></div>
+              <div class="id-row"><span>Class</span><strong>${esc(s.class)}</strong></div>
+              <div class="id-row"><span>D.O.B.</span><strong>${esc(dob)}</strong></div>
+              <div class="id-row"><span>Guardian</span><strong>${esc(s.guardian || '—')}</strong></div>
+              <div class="id-row"><span>Contact</span><strong>${esc(s.phone || '—')}</strong></div>
+            </div>
+          </div>
+          <div class="id-foot">
+            <div class="barcode">${code39SVG(s.id)}</div>
+            <div class="id-stamp">
+              Issued <strong>${issue}</strong>
+              Expires ${expiry}
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function backCard(s){
+    return `
+      <div class="id-card back">
+        <div class="id-bar"></div>
+        <div class="id-inner">
+          <div class="id-top" style="color:#1d3158">
+            <div class="id-logo" style="border:1px solid #d5dce6">${logoHTML}</div>
+            <div>
+              <div class="id-school" style="color:#1d3158">${esc(schoolName)}</div>
+              <small style="color:#7c8aa3">STUDENT IDENTIFICATION</small>
+            </div>
+          </div>
+          <div class="id-back-inner" style="margin-top:10px">
+            <div class="id-back-title">Terms of use</div>
+            <div class="id-terms">
+              This card is the property of ${esc(schoolName)} and must be carried at all times on
+              school premises. If found, please return to the school office. This card is
+              non-transferable and misuse may result in disciplinary action.
+            </div>
+            <div class="id-back-grid">
+              <div class="id-row"><span>Blood group</span><strong>${esc(s.bloodGroup || '—')}</strong></div>
+              <div class="id-row"><span>Address</span><strong>${esc(s.address || '—')}</strong></div>
+              <div class="id-row"><span>Emergency</span><strong>${esc(s.emergency || s.phone || '—')}</strong></div>
+              <div class="id-row"><span>Enrolled</span><strong>${esc(s.enrolled || '—')}</strong></div>
+            </div>
+            <div class="id-back-footer">
+              ${esc(settings.location || '')}${settings.phone ? ' · ' + esc(settings.phone) : ''}${settings.email ? ' · ' + esc(settings.email) : ''}
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  /* ============================================================
+     RENDER
+     ============================================================ */
+  document.getElementById('content').innerHTML = `
+    <div class="sheet">
+      <h3>${targets.length === 1 ? 'ID card preview' : targets.length + ' ID cards'}</h3>
+      ${targets.map(s => `
+        <div class="pair">
+          ${frontCard(s)}
+          ${backCard(s)}
+        </div>`).join('')}
+    </div>`;
+
+  /* ---------- PAGE TITLE ---------- */
+  document.title = (targets.length === 1
+    ? `ID Card · ${targets[0].name}`
+    : `${targets.length} ID Cards`) + ` | ${schoolName}`;
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Receipt | EduCore</title>
+<style>
+  :root{
+    --navy:#12315a;--blue:#3987ee;--border:#d8e4f2;--text:#23354d;--muted:#73849a;
+    --green:#14805e;--red:#d64545;--gold:#c99a2e;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px 16px;min-height:100vh;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text)}
+  button{font:inherit;cursor:pointer}
+
+  .bar{width:100%;max-width:680px;margin:0 auto 16px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .btn{border:0;border-radius:8px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-weight:700;font-size:12px}
+  .btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--border)}
+
+  .sheet{width:100%;max-width:680px;margin:0 auto;background:#fff;border-radius:14px;
+    padding:34px 38px;box-shadow:0 18px 50px #16345417;position:relative;overflow:hidden}
+
+  .cancelled-watermark{position:absolute;inset:0;display:grid;place-items:center;
+    pointer-events:none;z-index:5;overflow:hidden}
+  .cancelled-watermark span{font-size:110px;color:#d6454522;font-weight:900;letter-spacing:8px;
+    transform:rotate(-22deg);white-space:nowrap;border:6px solid #d6454533;
+    padding:10px 40px;border-radius:20px}
+
+  .receipt-head{display:flex;justify-content:space-between;align-items:flex-start;
+    padding-bottom:14px;border-bottom:2px solid var(--navy);margin-bottom:20px;position:relative;z-index:6}
+  .receipt-head .brand{display:flex;align-items:center;gap:12px}
+  .receipt-head .logo{width:56px;height:56px;border-radius:50%;background:#fff;
+    display:grid;place-items:center;overflow:hidden;border:2px solid #d8e8ff;
+    font-weight:900;color:var(--navy);font-size:15px;flex:0 0 56px}
+  .receipt-head .logo img{width:100%;height:100%;object-fit:contain}
+  .receipt-head h2{margin:0;font-size:16px;color:var(--navy);letter-spacing:.3px;text-transform:uppercase}
+  .receipt-head small{color:var(--muted);font-size:10px;display:block;margin-top:3px;line-height:1.5}
+  .receipt-head .num{text-align:right;font-family:monospace;font-size:12px;color:var(--navy);font-weight:800}
+  .receipt-head .num small{color:var(--muted);font-size:10px;font-family:Arial,Helvetica,sans-serif;font-weight:400;margin-top:4px}
+
+  .receipt-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;
+    padding:10px 14px;background:#f6f8fd;border-radius:8px;position:relative;z-index:6}
+  .receipt-title span{font-size:11px;text-transform:uppercase;letter-spacing:2px;font-weight:900;color:var(--navy)}
+  .receipt-title small{font-size:10px;color:var(--muted);font-family:monospace}
+
+  .meta-box{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;
+    padding:14px 16px;background:#f8faff;border:1px solid var(--border);border-radius:10px;
+    margin-bottom:18px;font-size:11px;line-height:1.7;position:relative;z-index:6}
+  .meta-box .row{display:flex;justify-content:space-between;gap:10px}
+  .meta-box .row span{color:var(--muted);font-weight:700;text-transform:uppercase;
+    font-size:9px;letter-spacing:.6px}
+  .meta-box .row strong{color:var(--navy);text-align:right;max-width:60%;word-break:break-word}
+
+  table.items{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px;position:relative;z-index:6}
+  table.items th{background:#f6f8fd;font-size:10px;padding:10px 12px;text-align:left;
+    color:#7a8498;border-bottom:1px solid #e8ebf2;text-transform:uppercase;letter-spacing:.5px}
+  table.items td{padding:10px 12px;border-bottom:1px solid #f0f2f7;vertical-align:top}
+  table.items td.amount{text-align:right;font-family:monospace;font-weight:800;
+    color:var(--navy);font-size:13px}
+  table.items td.amount.neg{color:var(--red)}
+
+  .total-row{display:flex;justify-content:space-between;padding:14px 12px 12px;
+    font-size:15px;font-weight:800;border-top:2px solid var(--navy);color:var(--navy);
+    position:relative;z-index:6}
+  .total-row span:last-child{font-family:monospace;font-size:16px}
+
+  .words-row{padding:12px 14px;background:#fbfdff;border:1px dashed #dbe4f2;border-radius:8px;
+    margin-top:8px;font-size:11px;color:#54637d;font-style:italic;position:relative;z-index:6}
+  .words-row strong{color:var(--navy);font-style:normal}
+
+  .balance-strip{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);
+    background:#f8faff;padding:10px 12px;border-radius:8px;margin-top:12px;gap:10px;flex-wrap:wrap;
+    position:relative;z-index:6}
+  .balance-strip strong{color:var(--navy)}
+  .balance-strip strong.credit{color:var(--green)}
+
+  .payment-note{margin-top:16px;padding:12px 14px;background:#f0f8f5;
+    border-left:3px solid var(--green);border-radius:0 8px 8px 0;font-size:11px;
+    line-height:1.7;color:#33415c;position:relative;z-index:6}
+  .payment-note strong{color:var(--green)}
+  .payment-note.warn{background:#fff8e6;border-left-color:#d88922}
+  .payment-note.warn strong{color:#a86414}
+
+  .sig-block{margin-top:36px;display:flex;justify-content:space-between;gap:40px;
+    position:relative;z-index:6}
+  .sig{margin-top:22px;max-width:240px;flex:1}
+  .sig .img{height:44px;display:flex;align-items:flex-end;margin-bottom:6px}
+  .sig .img img{max-height:44px;max-width:200px;object-fit:contain}
+  .sig .line{border-top:1px solid #526079;padding-top:6px;font-size:10px;color:var(--muted);
+    text-align:center;margin-top:36px}
+  .sig .line strong{display:block;color:var(--navy);font-size:11px;margin-bottom:2px;text-align:left}
+
+  .foot{margin-top:26px;padding-top:16px;border-top:1px dashed var(--border);
+    display:flex;justify-content:space-between;font-size:10px;color:var(--muted);gap:10px;
+    flex-wrap:wrap;position:relative;z-index:6}
+  .foot strong{color:var(--navy)}
+
+  .notice{font-size:9px;color:#9aa4b6;text-align:center;margin-top:22px;letter-spacing:.4px;
+    position:relative;z-index:6}
+
+  .cancelled-note{margin-top:16px;padding:12px 14px;background:#fff0f1;border-left:4px solid var(--red);
+    border-radius:0 8px 8px 0;font-size:11px;line-height:1.7;color:#bd3b48;
+    position:relative;z-index:6}
+  .cancelled-note strong{color:#8a1e28}
+
+  @media print{
+    @page{size:A5 portrait;margin:12mm}
+    body{padding:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .bar{display:none!important}
+    .sheet{box-shadow:none;border-radius:0;padding:0;max-width:none}
+  }
+  @media (max-width:600px){
+    body{padding:14px 8px}
+    .sheet{padding:22px 20px}
+    .meta-box{grid-template-columns:1fr}
+    .receipt-head{flex-direction:column;gap:10px;align-items:flex-start}
+    .receipt-head .num{text-align:left}
+  }
+</style>
+</head>
+<body>
+
+<div class="bar no-print">
+  <button class="btn ghost" onclick="window.close()">Close</button>
+  <button class="btn" onclick="window.print()">🖶 Print receipt</button>
+</div>
+
+<div class="sheet"><div id="content"></div></div>
+
+<script src="educore-shared.js"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+  const $ = id => document.getElementById(id);
+
+  const params = new URLSearchParams(location.search);
+  const feeId = params.get('id');
+  const salaryId = params.get('salaryId');
+
+  let type = null, record = null;
+  if(salaryId){
+    type = 'salary';
+    record = E.getSalaryPayments().find(s => s.id === salaryId);
+  } else if(feeId){
+    type = 'fee';
+    record = E.getPayments().find(p => p.id === feeId);
+  }
+
+  if(!record){
+    $('content').innerHTML = `
+      <div style="max-width:520px;margin:40px auto;padding:36px;text-align:center;
+        background:#fff;border:1px solid #e8ebf2;border-radius:16px;
+        font-family:Arial,Helvetica,sans-serif;color:#23354d">
+        <div style="font-size:44px;margin-bottom:12px">🧾</div>
+        <h1 style="font-size:18px;color:#12315a;margin:0 0 8px">Receipt not found</h1>
+        <p style="font-size:13px;color:#73849a;line-height:1.6;margin:0 0 20px">
+          This receipt link doesn't point to a valid transaction.
+        </p>
+        <a href="index.html" style="display:inline-block;background:#3987ee;color:#fff;
+          padding:11px 18px;border-radius:9px;text-decoration:none;font-weight:700;font-size:12px">
+          ← Back to Dashboard
+        </a>
+      </div>`;
+    return;
+  }
+
+  /* ---------- Amount in words ---------- */
+  const ONES = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine',
+                'Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen',
+                'Seventeen','Eighteen','Nineteen'];
+  const TENS = ['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+  function groupToWords(n){
+    if(n < 20) return ONES[n];
+    if(n < 100) return TENS[Math.floor(n/10)] + (n%10 ? ' ' + ONES[n%10] : '');
+    if(n < 1000) return ONES[Math.floor(n/100)] + ' Hundred' + (n%100 ? ' ' + groupToWords(n%100) : '');
+    if(n < 1_000_000){
+      const th = Math.floor(n/1000), rem = n % 1000;
+      return groupToWords(th) + ' Thousand' + (rem ? ' ' + groupToWords(rem) : '');
+    }
+    if(n < 1_000_000_000){
+      const m = Math.floor(n/1_000_000), rem = n % 1_000_000;
+      return groupToWords(m) + ' Million' + (rem ? ' ' + groupToWords(rem) : '');
+    }
+    const b = Math.floor(n/1_000_000_000), rem = n % 1_000_000_000;
+    return groupToWords(b) + ' Billion' + (rem ? ' ' + groupToWords(rem) : '');
+  }
+  function numberToWords(n){
+    n = Math.round(Number(n) * 100) / 100;
+    if(!Number.isFinite(n) || n === 0) return 'Zero';
+    if(n < 0) return 'Minus ' + numberToWords(-n);
+    const dollars = Math.floor(n), cents = Math.round((n - dollars) * 100);
+    let out = groupToWords(dollars) + ' Dollar' + (dollars === 1 ? '' : 's');
+    if(cents > 0) out += ' and ' + groupToWords(cents) + ' Cent' + (cents === 1 ? '' : 's');
+    return out;
+  }
+
+  /* ---------- School header ---------- */
+  const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+  const schoolName = settings.name || 'EduCore High School';
+  const logoHTML = settings.logo
+    ? `<img src="${settings.logo}" alt="">`
+    : schoolName.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase();
+  const contactLine = [settings.phone, settings.email].filter(Boolean).join(' · ');
+  const locationLine = settings.location || '';
+
+  /* ============================================================
+     FEE RECEIPT
+     ============================================================ */
+  function buildFeeReceipt(p){
+    const student = (E.readStore(E.STORE_KEYS.students, []) || []).find(s => s.id === p.studentId);
+    const summary = student ? E.studentFeeSummary(student.id, student.class) : null;
+    const isReversed = !!p.reversed;
+    const words = numberToWords(p.amount);
+
+    return `
+      ${isReversed ? `<div class="cancelled-watermark"><span>CANCELLED</span></div>` : ''}
+
+      <div class="receipt-head">
+        <div class="brand">
+          <div class="logo">${logoHTML}</div>
+          <div>
+            <h2>${E.esc(schoolName)}</h2>
+            ${locationLine ? `<small>${E.esc(locationLine)}</small>` : ''}
+            ${contactLine ? `<small>${E.esc(contactLine)}</small>` : ''}
+          </div>
+        </div>
+        <div class="num">
+          <div>${E.esc(p.receiptNo || '—')}</div>
+          <small>Issued ${E.fmtDateTime(p.at)}</small>
+        </div>
+      </div>
+
+      <div class="receipt-title">
+        <span>Official Fee Receipt</span>
+        <small>${isReversed ? 'Status: CANCELLED' : 'Status: Confirmed'}</small>
+      </div>
+
+      <div class="meta-box">
+        <div class="row"><span>Student</span><strong>${E.esc(p.studentName || '—')}</strong></div>
+        <div class="row"><span>Student ID</span><strong>${E.esc(p.studentId || '—')}</strong></div>
+        <div class="row"><span>Class</span><strong>${E.esc(p.className || '—')}</strong></div>
+        <div class="row"><span>Payment date</span><strong>${E.esc(E.fmtDate(p.date || p.at))}</strong></div>
+        <div class="row"><span>Method</span><strong>${E.esc(p.method || '—')}</strong></div>
+        <div class="row"><span>Reference</span><strong>${E.esc(p.reference || '—')}</strong></div>
+      </div>
+
+      <table class="items">
+        <thead><tr><th>Description</th><th style="text-align:right;width:140px">Amount</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>School fee payment${p.note ? ' — ' + E.esc(p.note) : ''}</td>
+            <td class="amount">${E.money(p.amount)}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="total-row">
+        <span>Amount received</span>
+        <span>${E.money(p.amount)}</span>
+      </div>
+
+      <div class="words-row">Amount in words: <strong>${E.esc(words)}</strong></div>
+
+      ${summary ? `
+        <div class="balance-strip">
+          <span>Previous paid: <strong>${E.money(Math.max(0, summary.paid - p.amount))}</strong></span>
+          <span>${summary.balance < 0
+            ? 'Account credit: <strong class="credit">' + E.money(-summary.balance) + '</strong>'
+            : 'New balance: <strong>' + E.money(Math.max(0, summary.balance)) + '</strong>'}</span>
+        </div>` : ''}
+
+      ${isReversed ? `
+        <div class="cancelled-note">
+          <strong>CANCELLED</strong> — This payment was reversed on
+          ${E.fmtDateTime(p.reversedAt)} by ${E.esc(p.reversedBy || 'admin')}.
+          ${p.reversalReason ? 'Reason: ' + E.esc(p.reversalReason) + '.' : ''}
+          Retained for audit purposes only.
+        </div>` : (summary ? `
+        <div class="payment-note ${summary.balance <= 0 ? '' : 'warn'}">
+          ${summary.balance < 0
+            ? `<strong>Account in credit.</strong> A credit of ${E.money(-summary.balance)} is applied and will auto-deduct from future charges.`
+            : summary.balance === 0
+            ? `<strong>Account fully paid.</strong> No outstanding balance remains.`
+            : `Remaining balance of <strong>${E.money(summary.balance)}</strong> is still outstanding.`}
+        </div>` : '')}
+
+      <div class="sig-block">
+        <div class="sig">
+          <div class="img"></div>
+          <div class="line">
+            <strong>${E.esc(settings.principal || 'Principal')}</strong>
+            Principal / Head Teacher
+          </div>
+        </div>
+        <div class="sig">
+          <div class="img"></div>
+          <div class="line">
+            <strong>${E.esc(p.receivedBy || 'Cashier')}</strong>
+            Received by
+          </div>
+        </div>
+      </div>
+
+      <div class="foot">
+        <span>Generated by <strong>${E.esc(schoolName)}</strong> · EduCore</span>
+        <span>This receipt confirms payment only</span>
+      </div>
+
+      <div class="notice">
+        Keep this receipt for your records. For enquiries, contact the school office quoting the receipt number above.
+      </div>
+    `;
+  }
+
+  /* ============================================================
+     SALARY RECEIPT
+     ============================================================ */
+  function buildSalaryReceipt(s){
+    const isReversed = !!s.reversed;
+    const words = numberToWords(s.netBalance);
+
+    return `
+      ${isReversed ? `<div class="cancelled-watermark"><span>CANCELLED</span></div>` : ''}
+
+      <div class="receipt-head">
+        <div class="brand">
+          <div class="logo">${logoHTML}</div>
+          <div>
+            <h2>${E.esc(schoolName)}</h2>
+            ${locationLine ? `<small>${E.esc(locationLine)}</small>` : ''}
+            ${contactLine ? `<small>${E.esc(contactLine)}</small>` : ''}
+          </div>
+        </div>
+        <div class="num">
+          <div>${E.esc(s.receiptNo || '—')}</div>
+          <small>Issued ${E.fmtDateTime(s.createdAt)}</small>
+        </div>
+      </div>
+
+      <div class="receipt-title">
+        <span>Official Salary Receipt</span>
+        <small>${isReversed ? 'Status: CANCELLED' : 'Status: Paid'}</small>
+      </div>
+
+      <div class="meta-box">
+        <div class="row"><span>Teacher</span><strong>${E.esc(s.teacherName || '—')}</strong></div>
+        <div class="row"><span>Teacher ID</span><strong>${E.esc(s.teacherId || '—')}</strong></div>
+        <div class="row"><span>Payment date</span><strong>${E.esc(E.fmtDate(s.date || s.createdAt))}</strong></div>
+        <div class="row"><span>Method</span><strong>${E.esc(s.method || '—')}</strong></div>
+        <div class="row"><span>Reference</span><strong>${E.esc(s.reference || '—')}</strong></div>
+        <div class="row"><span>Note</span><strong>${E.esc(s.note || '—')}</strong></div>
+      </div>
+
+      <table class="items">
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th style="text-align:right;width:140px">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Total salary</td>
+            <td class="amount">${E.money(s.totalSalary)}</td>
+          </tr>
+          ${Number(s.advance) ? `
+            <tr>
+              <td>Less: advance</td>
+              <td class="amount neg">- ${E.money(s.advance)}</td>
+            </tr>` : ''}
+          ${Number(s.taxAmount) ? `
+            <tr>
+              <td>Less: tax (${s.taxPercent}%)</td>
+              <td class="amount neg">- ${E.money(s.taxAmount)}</td>
+            </tr>` : ''}
+        </tbody>
+      </table>
+
+      <div class="total-row">
+        <span>Net balance paid</span>
+        <span>${E.money(s.netBalance)}</span>
+      </div>
+
+      <div class="words-row">Amount in words: <strong>${E.esc(words)}</strong></div>
+
+      ${isReversed ? `
+        <div class="cancelled-note">
+          <strong>CANCELLED</strong> — This transaction was reversed on
+          ${E.fmtDateTime(s.reversedAt)} by ${E.esc(s.reversedBy || 'admin')}.
+          ${s.reversalReason ? 'Reason: ' + E.esc(s.reversalReason) + '.' : ''}
+          Retained for audit purposes only.
+        </div>` : `
+        <div class="payment-note">
+          <strong>Salary disbursed.</strong> This receipt confirms the net amount was paid to the teacher.
+        </div>`}
+
+      <div class="sig-block">
+        <div class="sig">
+          <div class="img"></div>
+          <div class="line">
+            <strong>${E.esc(settings.principal || 'Principal')}</strong>
+            Approved by
+          </div>
+        </div>
+        <div class="sig">
+          <div class="img"></div>
+          <div class="line">
+            <strong>${E.esc(s.createdBy || 'Accountant')}</strong>
+            Received by
+          </div>
+        </div>
+      </div>
+
+      <div class="foot">
+        <span>Generated by <strong>${E.esc(schoolName)}</strong> · EduCore</span>
+        <span>This receipt confirms payment only</span>
+      </div>
+
+      <div class="notice">
+        Keep this receipt for your records. For enquiries, contact the school office quoting the receipt number above.
+      </div>
+    `;
+  }
+
+  /* ---------- Render ---------- */
+  $('content').innerHTML = (type === 'salary')
+    ? buildSalaryReceipt(record)
+    : buildFeeReceipt(record);
+
+  document.title = `Receipt ${record.receiptNo || ''} | ${schoolName}`;
+})();
+</script>
+</body>
+</html>

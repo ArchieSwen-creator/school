@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Children | EduCore</title>
+<style>
+  :root{
+    --navy:#12315a;--navy2:#14213d;--blue:#3987ee;--pale:#eef5ff;--border:#d8e4f2;
+    --text:#23354d;--muted:#73849a;--green:#14805e;--orange:#d88922;--red:#d64545;
+    --gold:#c99a2e;--gold2:#fff4d6;--bg:#f5f7fb;--line:#e8ebf2;--white:#fff;
+    --shadow:0 8px 24px rgba(24,42,78,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:64px 16px 40px;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button{font:inherit;cursor:pointer}
+
+  .page{width:100%;max-width:1200px;margin:0 auto}
+
+  .band{
+    background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
+    border-radius:16px;padding:22px 28px;margin-bottom:20px;
+    box-shadow:0 18px 50px #16345417;display:flex;justify-content:space-between;
+    align-items:center;gap:16px;flex-wrap:wrap;border-top:5px solid #58a4ff;
+  }
+  .band-left{display:flex;align-items:center;gap:14px}
+  .band-logo{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;place-items:center;
+    overflow:hidden;color:var(--navy);font-weight:900;font-size:18px;border:3px solid #d8e8ff;flex:0 0 48px}
+  .band-logo img{width:100%;height:100%;object-fit:contain}
+  .band h1{margin:0;font-size:19px;letter-spacing:.3px;text-transform:uppercase}
+  .band p{margin:4px 0 0;font-size:11px;color:#cfdcf5}
+  .band-user{display:flex;align-items:center;gap:10px;font-size:11px;color:#cfdcf5;
+    background:#ffffff14;border:1px solid #ffffff36;padding:7px 12px;border-radius:20px}
+  .band-user strong{color:#fff}
+
+  .btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{filter:brightness(.96)}
+  .btn.secondary{background:#eef2fb;color:#34415c}
+  .btn.gold{background:linear-gradient(135deg,#f7d97a,#c99a2e);color:#5a3a00}
+  .btn[disabled]{opacity:.5;cursor:not-allowed;filter:grayscale(.5)}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px}
+
+  .child-card{background:#fff;border:1px solid var(--line);border-radius:14px;
+    box-shadow:var(--shadow);overflow:hidden}
+  .child-head{padding:20px 22px;background:linear-gradient(120deg,#f8faff,#eef5ff);
+    border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px}
+  .child-avatar{width:52px;height:52px;border-radius:14px;background:#fff;color:#3859b7;
+    display:grid;place-items:center;font-weight:800;font-size:16px;border:2px solid #d8e8ff;
+    overflow:hidden;flex:0 0 52px}
+  .child-avatar img{width:100%;height:100%;object-fit:cover}
+  .child-head-info h3{margin:0;font-size:15px;color:var(--navy)}
+  .child-head-info p{margin:4px 0 0;font-size:11px;color:var(--muted)}
+  .child-head-info strong{color:var(--text);font-weight:700}
+
+  .child-body{padding:16px 22px 20px}
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+  .mini-stat{background:#f8faff;border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+  .mini-stat small{display:block;font-size:9px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.7px;font-weight:800;margin-bottom:4px}
+  .mini-stat strong{font-size:15px;color:var(--navy)}
+
+  .badge{display:inline-block;padding:4px 8px;border-radius:20px;font-size:10px;font-weight:700}
+  .badge.green{background:#e6f7f0;color:#16835f}
+  .badge.orange{background:#fff2dd;color:#aa6c14}
+  .badge.red{background:#ffeaec;color:#bd3b48}
+  .badge.blue{background:#edf2ff;color:#3b5cc1}
+
+  .child-actions{display:flex;gap:6px;flex-wrap:wrap}
+  .child-actions .btn{padding:9px 12px;font-size:11px;flex:1 1 auto;justify-content:center}
+  .child-actions .btn[disabled]{pointer-events:none}
+
+  .empty-state{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);padding:60px 30px;text-align:center;color:var(--muted);font-size:13px}
+  .empty-state .icon{font-size:48px;margin-bottom:14px;opacity:.5;display:block}
+  .empty-state strong{display:block;color:var(--navy);font-size:15px;margin-bottom:8px}
+
+  .diag{background:#fffbe6;border:1px solid #f3d999;border-radius:10px;padding:10px 14px;
+    margin:0 auto 18px;max-width:1200px;font-family:monospace;font-size:11px;
+    color:#7a5a12;line-height:1.6}
+  .diag strong{color:#5a3a00}
+
+  @media (max-width:650px){
+    body{padding:64px 8px 24px}
+    .band{padding:18px 20px}
+    .band h1{font-size:15px}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="band">
+    <div class="band-left">
+      <div class="band-logo" id="bandLogo">DS</div>
+      <div>
+        <h1 id="bandSchool">My Children</h1>
+        <p id="bandSub">Students linked to your account</p>
+      </div>
+    </div>
+    <div class="band-user">
+      Signed in as <strong id="bandUser">—</strong>
+    </div>
+  </div>
+
+  <!-- Diagnostic strip — remove once everything is confirmed working -->
+  <div class="diag" id="diagStrip"></div>
+
+  <div id="content"></div>
+
+</div>
+
+<script src="educore-shared.js"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  /* ---------- GUARD ---------- */
+  const user = E.requirePerm('children', 'My Children');
+  if(!user) return;
+
+  /* ---------- SUB-FEATURE PERMISSIONS ----------
+     Read once at page load. Used for BOTH rendering and click-gating. */
+  const canReport  = E.can('children.report');
+  const canFees    = E.can('children.fees');
+  const canIdCard  = E.can('children.id_card');
+
+  /* ---------- DIAGNOSTIC ----------
+     Show the user exactly what the page sees. Remove when not needed. */
+  function paintDiag(){
+    const el = document.getElementById('diagStrip');
+    if(!el) return;
+    el.innerHTML = `<strong>Permission check (diagnostic)</strong> · ` +
+      `user: <strong>${E.esc(user.username)}</strong> · ` +
+      `role: <strong>${E.esc(user.role)}</strong> · ` +
+      `children (menu): <strong>${user.permissions?.children ? 'ON' : 'OFF'}</strong> · ` +
+      `report: <strong>${canReport ? 'ON' : 'OFF'}</strong> · ` +
+      `fees: <strong>${canFees ? 'ON' : 'OFF'}</strong> · ` +
+      `id_card: <strong>${canIdCard ? 'ON' : 'OFF'}</strong>`;
+  }
+
+  /* ---------- HEADER ---------- */
+  function paintHeader(){
+    const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const name = settings.name || 'EduCore High School';
+    if(settings.logo){
+      document.getElementById('bandLogo').innerHTML = `<img src="${settings.logo}" alt="">`;
+    } else {
+      document.getElementById('bandLogo').textContent =
+        name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
+    }
+    document.getElementById('bandSchool').textContent = name;
+    document.getElementById('bandSub').textContent = 'Students linked to your account';
+    document.getElementById('bandUser').textContent = user.name || user.username;
+  }
+
+  /* ---------- RENDER ---------- */
+  function paint(){
+    const kids = E.childrenOf(user);
+    const results = E.readStore(E.STORE_KEYS.results, []) || [];
+    const fees = E.readStore(E.STORE_KEYS.fees, []) || [];
+    const attendance = E.readStore(E.STORE_KEYS.attendance, {}) || {};
+    const photos = E.readStore(E.STORE_KEYS.photos, {}) || {};
+
+    const content = document.getElementById('content');
+
+    if(!kids.length){
+      content.innerHTML = `
+        <div class="empty-state">
+          <span class="icon">👨‍👩‍👧</span>
+          <strong>No children linked to this account</strong>
+          <div>Contact the school office to link your children's records to your account.</div>
+        </div>`;
+      return;
+    }
+
+    content.innerHTML = `
+      <div class="grid">
+        ${kids.map(k => buildChildCard(k, results, fees, attendance, photos)).join('')}
+      </div>`;
+
+    /* --- Click handlers --- */
+    content.querySelectorAll('[data-report]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if(!canReport){ E.toast("You don't have permission to open report cards."); return; }
+        window.open('report-card-print.html?student=' + encodeURIComponent(btn.dataset.report),
+          '_blank');
+      });
+    });
+    content.querySelectorAll('[data-fees]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if(!canFees){ E.toast("You don't have permission to view fee details."); return; }
+        window.location.href = 'fees.html';
+      });
+    });
+    content.querySelectorAll('[data-idcard]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if(!canIdCard){ E.toast("You don't have permission to open ID cards."); return; }
+        window.open('id-card-print.html?student=' + encodeURIComponent(btn.dataset.idcard),
+          '_blank');
+      });
+    });
+  }
+
+  /* ---------- ONE CHILD CARD ---------- */
+  function buildChildCard(k, results, fees, attendance, photos){
+    const photo = photos[k.id];
+    const avatarHTML = photo ? `<img src="${photo}" alt="">` : E.initials(k.name);
+
+    const myResults = results.filter(r => r.student === k.name && r.class === k.class);
+    const avg = myResults.length
+      ? (myResults.reduce((a,r) => a + Number(r.score||0), 0) / myResults.length).toFixed(1)
+      : '—';
+    const avgGrade = avg === '—' ? null : E.grade(parseFloat(avg));
+
+    let present = 0, late = 0, absent = 0;
+    Object.keys(attendance).forEach(key => {
+      const [date, cls] = key.split('|');
+      if(cls !== k.class) return;
+      const rec = attendance[key] || {};
+      const v = rec[k.id];
+      if(!v) return;
+      if(v === 'Present') present++;
+      else if(v === 'Late') late++;
+      else if(v === 'Absent') absent++;
+    });
+    const totalDays = present + late + absent;
+    const rate = totalDays ? Math.round((present + late) / totalDays * 100) : null;
+
+    const f = fees.find(x => x.id === k.id);
+    const balance = f ? f.total - f.paid : 0;
+    const feeStatus = !f ? 'No account' : f.paid >= f.total ? 'Paid' : f.paid > 0 ? 'Part-paid' : 'Pending';
+    const feeBadgeClass = feeStatus === 'Paid' ? 'green'
+                        : feeStatus === 'Part-paid' ? 'orange'
+                        : feeStatus === 'Pending' ? 'red'
+                        : 'blue';
+
+    /* Build the action bar based on sub-permissions.
+       Buttons the user can't use are shown disabled with a title tooltip. */
+    const actionBits = [];
+
+    actionBits.push(canReport
+      ? `<button class="btn" data-report="${E.esc(k.id)}">📄 Report card</button>`
+      : `<button class="btn" disabled title="You don't have permission to open report cards">📄 Report card</button>`);
+
+    actionBits.push(canFees
+      ? `<button class="btn secondary" data-fees="${E.esc(k.id)}">＄ Fees</button>`
+      : `<button class="btn secondary" disabled title="You don't have permission to view fees">＄ Fees</button>`);
+
+    actionBits.push(canIdCard
+      ? `<button class="btn gold" data-idcard="${E.esc(k.id)}">🪪 ID card</button>`
+      : `<button class="btn gold" disabled title="You don't have permission to open ID cards">🪪 ID card</button>`);
+
+    return `
+      <div class="child-card">
+        <div class="child-head">
+          <div class="child-avatar">${avatarHTML}</div>
+          <div class="child-head-info">
+            <h3>${E.esc(k.name)}</h3>
+            <p><strong>${E.esc(k.class)}</strong> · ${E.esc(k.id)}</p>
+          </div>
+        </div>
+        <div class="child-body">
+          <div class="stat-grid">
+            <div class="mini-stat">
+              <small>Overall average</small>
+              <strong>${avg}${avg === '—' ? '' : '%'} ${avgGrade ? `<span class="badge ${{A:'green',B:'blue',C:'orange',D:'orange',F:'red'}[avgGrade]}">${avgGrade}</span>` : ''}</strong>
+            </div>
+            <div class="mini-stat">
+              <small>Attendance</small>
+              <strong>${rate != null ? rate + '%' : '—'}</strong>
+            </div>
+            <div class="mini-stat">
+              <small>Subjects recorded</small>
+              <strong>${myResults.length}</strong>
+            </div>
+            <div class="mini-stat">
+              <small>Fees</small>
+              <strong>${E.money(balance)} <span class="badge ${feeBadgeClass}">${feeStatus}</span></strong>
+            </div>
+          </div>
+          <div class="child-actions">
+            ${actionBits.join(' ')}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  /* ---------- INIT ---------- */
+  paintHeader();
+  paintDiag();
+  paint();
+})();
+</script>
+</body>
+</html>

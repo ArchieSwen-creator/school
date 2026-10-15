@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audit Log | EduCore</title>
+<style>
+  :root{
+    --navy:#12315a;--navy2:#14213d;--blue:#3987ee;--pale:#eef5ff;--border:#d8e4f2;
+    --text:#23354d;--muted:#73849a;--green:#14805e;--orange:#d88922;--red:#d64545;
+    --gold:#c99a2e;--gold2:#fff4d6;--bg:#f5f7fb;--line:#e8ebf2;--white:#fff;
+    --shadow:0 8px 24px rgba(24,42,78,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:64px 16px 40px;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+
+  .page{width:100%;max-width:1240px;margin:0 auto}
+
+  .band{
+    background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
+    border-radius:16px;padding:22px 28px;margin-bottom:20px;
+    box-shadow:0 18px 50px #16345417;display:flex;justify-content:space-between;
+    align-items:center;gap:16px;flex-wrap:wrap;border-top:5px solid #58a4ff;
+  }
+  .band-left{display:flex;align-items:center;gap:14px}
+  .band-logo{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;place-items:center;
+    overflow:hidden;color:var(--navy);font-weight:900;font-size:18px;border:3px solid #d8e8ff;flex:0 0 48px}
+  .band-logo img{width:100%;height:100%;object-fit:contain}
+  .band h1{margin:0;font-size:19px;letter-spacing:.3px;text-transform:uppercase}
+  .band p{margin:4px 0 0;font-size:11px;color:#cfdcf5}
+  .band-user{display:flex;align-items:center;gap:10px;font-size:11px;color:#cfdcf5;
+    background:#ffffff14;border:1px solid #ffffff36;padding:7px 12px;border-radius:20px}
+  .band-user strong{color:#fff}
+
+  .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:16px 18px;
+    box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--blue)}
+  .stat.green::before{background:var(--green)}
+  .stat.orange::before{background:var(--orange)}
+  .stat.red::before{background:var(--red)}
+  .stat small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.8px;
+    color:var(--muted);font-weight:800;margin-bottom:8px}
+  .stat strong{font-size:22px;color:var(--navy);font-weight:800}
+  .stat .sub{font-size:10px;color:var(--muted);margin-top:4px;display:block}
+
+  .toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;
+    flex-wrap:wrap;margin-bottom:16px}
+  .toolbar-left{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .field,.pick{border:1px solid var(--line);border-radius:9px;padding:10px 12px;
+    background:#fff;color:var(--text);font-size:12px;outline:none}
+  .field{min-width:230px}
+  .field:focus,.pick:focus{border-color:var(--blue)}
+
+  .btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{filter:brightness(.96)}
+  .btn.secondary{background:#eef2fb;color:#34415c}
+  .btn.outline{background:#fff;color:#34415c;border:1px solid var(--line)}
+  .btn.danger{background:#fff0f1;color:var(--red)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);overflow:hidden}
+  .card-head{display:flex;justify-content:space-between;align-items:center;
+    padding:18px 22px;border-bottom:1px solid var(--line);gap:12px;flex-wrap:wrap}
+  .card-head h3{margin:0;font-size:14px}
+  .card-head .count{padding:4px 9px;border-radius:20px;background:#edf2ff;color:#3b5cc1;
+    font-size:10px;font-weight:800}
+
+  .table-wrap{overflow-x:auto;max-height:70vh}
+  table{width:100%;border-collapse:collapse;white-space:nowrap}
+  th{text-align:left;background:#fafbfe;color:#7a8498;font-size:10px;
+    text-transform:uppercase;letter-spacing:.6px;padding:13px 18px;
+    border-bottom:1px solid var(--line);position:sticky;top:0;z-index:2}
+  td{padding:12px 18px;border-bottom:1px solid #f0f2f7;font-size:12px;vertical-align:top}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:hover{background:#fbfcff}
+
+  .action-pill{display:inline-block;padding:5px 9px;border-radius:20px;font-size:10px;
+    font-weight:900;letter-spacing:.6px;text-transform:uppercase}
+  .action-pill.login{background:#e6f7f0;color:#16835f}
+  .action-pill.logout{background:#eef1f6;color:#59647c}
+  .action-pill.create{background:#e6f7f0;color:#16835f}
+  .action-pill.update{background:#edf2ff;color:#3b5cc1}
+  .action-pill.delete{background:#ffeaec;color:#bd3b48}
+  .action-pill.lock{background:#fff2dd;color:#a86414}
+  .action-pill.unlock{background:#e6f7f0;color:#16835f}
+  .action-pill.copy{background:#f4eaff;color:#6b3da5}
+  .action-pill.signature{background:#f4eaff;color:#6b3da5}
+
+  .actor{font-weight:700;color:var(--navy);font-size:11px}
+  .target{font-size:12px;color:var(--text)}
+  .change-cell{font-size:11px;color:var(--muted);max-width:340px;white-space:normal;line-height:1.55}
+  .change-cell .old{color:#9b3038;text-decoration:line-through}
+  .change-cell .new{color:#16835f;font-weight:700}
+  .when-cell{font-size:11px;color:var(--muted);font-family:monospace}
+
+  .empty{padding:60px 20px;text-align:center;color:var(--muted);font-size:13px}
+  .empty .icon{font-size:44px;opacity:.4;margin-bottom:12px;display:block}
+
+  @media (max-width:850px){
+    .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:650px){
+    body{padding:64px 8px 24px}
+    .band{padding:18px 20px}
+    .band h1{font-size:15px}
+    .field,.pick{min-width:0;width:100%}
+    .toolbar{flex-direction:column;align-items:stretch}
+    .toolbar-left{width:100%}
+    .stats{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="band">
+    <div class="band-left">
+      <div class="band-logo" id="bandLogo">DS</div>
+      <div>
+        <h1 id="bandSchool">Audit Log</h1>
+        <p id="bandSub">Every action taken in the system</p>
+      </div>
+    </div>
+    <div class="band-user">
+      Signed in as <strong id="bandUser">—</strong>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><small>Total entries</small><strong id="kTotal">0</strong></div>
+    <div class="stat green"><small>Today</small><strong id="kToday">0</strong><span class="sub" id="kTodaySub">—</span></div>
+    <div class="stat orange"><small>This week</small><strong id="kWeek">0</strong><span class="sub" id="kWeekSub">—</span></div>
+    <div class="stat red"><small>Deletes &amp; locks</small><strong id="kCritical">0</strong><span class="sub" id="kCritSub">—</span></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <input class="field" id="search" placeholder="Search actor, target, change...">
+      <select class="pick" id="actionFilter">
+        <option value="">All actions</option>
+        <option value="login">Login</option>
+        <option value="logout">Logout</option>
+        <option value="create">Create</option>
+        <option value="update">Update</option>
+        <option value="delete">Delete</option>
+        <option value="lock">Lock</option>
+        <option value="unlock">Unlock</option>
+        <option value="copy">Copy</option>
+        <option value="signature">Signature</option>
+      </select>
+      <select class="pick" id="actorFilter">
+        <option value="">All users</option>
+      </select>
+      <select class="pick" id="rangeFilter">
+        <option value="">All time</option>
+        <option value="today">Today</option>
+        <option value="week">Last 7 days</option>
+        <option value="month">Last 30 days</option>
+      </select>
+    </div>
+    <div class="toolbar-left" id="toolbarActions">
+      <button class="btn secondary" id="exportBtn">↓ Export CSV</button>
+      <button class="btn danger" id="clearBtn">🗑 Clear log</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h3>Activity <span class="count" id="count">0</span></h3>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>When</th>
+            <th>Action</th>
+            <th>Actor</th>
+            <th>Target</th>
+            <th>Change</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script src="educore-shared.js"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  /* ---------- GUARD ---------- */
+  const user = E.requirePerm('audit', 'Audit Log');
+  if(!user) return;
+
+  /* ---------- SUB-FEATURE PERMISSIONS ---------- */
+  const canView   = E.can('audit.view');
+  const canClear  = E.can('audit.clear');
+  const canExport = E.can('audit.export');
+
+  /* If the user has "audit" menu access but NOT audit.view, block the page */
+  if(!canView){
+    E.showDenied('Audit Log (view)');
+    return;
+  }
+
+  /* ---------- HEADER ---------- */
+  function paintHeader(){
+    const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const name = settings.name || 'EduCore High School';
+    if(settings.logo){
+      document.getElementById('bandLogo').innerHTML = `<img src="${settings.logo}" alt="">`;
+    } else {
+      document.getElementById('bandLogo').textContent =
+        name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
+    }
+    document.getElementById('bandSchool').textContent = name;
+    document.getElementById('bandSub').textContent = 'Every action taken in the system';
+    document.getElementById('bandUser').textContent = user.name || user.username;
+  }
+
+  /* ---------- ACTOR OPTIONS ---------- */
+  function fillActors(){
+    const list = E.readAudit();
+    const set = new Set(list.map(e => e.actor).filter(Boolean));
+    const sel = document.getElementById('actorFilter');
+    sel.innerHTML = '<option value="">All users</option>' +
+      Array.from(set).sort().map(a => `<option>${E.esc(a)}</option>`).join('');
+  }
+
+  /* ---------- ACTION PILL ---------- */
+  function actionPill(a){
+    const key = (a || '').toLowerCase();
+    const known = ['login','logout','create','update','delete','lock','unlock','copy','signature'];
+    const cls = known.includes(key) ? key : 'update';
+    return `<span class="action-pill ${cls}">${E.esc(a || '—')}</span>`;
+  }
+
+  /* ---------- RELATIVE TIME ---------- */
+  function relativeTime(iso){
+    try {
+      const d = new Date(iso);
+      const diff = Date.now() - d.getTime();
+      if(diff < 60_000) return 'just now';
+      if(diff < 3_600_000) return Math.floor(diff / 60_000) + ' min ago';
+      if(diff < 86_400_000) return Math.floor(diff / 3_600_000) + ' hr ago';
+      if(diff < 604_800_000) return Math.floor(diff / 86_400_000) + ' day' + (Math.floor(diff / 86_400_000) === 1 ? '' : 's') + ' ago';
+      return d.toLocaleDateString();
+    } catch(e){ return iso; }
+  }
+
+  function startOfDay(ts){
+    const d = new Date(ts);
+    d.setHours(0,0,0,0);
+    return d.getTime();
+  }
+
+  /* ---------- RENDER ---------- */
+  function paintTable(){
+    const list = E.readAudit();
+    const q = document.getElementById('search').value.toLowerCase();
+    const action = document.getElementById('actionFilter').value;
+    const actor = document.getElementById('actorFilter').value;
+    const range = document.getElementById('rangeFilter').value;
+
+    const now = Date.now();
+    const cutoff = range === 'today' ? startOfDay(now)
+                 : range === 'week'  ? now - 7 * 86_400_000
+                 : range === 'month' ? now - 30 * 86_400_000
+                 : 0;
+
+    const arr = list.filter(e => {
+      if(action && (e.action || '').toLowerCase() !== action) return false;
+      if(actor && e.actor !== actor) return false;
+      if(cutoff && new Date(e.at).getTime() < cutoff) return false;
+      if(q){
+        const hay = `${e.actor} ${e.target} ${e.action} ${e.from} ${e.to} ${e.meta}`.toLowerCase();
+        if(!hay.includes(q)) return false;
+      }
+      return true;
+    });
+
+    /* KPIs */
+    const today = list.filter(e => new Date(e.at).getTime() >= startOfDay(now)).length;
+    const week = list.filter(e => new Date(e.at).getTime() >= now - 7 * 86_400_000).length;
+    const critical = list.filter(e => ['delete','lock'].includes((e.action||'').toLowerCase())).length;
+
+    document.getElementById('kTotal').textContent = list.length;
+    document.getElementById('kToday').textContent = today;
+    document.getElementById('kTodaySub').textContent = today ? 'activity today' : 'no activity today';
+    document.getElementById('kWeek').textContent = week;
+    document.getElementById('kWeekSub').textContent = week ? 'last 7 days' : 'none this week';
+    document.getElementById('kCritical').textContent = critical;
+    document.getElementById('kCritSub').textContent = critical ? 'require review' : 'all clear';
+
+    const tb = document.getElementById('tbody');
+    if(!arr.length){
+      tb.innerHTML = `<tr><td colspan="5" class="empty">
+        <span class="icon">🗒</span>
+        No entries match your filters.
+      </td></tr>`;
+      document.getElementById('count').textContent = '0';
+      return;
+    }
+
+    const shown = arr.slice(0, 500);
+
+    tb.innerHTML = shown.map(e => {
+      const change = (e.from !== '' || e.to !== '' || e.meta)
+        ? `${e.from !== '' ? `<span class="old">${E.esc(e.from)}</span> → ` : ''}<span class="new">${E.esc(e.to || e.meta || '')}</span>`
+        : '<span style="color:#aab6c8">—</span>';
+
+      return `<tr>
+        <td class="when-cell" title="${E.esc(e.at)}">${E.esc(relativeTime(e.at))}</td>
+        <td>${actionPill(e.action)}</td>
+        <td class="actor">${E.esc(e.actor || '—')}</td>
+        <td class="target">${E.esc(e.target || '—')}</td>
+        <td class="change-cell">${change}</td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('count').textContent = arr.length + (arr.length > 500 ? ' (showing 500)' : '');
+  }
+
+  /* ---------- EXPORT ---------- */
+  document.getElementById('exportBtn').addEventListener('click', () => {
+    if(!canExport){ E.toast("You don't have permission to export the audit log."); return; }
+    const list = E.readAudit();
+    if(!list.length){ E.toast('Nothing to export.'); return; }
+    const rows = [
+      ['When','Action','Actor','Target','From','To','Meta'],
+      ...list.map(e => [e.at, e.action, e.actor, e.target, e.from, e.to, e.meta])
+    ];
+    const csv = rows.map(r => r.map(v => '"' + String(v ?? '').replace(/"/g,'""') + '"').join(',')).join('\r\n');
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = 'audit-log.csv'; a.click();
+    URL.revokeObjectURL(url);
+    E.toast('Audit log exported.');
+  });
+
+  /* ---------- CLEAR ---------- */
+  document.getElementById('clearBtn').addEventListener('click', () => {
+    if(!canClear){ E.toast("You don't have permission to clear the audit log."); return; }
+    const list = E.readAudit();
+    if(!list.length){ E.toast('Audit log is already empty.'); return; }
+    if(!confirm(`Clear the entire audit log?\n\nThis will permanently delete ${list.length} entries.\n\nThis cannot be undone.`)) return;
+    const typed = prompt('Type CLEAR to confirm:');
+    if(typed !== 'CLEAR'){ E.toast('Confirmation did not match.'); return; }
+    E.writeAudit([]);
+    E.audit('delete', 'Audit log', `${list.length} entries`, 'cleared');
+    fillActors();
+    paintTable();
+    E.toast('Audit log cleared.');
+  });
+
+  /* ---------- EVENTS ---------- */
+  document.getElementById('search').addEventListener('input', paintTable);
+  document.getElementById('actionFilter').addEventListener('change', paintTable);
+  document.getElementById('actorFilter').addEventListener('change', paintTable);
+  document.getElementById('rangeFilter').addEventListener('change', paintTable);
+
+  /* ---------- INIT ---------- */
+  paintHeader();
+  fillActors();
+  paintTable();
+
+  /* Hide buttons the user can't use */
+  if(!canClear) document.getElementById('clearBtn').style.display = 'none';
+  if(!canExport) document.getElementById('exportBtn').style.display = 'none';
+  if(!canClear && !canExport){
+    const wrap = document.getElementById('toolbarActions');
+    if(wrap) wrap.style.display = 'none';
+  }
+})();
+</script>
+</body>
+</html>4r

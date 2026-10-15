@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduCore | School Management</title>
+<style>
+:root{--navy:#14213d;--navy2:#1d3158;--blue:#4169e1;--blue2:#edf2ff;--ink:#202a3b;--muted:#7a8498;--line:#e8ebf2;--bg:#f5f7fb;--white:#fff;--green:#1c9b72;--orange:#d88922;--red:#d84e5a;--gold:#c99a2e;--gold2:#fff4d6;--shadow:0 8px 24px rgba(24,42,78,.06)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--ink)}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+
+/* LOGIN */
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:radial-gradient(1200px 600px at 10% 0%, #1d3158 0%, transparent 60%),
+             radial-gradient(1000px 600px at 90% 100%, #14213d 0%, transparent 60%),
+             linear-gradient(135deg,#14213d,#1d3158)}
+.login-card{width:100%;max-width:440px;background:#fff;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.4);overflow:hidden}
+.login-head{padding:28px 28px 22px;background:linear-gradient(120deg,#102949,#245d9c);color:#fff}
+.login-brand{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.login-brand .mark{width:42px;height:42px;border-radius:12px;background:#fff;color:#245d9c;display:grid;place-items:center;font-weight:900;font-size:20px}
+.login-brand h1{margin:0;font-size:19px;letter-spacing:.3px}
+.login-brand small{display:block;color:#aab8d6;font-size:11px;margin-top:3px}
+.login-head p{margin:14px 0 0;font-size:12px;color:#cfdcf5}
+.login-body{padding:26px 28px 22px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:11px;font-weight:800;color:#657089;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.field input{width:100%;border:1px solid #dfe4ee;border-radius:9px;padding:12px 13px;font-size:14px;outline:none;background:#f8faff;transition:.15s}
+.field input:focus{border-color:#5575e5;background:#fff}
+.btn-login{width:100%;border:0;border-radius:10px;padding:13px;background:#245d9c;color:#fff;font-weight:800;font-size:13px;letter-spacing:.3px;margin-top:6px}
+.btn-login:hover{background:#1d4d82}
+.login-error{background:#fff0f1;color:#bd3b48;padding:10px 12px;border-radius:8px;font-size:12px;margin-top:10px;display:none}
+.login-error.show{display:block}
+.demo-accounts{margin-top:20px;padding-top:16px;border-top:1px dashed #dfe4ee}
+.demo-accounts h4{margin:0 0 10px;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.demo-chips{display:flex;flex-wrap:wrap;gap:6px}
+.demo-chip{border:1px solid #dfe4ee;background:#f8faff;border-radius:8px;padding:7px 11px;font-size:11px;font-weight:700;color:#34415c;cursor:pointer}
+.demo-chip:hover{background:#eef2fb;border-color:#b9c8e8}
+
+/* SHELL */
+.app{min-height:100vh;display:flex}
+.sidebar{
+  width:250px;background:var(--navy);color:#fff;padding:25px 0 0;
+  display:flex;flex-direction:column;flex-shrink:0;
+  height:100vh;position:sticky;top:0;overflow:hidden;
+}
+.sidebar-scroll{
+  flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;
+  padding:0 16px 8px;
+  scrollbar-width:thin;
+  scrollbar-color:#4b5f8a transparent;
+}
+.sidebar-scroll::-webkit-scrollbar{width:8px}
+.sidebar-scroll::-webkit-scrollbar-track{background:transparent}
+.sidebar-scroll::-webkit-scrollbar-thumb{
+  background:#3a4d73;border-radius:8px;
+  border:2px solid transparent;background-clip:padding-box;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb:hover{background:#54689a;background-clip:padding-box}
+
+.brand{display:flex;align-items:center;gap:11px;padding:0 10px 29px}
+.brand-mark{width:40px;height:40px;border-radius:12px;background:#fff;color:var(--blue);display:grid;place-items:center;font-weight:900;font-size:20px}
+.brand strong{font-size:17px;letter-spacing:.2px}
+.brand small{display:block;color:#aab8d6;font-size:11px;margin-top:4px}
+.nav-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#8494b8;padding:13px 12px 8px}
+.nav{display:flex;flex-direction:column;gap:5px}
+.nav button{display:flex;align-items:center;gap:12px;width:100%;border:0;background:transparent;
+  color:#c5cee0;padding:12px;border-radius:9px;text-align:left;font-size:13px;transition:.15s}
+.nav button:hover{background:#2b426b;color:#fff}
+.nav button.active{background:#2b426b;color:#fff}
+.nav button.locked{opacity:.4;cursor:not-allowed}
+.nav button.locked:hover{background:transparent;color:#c5cee0}
+.nav .ico{width:19px;text-align:center;font-size:16px}
+.sidebar-foot{
+  border-top:1px solid #30415f;padding:18px 26px 22px;color:#aab8d6;
+  font-size:11px;line-height:1.6;flex-shrink:0;background:var(--navy);
+}
+.main{flex:1;min-width:0}
+.topbar{height:78px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 30px;gap:18px}
+.top-left{display:flex;align-items:center;gap:14px}
+.menu-toggle{display:none;border:0;background:#f0f3fa;border-radius:9px;padding:9px}
+.topbar h1{font-size:19px;margin:0}
+.topbar p{font-size:12px;color:var(--muted);margin:5px 0 0}
+.top-actions{display:flex;align-items:center;gap:12px}
+.user-menu{position:relative}
+.user-btn{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:#fff;padding:6px 10px 6px 6px;border-radius:30px;cursor:pointer}
+.user-btn .avatar{width:30px;height:30px;border-radius:50%;background:#e1e9ff;color:#3155b7;display:grid;place-items:center;font-weight:bold;font-size:11px}
+.user-btn .who{text-align:left;line-height:1.15}
+.user-btn .who strong{display:block;font-size:12px}
+.user-btn .who small{display:block;font-size:10px;color:var(--muted);margin-top:2px}
+.user-menu-pop{position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--line);
+  border-radius:10px;box-shadow:var(--shadow);min-width:200px;padding:6px;display:none;z-index:12}
+.user-menu-pop.show{display:block}
+.user-menu-pop button{display:block;width:100%;text-align:left;border:0;background:transparent;
+  padding:10px 12px;border-radius:8px;font-size:12px;color:var(--ink);cursor:pointer}
+.user-menu-pop button:hover{background:#f3f6fd}
+
+.content{padding:27px 30px 40px;max-width:1600px;margin:auto}
+.welcome{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:23px}
+.welcome h2{font-size:23px;margin:0 0 7px}
+.welcome p{margin:0;color:var(--muted);font-size:13px}
+.btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;font-size:12px;font-weight:bold;
+  display:inline-flex;align-items:center;gap:7px}
+.btn:hover{filter:brightness(.96)}
+.btn.secondary{background:#eef2fb;color:#34415c}
+.btn.outline{background:#fff;color:#34415c;border:1px solid var(--line)}
+.btn.gold{background:linear-gradient(135deg,#f7d97a,#c99a2e);color:#5a3a00}
+.btn:disabled{opacity:.85;cursor:not-allowed}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:22px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:19px;box-shadow:var(--shadow)}
+.stat-head{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px}
+.stat-icon{width:37px;height:37px;border-radius:11px;display:grid;place-items:center;font-size:17px;background:#edf2ff}
+.stat:nth-child(2) .stat-icon{background:#e5f8f1}
+.stat:nth-child(3) .stat-icon{background:#fff2df}
+.stat:nth-child(4) .stat-icon{background:#f4eaff}
+.stat h3{font-size:27px;margin:13px 0 7px}
+.trend{font-size:11px;color:var(--green)}
+.dashboard-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,1fr);gap:18px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);margin-bottom:18px;min-width:0}
+.panel-head{display:flex;justify-content:space-between;align-items:center;padding:19px 20px;border-bottom:1px solid var(--line);gap:12px;flex-wrap:wrap}
+.panel-head h3{font-size:14px;margin:0}
+.panel-head p{font-size:11px;color:var(--muted);margin:5px 0 0}
+.panel-body{padding:19px 20px}
+.link-btn{border:0;background:transparent;color:var(--blue);font-size:12px;font-weight:bold}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;white-space:nowrap}
+th{text-align:left;background:#fafbfe;color:#7a8498;font-size:10px;text-transform:uppercase;letter-spacing:.6px;padding:13px 18px;border-bottom:1px solid var(--line)}
+td{padding:14px 18px;border-bottom:1px solid #f0f2f7;font-size:12px}
+tbody tr:last-child td{border-bottom:0}
+.person{display:flex;align-items:center;gap:10px}
+.mini-avatar{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;background:#edf2ff;color:#3859b7;font-size:10px;font-weight:bold}
+.person strong{display:block;font-size:12px}
+.person small{display:block;color:var(--muted);font-size:10px;margin-top:4px}
+.pill{display:inline-block;padding:5px 8px;border-radius:20px;font-size:10px;font-weight:bold}
+.pill.green{background:#e6f7f0;color:#16835f}
+.pill.orange{background:#fff2dd;color:#aa6c14}
+.pill.red{background:#ffeaec;color:#bd3b48}
+.pill.blue{background:#edf2ff;color:#3b5cc1}
+.pill.gold{background:var(--gold2);color:var(--gold)}
+.notice{padding:12px;border-radius:10px;background:#f6f8ff;margin-bottom:10px;border-left:3px solid #5475e5}
+.notice:last-child{margin-bottom:0}
+.notice strong{font-size:12px}
+.notice p{font-size:11px;line-height:1.5;color:var(--muted);margin:6px 0 0}
+.empty{padding:40px 20px;text-align:center;color:var(--muted);font-size:13px}
+.dux-card{background:linear-gradient(180deg,#fff9e6,#fff);border:1px solid #e4cd86;border-radius:12px;padding:16px}
+.dux-card.rank-2{background:linear-gradient(180deg,#f5f7fc,#fff);border-color:#cfd6e4}
+.dux-card.rank-3{background:linear-gradient(180deg,#fdf3e6,#fff);border-color:#e6cfb3}
+.leader-row{display:grid;grid-template-columns:110px 1fr;gap:12px;align-items:center;padding:10px 12px;
+  border:1px solid var(--line);border-radius:10px;background:#fbfcff}
+.leader-chip{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:20px;
+  font-size:11px;font-weight:700;background:#eef2fb;color:#34415c;margin:3px 4px 3px 0}
+.leader-chip.rank-1{background:var(--gold2);color:#8a6a1a}
+.leader-chip.rank-2{background:#e9edf6;color:#4f5d7a}
+.leader-chip.rank-3{background:#f6e6d2;color:#8a5f22}
+
+.attendance-mini{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.attendance-mini .mini{background:#f8faff;border:1px solid var(--line);border-radius:10px;
+  padding:12px}
+.attendance-mini .mini small{display:block;font-size:10px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.7px;font-weight:800;margin-bottom:6px}
+.attendance-mini .mini strong{font-size:20px;color:var(--navy)}
+
+.rpt-status{display:flex;align-items:center;gap:14px;padding:16px 20px;
+  border-radius:12px;margin-bottom:18px;border:1px solid;font-size:12.5px;line-height:1.6}
+.rpt-status.unlocked{background:#f0fdf7;border-color:#b8e9d3;color:#0e6b4a}
+.rpt-status.locked{background:#fff8e6;border-color:#f3d999;color:#8a6a1a}
+.rpt-status .icon{font-size:24px;flex:0 0 auto}
+.rpt-status strong{color:inherit}
+.rpt-status .actions{margin-left:auto}
+.rpt-status a{display:inline-block;padding:8px 14px;border-radius:8px;
+  background:var(--navy);color:#fff;text-decoration:none;font-weight:700;font-size:11px}
+
+.footer{text-align:center;color:#9aa2b2;font-size:10px;padding:18px 0 0}
+.mobile-overlay{display:none}
+@media(max-width:1050px){.sidebar{width:220px}.content{padding:23px 20px}.topbar{padding:0 20px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){
+  .sidebar{position:fixed;z-index:15;left:-260px;top:0;bottom:0;width:250px;
+    height:100vh;transition:left .2s}
+  .sidebar.open{left:0}
+  .mobile-overlay.show{display:block;position:fixed;inset:0;background:#0e182c80;z-index:14}
+  .menu-toggle{display:block}
+  .topbar{height:auto;min-height:70px;padding:14px}
+  .topbar h1{font-size:16px}
+  .content{padding:20px 14px}
+  .stats{grid-template-columns:1fr}
+  .dashboard-grid{grid-template-columns:1fr}
+  .user-btn .who{display:none}
+  .attendance-mini{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-head">
+      <div class="login-brand"><div class="mark">E</div><div><h1>EduCore</h1><small>School Management System</small></div></div>
+      <p>Sign in to continue. Use one of the demo accounts below to explore each role.</p>
+    </div>
+    <div class="login-body">
+      <form id="loginForm" autocomplete="off">
+        <div class="field"><label for="loginUser">Username</label><input id="loginUser" name="username" required autocapitalize="off"></div>
+        <div class="field"><label for="loginPass">Password</label><input id="loginPass" name="password" type="password" required></div>
+        <button class="btn-login" type="submit">Sign in →</button>
+        <div class="login-error" id="loginError"></div>
+      </form>
+      <div class="demo-accounts"><h4>Demo accounts</h4><div class="demo-chips" id="demoChips"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SHELL -->
+<div class="app hidden" id="appShell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-scroll">
+      <div class="brand"><div class="brand-mark">E</div><div><strong>EduCore</strong><small id="sidebarRole">Signed out</small></div></div>
+      <div class="nav-label">Main menu</div>
+      <nav class="nav" id="navigation"></nav>
+    </div>
+    <div class="sidebar-foot">EduCore School Management<br><span id="sidebarFooter">Not signed in</span></div>
+  </aside>
+  <div class="mobile-overlay" id="mobileOverlay"></div>
+  <main class="main">
+    <header class="topbar">
+      <div class="top-left">
+        <button class="menu-toggle" id="menuToggle" aria-label="Open menu">☰</button>
+        <div><h1 id="pageTitle">Dashboard</h1><p id="todayText"></p></div>
+      </div>
+      <div class="top-actions">
+        <div class="user-menu">
+          <button class="user-btn" id="userBtn">
+            <span class="avatar" id="userAvatar">–</span>
+            <span class="who"><strong id="userName">—</strong><small id="userRoleSmall">—</small></span>
+          </button>
+          <div class="user-menu-pop" id="userMenuPop">
+            <button id="profileBtn">My profile</button>
+            <button id="logoutBtn">Sign out</button>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="content" id="contentRoot"></div>
+  </main>
+</div>
+
+<script src="educore-shared.js"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+  const $ = E.$, $$ = E.$$, esc = E.esc, initials = E.initials, money = E.money;
+
+  /* ---------------- PASSWORD HASH ---------------- */
+  async function hashPassword(plain){
+    try{
+      const enc = new TextEncoder().encode('educore::' + plain);
+      const buf = await crypto.subtle.digest('SHA-256', enc);
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+    }catch(e){
+      let h = 0;
+      for(let i=0;i<plain.length;i++){ h = (h*31 + plain.charCodeAt(i)) >>> 0; }
+      return 'fb' + h.toString(16);
+    }
+  }
+
+  /* ---------------- SEED USERS ---------------- */
+  async function seedUsersIfNeeded(){
+    if(E.readStore(E.STORE_KEYS.seeded, null)) return;
+    const seeds = [
+      { username:'admin',      password:'admin123', role:'Principal', name:'System Administrator', perms: E.ROLE_PRESETS.Principal },
+      { username:'principal1', password:'demo123',  role:'Principal', name:'Mrs. A. Smith',         perms: E.ROLE_PRESETS.Principal },
+      { username:'registrar1', password:'demo123',  role:'Registrar', name:'Mr. J. Doe',            perms: E.ROLE_PRESETS.Registrar },
+      { username:'teacher1',   password:'demo123',  role:'Teacher',   name:'Mrs. Rebecca Moore',    perms: E.ROLE_PRESETS.Teacher, linkedTeacherId:'TCH-021' },
+      { username:'student1',   password:'demo123',  role:'Student',   name:'Amara Johnson',         perms: E.ROLE_PRESETS.Student, linkedStudentId:'STU-1001' },
+      { username:'parent1',    password:'demo123',  role:'Parent',    name:'Mr. & Mrs. Johnson',    perms: E.ROLE_PRESETS.Parent,  linkedStudentIds:['STU-1001','STU-1006'] }
+    ];
+    const users = [];
+    for(const s of seeds){
+      users.push({
+        id: 'u-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6),
+        username: s.username,
+        passwordHash: await hashPassword(s.password),
+        name: s.name, email:'', phone:'',
+        role: s.role,
+        linkedStudentId: s.linkedStudentId || null,
+        linkedStudentIds: s.linkedStudentIds || null,
+        linkedTeacherId: s.linkedTeacherId || null,
+        permissions: { ...s.perms },
+        active: true,
+        createdAt: new Date().toISOString(),
+        createdBy: 'system',
+        lastLogin: null
+      });
+    }
+    E.writeStore(E.STORE_KEYS.users, users);
+    E.writeStore(E.STORE_KEYS.seeded, true);
+  }
+
+  /* ---------------- LOGIN ---------------- */
+  function login(username, passwordHash){
+    const users = E.readStore(E.STORE_KEYS.users, []) || [];
+    const u = users.find(x => x.username.toLowerCase() === username.toLowerCase());
+    if(!u) return { ok:false, error:'No such user.' };
+    if(!u.active) return { ok:false, error:'This account has been disabled.' };
+    if(u.passwordHash !== passwordHash) return { ok:false, error:'Incorrect password.' };
+    E.writeStore(E.STORE_KEYS.session, { userId:u.id, loggedInAt: new Date().toISOString() });
+    u.lastLogin = new Date().toISOString();
+    E.writeStore(E.STORE_KEYS.users, users);
+    E.audit('login', 'User ' + u.username, '', '');
+    return { ok:true, user:u };
+  }
+
+  /* ---------------- SIDEBAR ---------------- */
+  function buildSidebar(){
+    const u = E.currentUser();
+    if(!u) return;
+    const nav = $('#navigation');
+    const groups = {};
+    E.PAGE_REGISTRY.forEach(p => {
+      (groups[p.group] = groups[p.group] || []).push(p);
+    });
+        /* Determine if viewer is fee-blocked from gradesheet + ledger */
+    const gsAccess = E.viewerGradesheetAccess();
+    const isFeeBlocked = !gsAccess.allowed;
+    const feeBlockedKeys = new Set(['gradesheet', 'ledger']);
+
+    const order = ['Main menu','Family','Academic','Administration','Requests','System'];
+    nav.innerHTML = order.filter(g => groups[g]).map(g => `
+      <div class="nav-label">${g}</div>
+      ${groups[g].map(p => {
+        const permLocked = !u.permissions[p.perm];
+        const feeLocked = isFeeBlocked && feeBlockedKeys.has(p.key);
+        const locked = permLocked || feeLocked;
+        const current = p.key === 'dashboard' ? 'active' : '';
+        const title = feeLocked
+          ? `Locked — ${E.money(gsAccess.totalShortfall || 0)} in outstanding fees`
+          : '';
+        return `<button data-page="${p.key}" class="${current} ${locked?'locked':''}"
+          ${locked?'data-locked="1"':''} ${feeLocked?'data-fee-locked="1"':''}
+          ${title?`title="${E.esc(title)}"`:''}>
+          <span class="ico">${p.icon}</span> ${p.label}${feeLocked ? ' 🔒' : ''}
+        </button>`;
+      }).join('')}
+    `).join('');
+
+    nav.addEventListener('click', e => {
+      const btn = e.target.closest('button[data-page]');
+      if(!btn) return;
+      const key = btn.dataset.page;
+      const entry = E.PAGE_REGISTRY.find(p => p.key === key);
+      if(!entry) return;
+            if(btn.dataset.locked){
+        if(btn.dataset.feeLocked){
+          const access = E.viewerGradesheetAccess();
+          E.toast(`Locked — ${E.money(access.totalShortfall || 0)} in outstanding fees.`);
+        } else {
+          E.toast(`You don't have access to ${entry.label}.`);
+        }
+        return;
+      }
+      
+      if(entry.key === 'dashboard'){
+        renderDashboard();
+        $$('#navigation button').forEach(b => b.classList.toggle('active', b === btn));
+        $('#pageTitle').textContent = 'Dashboard';
+        closeMobile();
+        return;
+      }
+      if(entry.file) window.location.href = entry.file;
+    });
+  }
+
+  /* ---------------- HEADER ---------------- */
+  function syncHeaderUser(){
+    const u = E.currentUser();
+    if(!u) return;
+    $('#userAvatar').textContent = initials(u.name || u.username);
+    $('#userName').textContent = u.name || u.username;
+    $('#userRoleSmall').textContent = u.role;
+    $('#sidebarRole').textContent = u.role + ' · ' + u.username;
+    $('#sidebarFooter').textContent = 'Signed in as ' + u.username;
+  }
+
+  /* ============================================================
+     DUX — semester-aware
+     ============================================================ */
+  function computeDux(scope){
+    const u = E.currentUser();
+    const scoped = E.visibleResultsFor(u);
+    const students = E.readStore(E.STORE_KEYS.students, []) || [];
+
+    const studentAvg = {};
+    scoped.forEach(r => {
+      const s = students.find(x => x.name === r.student && x.class === r.class);
+      if(!s) return;
+      const category = E.classCategoryFor(r.class);
+      if(scope === 'S1' && Number(r.semester) !== 1) return;
+      if(scope === 'S2' && Number(r.semester) !== 2) return;
+      const key = r.student + '|' + r.class;
+      if(!studentAvg[key]){
+        studentAvg[key] = { student: r.student, class: r.class, total: 0, count: 0, category };
+      }
+      let numeric = Number(r.score);
+      if(!Number.isFinite(numeric)){
+        const mid = E.midpointForLetter(r.score, category);
+        numeric = Number.isFinite(mid) ? mid : null;
+      }
+      if(numeric == null) return;
+      studentAvg[key].total += numeric;
+      studentAvg[key].count += 1;
+    });
+
+    if(scope === 'YEAR'){
+      const perStudent = {};
+      Object.values(studentAvg).forEach(x => {
+        const k = x.student + '|' + x.class;
+        if(!perStudent[k]) perStudent[k] = { student:x.student, class:x.class, total:0, count:0, category:x.category };
+        perStudent[k].total += x.total / x.count;
+        perStudent[k].count += 1;
+      });
+      Object.keys(perStudent).forEach(k => {
+        studentAvg[k] = { ...perStudent[k] };
+      });
+    }
+
+    const list = Object.values(studentAvg).filter(x => x.count > 0)
+      .map(x => ({ student:x.student, class:x.class, avg:x.total/x.count, category:x.category }));
+    const school = [...list].sort((a,b) => b.avg - a.avg).slice(0,3);
+    const byClass = {};
+    list.forEach(x => { (byClass[x.class] = byClass[x.class] || []).push(x); });
+    const classTop = {};
+    Object.keys(byClass).forEach(cls => {
+      classTop[cls] = byClass[cls].sort((a,b) => b.avg - a.avg).slice(0,3).map((x,i) => ({ ...x, rank: i+1 }));
+    });
+    return { school, classTop };
+  }
+
+  function attendanceToday(){
+    const attendance = E.readStore(E.STORE_KEYS.attendance, {}) || {};
+    const date = E.todayISO();
+    const keys = Object.keys(attendance).filter(k => k.startsWith(date + '|'));
+    let present = 0, total = 0;
+    keys.forEach(k => Object.values(attendance[k]).forEach(v => { total++; if(v === 'Present' || v === 'Late') present++; }));
+    return total ? Math.round(present / total * 100) + '%' : '0%';
+  }
+
+  /* ============================================================
+     REPORT-CARD STATUS BANNER (for parent/student)
+     ============================================================ */
+  function reportStatusBanner(studentId, className){
+    const t = E.getReportThreshold();
+    if(!t.enabled) return '';
+    const access = E.canOpenReportCard(studentId, className);
+    const pct = access.billed > 0 ? Math.min(100, Math.round(access.paid / access.billed * 100)) : 100;
+
+    if(access.allowed){
+      return `<div class="rpt-status unlocked">
+        <span class="icon">✅</span>
+        <div><strong>Your report card is unlocked.</strong>
+          Payment threshold met — you can open your report card anytime.
+          (Paid ${E.money(access.paid)} of ${E.money(access.billed)} · ${pct}%)</div>
+        <div class="actions"><a href="report-card-print.html?student=${encodeURIComponent(studentId)}" target="_blank">📄 Open report card</a></div>
+      </div>`;
+    }
+    return `<div class="rpt-status locked">
+      <span class="icon">🔒</span>
+      <div><strong>Your report card is locked.</strong>
+        ${access.mode === 'percent'
+          ? `You need <strong>${access.value}%</strong> of your bill paid.`
+          : `You need <strong>${E.money(access.value)}</strong> paid.`}
+        You've paid ${E.money(access.paid)} of ${E.money(access.billed)} · ${pct}%.
+        Shortfall: <strong>${E.money(access.shortfall)}</strong>.</div>
+      <div class="actions"><a href="fees.html">＄ Go to Fees</a></div>
+    </div>`;
+  }
+
+  /* ============================================================
+     DASHBOARD
+     ============================================================ */
+  function renderDashboard(){
+    const user = E.currentUser();
+    if(!user) return;
+
+    const students = E.readStore(E.STORE_KEYS.students, []) || [];
+    const teachers = E.readStore(E.STORE_KEYS.teachers, []) || [];
+    const announcements = E.readStore(E.STORE_KEYS.announcements, []) || [];
+
+    /* ---------- STUDENT ---------- */
+    if(user.role === 'Student'){
+      const s = students.find(x => x.id === user.linkedStudentId);
+      const category = s ? E.classCategoryFor(s.class) : '';
+      const year = E.currentAcademicYear();
+
+      const mySubjects = s
+        ? Array.from(new Set(
+            (E.readResults() || [])
+              .filter(r => r.student === s.name && r.class === s.class)
+              .map(r => r.subject)
+          ))
+        : [];
+
+      const s1Avg = s && mySubjects.length
+        ? (() => {
+            const avgs = mySubjects
+              .map(sub => E.semesterAverageFor(s.name, s.class, sub, 1, category, year))
+              .filter(Boolean)
+              .map(x => x.number);
+            return avgs.length ? avgs.reduce((a,b) => a+b, 0) / avgs.length : null;
+          })()
+        : null;
+      const s2Avg = s && mySubjects.length
+        ? (() => {
+            const avgs = mySubjects
+              .map(sub => E.semesterAverageFor(s.name, s.class, sub, 2, category, year))
+              .filter(Boolean)
+              .map(x => x.number);
+            return avgs.length ? avgs.reduce((a,b) => a+b, 0) / avgs.length : null;
+          })()
+        : null;
+      const currentAvg = s1Avg != null ? s1Avg : s2Avg;
+      const currentAvgText = currentAvg != null
+        ? currentAvg.toFixed(1) + '%' + (E.isNurseryCategory(category) ? ' · ' + E.gradeFromNumber(currentAvg, category) : '')
+        : '—';
+      const currentSemester = s2Avg != null && s1Avg != null ? 'Semester Two'
+                            : s1Avg != null ? 'Semester One'
+                            : 'Semester One';
+
+      const attendanceRegisters = E.readStore(E.STORE_KEYS.attendance, {}) || {};
+      let attPresent = 0, attLate = 0, attAbsent = 0;
+      Object.keys(attendanceRegisters).forEach(key => {
+        const [date, cls] = key.split('|');
+        if(cls !== (s?.class || '')) return;
+        const rec = attendanceRegisters[key] || {};
+        const v = rec[s?.id];
+        if(!v) return;
+        if(v === 'Present') attPresent++;
+        else if(v === 'Late') attLate++;
+        else if(v === 'Absent') attAbsent++;
+      });
+      const attTotal = attPresent + attLate + attAbsent;
+      const attRate = attTotal ? Math.round((attPresent + attLate) / attTotal * 100) : null;
+
+      const myRows = s
+        ? mySubjects.map(sub => {
+            const row = E.subjectLedgerRow(s.name, s.class, sub, year);
+            return { subject: sub, ...row };
+          })
+        : [];
+
+      const summary = s ? E.studentFeeSummary(s.id, s.class) : null;
+
+      /* Report card button respects threshold */
+      const reportBtnHTML = (() => {
+        if(!user.permissions.reportcard) return '';
+        if(!s) return `<button class="btn" data-goto="reportcards">📄 My report card</button>`;
+        const access = E.canOpenReportCard(s.id, s.class);
+        if(access.allowed){
+          return `<button class="btn" data-goto="reportcards">📄 My report card</button>`;
+        }
+        return `<button class="btn outline" disabled title="Meet the payment threshold to unlock"
+          style="color:#a86414">🔒 Report card locked (${E.money(access.shortfall || 0)} owed)</button>`;
+      })();
+
+      $('#contentRoot').innerHTML = `
+        <div class="welcome">
+          <div><h2>Hello, ${esc(s ? s.name.split(' ')[0] : user.name)} 👋</h2>
+            <p>${s ? esc(s.class) : 'Student'} · ${s ? esc(category || '—') : ''} · ${esc(s ? s.id : '')}</p></div>
+          ${reportBtnHTML}
+        </div>
+
+        ${s ? reportStatusBanner(s.id, s.class) : ''}
+
+        <div class="stats">
+          <div class="stat"><div class="stat-head">Current average <span class="stat-icon">✎</span></div><h3>${currentAvgText}</h3><div class="trend">${esc(currentSemester)}</div></div>
+          <div class="stat"><div class="stat-head">Subjects recorded <span class="stat-icon">▤</span></div><h3>${myRows.length}</h3><div class="trend">Two semesters</div></div>
+          ${user.permissions.fees && summary ? `<div class="stat"><div class="stat-head">Fee balance <span class="stat-icon">＄</span></div><h3>${E.money(Math.max(0, summary.balance))}</h3><div class="trend">${summary.balance <= 0 ? 'Paid' : 'Outstanding'}</div></div>` : ''}
+          ${user.permissions.idcards ? `<div class="stat"><div class="stat-head">My ID card <span class="stat-icon">🪪</span></div><h3 style="font-size:16px;margin-top:16px">Ready</h3><div class="trend">Student ID</div></div>` : ''}
+        </div>
+
+        <div class="dashboard-grid">
+          <div>
+            <div class="panel"><div class="panel-head"><h3>My academic record</h3><p>Subject · S1 Avg · S2 Avg · Yearly</p></div>
+              <div class="table-wrap"><table>
+                <thead><tr>
+                  <th>Subject</th>
+                  <th>S1 Avg</th>
+                  <th>S2 Avg</th>
+                  <th>Yearly</th>
+                </tr></thead>
+                <tbody>${
+                  myRows.length
+                    ? myRows.map(r => {
+                        const s1Txt = r.s1Avg ? r.s1Avg.number.toFixed(1) + '%' : '—';
+                        const s2Txt = r.s2Avg ? r.s2Avg.number.toFixed(1) + '%' : '—';
+                        const yrTxt = r.yearly ? r.yearly.number.toFixed(1) + '%' : '—';
+                        const yrGrade = r.yearly
+                          ? `<span class="pill ${r.yearly.letter==='A'?'green':r.yearly.letter==='F'?'red':'blue'}">${r.yearly.letter}</span>`
+                          : '';
+                        return `<tr>
+                          <td>${esc(r.subject)}</td>
+                          <td>${s1Txt}</td>
+                          <td>${s2Txt}</td>
+                          <td>${yrTxt} ${yrGrade}</td>
+                        </tr>`;
+                      }).join('')
+                    : '<tr><td colspan="4" class="empty">No results yet.</td></tr>'
+                }</tbody>
+              </table></div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head"><h3>My attendance</h3><p>All recorded days</p></div>
+              <div class="panel-body">
+                <div class="attendance-mini">
+                  <div class="mini"><small>Present</small><strong>${attPresent}</strong></div>
+                  <div class="mini"><small>Late</small><strong>${attLate}</strong></div>
+                  <div class="mini"><small>Absent</small><strong>${attAbsent}</strong></div>
+                  <div class="mini"><small>Rate</small><strong>${attRate != null ? attRate + '%' : '—'}</strong></div>
+                </div>
+                ${attTotal === 0 ? '<div style="margin-top:14px;font-size:11px;color:var(--muted);text-align:center">No attendance has been recorded for you yet.</div>' : ''}
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="panel"><div class="panel-head"><h3>Announcements</h3></div>
+              <div class="panel-body">${announcements.slice(0,3).map(a => `<div class="notice"><strong>${esc(a.title)}</strong><p>${esc(a.body)}</p></div>`).join('') || '<div class="empty">No announcements.</div>'}</div>
+            </div>
+          </div>
+        </div>
+        <div class="footer">EduCore · Front-end demonstration only.</div>
+      `;
+      return;
+    }
+
+    /* ---------- PARENT ---------- */
+    if(user.role === 'Parent'){
+      const kids = E.childrenOf(user);
+
+      if(!kids.length){
+        $('#contentRoot').innerHTML = `
+          <div class="welcome">
+            <div><h2>Welcome, ${esc(user.name)} 👋</h2>
+              <p>Your account is not yet linked to any students.</p></div>
+          </div>
+          <div class="panel"><div class="panel-body">
+            <div class="empty">Ask the school office to link your children's records to your account.</div>
+          </div></div>`;
+        return;
+      }
+
+      let totalBilled = 0, totalPaid = 0;
+      kids.forEach(k => {
+        const sum = E.studentFeeSummary(k.id, k.class);
+        totalBilled += sum.netBill;
+        totalPaid += sum.paid;
+      });
+      const outstanding = Math.max(0, totalBilled - totalPaid);
+      const year = E.currentAcademicYear();
+
+      const childAverages = kids.map(k => {
+        const category = E.classCategoryFor(k.class);
+        const subjects = Array.from(new Set(
+          (E.readResults() || [])
+            .filter(r => r.student === k.name && r.class === k.class)
+            .map(r => r.subject)
+        ));
+        if(!subjects.length) return { kid:k, s1:null, s2:null, year:null, category };
+        const s1Avgs = subjects.map(sub => E.semesterAverageFor(k.name, k.class, sub, 1, category, year)).filter(Boolean).map(x => x.number);
+        const s2Avgs = subjects.map(sub => E.semesterAverageFor(k.name, k.class, sub, 2, category, year)).filter(Boolean).map(x => x.number);
+        const yrAvgs = subjects.map(sub => E.yearlyAverageFor(k.name, k.class, sub, category, year)).filter(Boolean).map(x => x.number);
+        return {
+          kid: k, category,
+          s1: s1Avgs.length ? s1Avgs.reduce((a,b) => a+b,0)/s1Avgs.length : null,
+          s2: s2Avgs.length ? s2Avgs.reduce((a,b) => a+b,0)/s2Avgs.length : null,
+          year: yrAvgs.length ? yrAvgs.reduce((a,b) => a+b,0)/yrAvgs.length : null
+        };
+      });
+
+      const overallAvg = (() => {
+        const vals = childAverages.map(c => c.year).filter(v => v != null);
+        return vals.length ? (vals.reduce((a,b) => a+b,0)/vals.length).toFixed(1) + '%' : '—';
+      })();
+
+      $('#contentRoot').innerHTML = `
+        <div class="welcome">
+          <div><h2>Welcome, ${esc(user.name)} 👋</h2>
+            <p>Here's a quick overview of your ${kids.length === 1 ? 'child' : 'children'}.</p></div>
+          ${user.permissions.children ? `<button class="btn" data-goto="children">👨‍👩‍👧 My children</button>` : ''}
+        </div>
+
+        ${kids.map(k => reportStatusBanner(k.id, k.class)).join('')}
+
+        <div class="stats">
+          <div class="stat"><div class="stat-head">My children <span class="stat-icon">👨‍👩‍👧</span></div><h3>${kids.length}</h3><div class="trend">Linked students</div></div>
+          <div class="stat"><div class="stat-head">Yearly average <span class="stat-icon">✎</span></div><h3>${overallAvg}</h3><div class="trend">${esc(year)}</div></div>
+          <div class="stat"><div class="stat-head">Total paid <span class="stat-icon">✓</span></div><h3>${money(totalPaid)}</h3><div class="trend">All children</div></div>
+          <div class="stat"><div class="stat-head">Outstanding <span class="stat-icon">＄</span></div><h3>${money(outstanding)}</h3><div class="trend">Fee balance</div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <div><h3>My children</h3><p>Tap a card to open the report card</p></div>
+            ${user.permissions.children ? `<button class="link-btn" data-goto="children">View all →</button>` : ''}
+          </div>
+          <div class="panel-body">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px">
+              ${childAverages.map(c => {
+                const k = c.kid;
+                const sum = E.studentFeeSummary(k.id, k.class);
+                const yearTxt = c.year != null ? c.year.toFixed(1) + '%' : '—';
+                const yearGrade = c.year != null ? E.gradeFromNumber(c.year, c.category) : null;
+                const access = E.canOpenReportCard(k.id, k.class);
+                const btn = access.allowed
+                  ? `<button class="btn" style="width:100%;justify-content:center" data-open-kid-report="${esc(k.id)}">📄 Report card</button>`
+                  : `<button class="btn outline" style="width:100%;justify-content:center;color:#a86414" disabled title="Meet the payment threshold to unlock">🔒 Locked (${money(access.shortfall || 0)} owed)</button>`;
+                return `<div style="padding:16px;border:1px solid var(--line);border-radius:12px;background:#fbfcff">
+                  <div class="person" style="margin-bottom:12px">
+                    <div class="mini-avatar">${initials(k.name)}</div>
+                    <div><strong>${esc(k.name)}</strong><small>${esc(k.class)} · ${esc(k.id)}</small></div>
+                  </div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;font-size:11px">
+                    <div><span style="color:var(--muted);display:block;font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px">Yearly avg</span><strong>${yearTxt}${yearGrade?' · '+yearGrade:''}</strong></div>
+                    <div><span style="color:var(--muted);display:block;font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px">Fees</span><strong>${money(Math.max(0, sum.balance))}</strong></div>
+                  </div>
+                  ${btn}
+                </div>`;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Announcements</h3></div>
+          <div class="panel-body">
+            ${announcements.slice(0, 3).map(a => `<div class="notice"><strong>${esc(a.title)}</strong><p>${esc(a.body)}</p></div>`).join('') || '<div class="empty">No announcements.</div>'}
+          </div>
+        </div>
+        <div class="footer">EduCore · Front-end demonstration only.</div>`;
+
+      document.querySelectorAll('[data-open-kid-report]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const sid = btn.dataset.openKidReport;
+          const kid = kids.find(k => k.id === sid);
+          if(!kid) return;
+          const access = E.canOpenReportCard(kid.id, kid.class);
+          if(!access.allowed){
+            E.toast(`Report card locked — ${E.money(access.shortfall || 0)} still owed.`);
+            return;
+          }
+          window.open('report-card-print.html?student=' + encodeURIComponent(sid), '_blank');
+        });
+      });
+
+      return;
+    }
+
+    /* ---------- STAFF ---------- */
+    const { school, classTop } = computeDux('S1');
+    const visibleStudents = E.visibleStudentsFor(user);
+
+    const allStudents = E.readStore(E.STORE_KEYS.students, []) || [];
+    let totalOutstanding = 0;
+    allStudents.forEach(s => {
+      const sum = E.studentFeeSummary(s.id, s.class);
+      totalOutstanding += Math.max(0, sum.balance);
+    });
+
+    $('#contentRoot').innerHTML = `
+      <div class="welcome">
+        <div><h2>Good day, ${esc(user.name)} 👋</h2><p>Here is what is happening at your school today.</p></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="stat-head">Total students <span class="stat-icon">♙</span></div><h3>${visibleStudents.length}</h3><div class="trend">Visible to you</div></div>
+        <div class="stat"><div class="stat-head">Teaching staff <span class="stat-icon">♧</span></div><h3>${teachers.length}</h3><div class="trend">Staff</div></div>
+        <div class="stat"><div class="stat-head">Attendance today <span class="stat-icon">✓</span></div><h3>${attendanceToday()}</h3><div class="trend">Register</div></div>
+        <div class="stat"><div class="stat-head">Outstanding fees <span class="stat-icon">＄</span></div><h3>${money(totalOutstanding)}</h3><div class="trend">All students</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>🏅 Dux Leaderboard</h3><p>Top 3 students ${user.role === 'Teacher' ? 'across your classes' : 'of the school'} and top 3 of every class</p></div>
+          <select id="duxScope" style="border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:12px;background:#fff">
+            <option value="S1">Semester One</option>
+            <option value="S2">Semester Two</option>
+            <option value="YEAR">Yearly (both semesters)</option>
+          </select>
+        </div>
+        <div class="panel-body">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:800;margin-bottom:10px">School Top 3</div>
+          <div id="duxSchoolGrid" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px">
+            ${school.length ? school.map((x,i) => {
+              const rank = i+1, stars = '★'.repeat(4-rank);
+              const label = rank===1?'1st Dux':rank===2?'2nd Dux':'3rd Dux';
+              const gradeLetter = E.gradeFromNumber(x.avg, x.category);
+              return `<div class="dux-card rank-${rank}">
+                <span class="pill gold">${label}</span>
+                <div style="font-size:15px;letter-spacing:2px;color:#c99a2e;margin-top:8px">${stars}</div>
+                <div style="font-size:14px;font-weight:800;color:#14213d;margin:6px 0 2px">${esc(x.student)}</div>
+                <div style="font-size:11px;color:#7a8498">${esc(x.class)}</div>
+                <div style="font-size:20px;font-weight:800;color:#14213d;margin-top:8px">${x.avg.toFixed(1)}% <span style="font-size:12px;color:#8a6a1a">· ${gradeLetter}</span></div>
+              </div>`;
+            }).join('') : '<div class="empty" style="grid-column:1/-1">No results for this semester.</div>'}
+          </div>
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:800;margin:24px 0 10px">Class Top 3 (first · second · third dux)</div>
+          <div id="duxClassList">
+            ${Object.keys(classTop).sort().length ? Object.keys(classTop).sort().map(cls => {
+              const top = classTop[cls];
+              return `<div class="leader-row" style="margin-bottom:8px">
+                <div style="font-size:12px;font-weight:800;color:#14213d">${esc(cls)}</div>
+                <div>${top.map((x,i) => {
+                  const rank = i+1, stars = '★'.repeat(4-rank);
+                  return `<span class="leader-chip rank-${rank}"><span style="color:#c99a2e;margin-right:4px">${stars}</span>${esc(x.student)} · ${x.avg.toFixed(1)}%</span>`;
+                }).join('')}</div>
+              </div>`;
+            }).join('') : '<div class="empty">No class results for this semester.</div>'}
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div>
+          <div class="panel"><div class="panel-head"><h3>Recently enrolled students</h3></div>
+            <div class="table-wrap"><table>
+              <thead><tr><th>Student</th><th>Class</th><th>Category</th><th>Status</th></tr></thead>
+              <tbody>${visibleStudents.slice(-5).reverse().map(s => `<tr>
+                <td><div class="person"><div class="mini-avatar">${initials(s.name)}</div>
+                  <div><strong>${esc(s.name)}</strong><small>${esc(s.id)}</small></div></div></td>
+                <td>${esc(s.class)}</td>
+                <td><span class="pill ${E.isNurseryClass(s.class) ? 'orange' : 'blue'}">${esc(E.classCategoryFor(s.class) || '—')}</span></td>
+                <td><span class="pill ${s.status==='Active'?'green':s.status==='Inactive'?'red':'orange'}">${esc(s.status)}</span></td>
+              </tr>`).join('') || '<tr><td colspan="4" class="empty">No students.</td></tr>'}
+              </tbody>
+            </table></div>
+          </div>
+        </div>
+        <div>
+          <div class="panel"><div class="panel-head"><h3>Announcements</h3></div>
+            <div class="panel-body">${announcements.slice(0,3).map(a => `<div class="notice"><strong>${esc(a.title)}</strong><p>${esc(a.body)}</p></div>`).join('') || '<div class="empty">No announcements.</div>'}</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer">EduCore · Front-end demonstration only.</div>
+    `;
+
+    $('#duxScope')?.addEventListener('change', e => {
+      const scope = e.target.value;
+      const { school, classTop } = computeDux(scope);
+      $('#duxSchoolGrid').innerHTML = school.length ? school.map((x,i) => {
+        const rank = i+1, stars = '★'.repeat(4-rank);
+        const label = rank===1?'1st Dux':rank===2?'2nd Dux':'3rd Dux';
+        const gradeLetter = E.gradeFromNumber(x.avg, x.category);
+        return `<div class="dux-card rank-${rank}">
+          <span class="pill gold">${label}</span>
+          <div style="font-size:15px;letter-spacing:2px;color:#c99a2e;margin-top:8px">${stars}</div>
+          <div style="font-size:14px;font-weight:800;color:#14213d;margin:6px 0 2px">${esc(x.student)}</div>
+          <div style="font-size:11px;color:#7a8498">${esc(x.class)}</div>
+          <div style="font-size:20px;font-weight:800;color:#14213d;margin-top:8px">${x.avg.toFixed(1)}% <span style="font-size:12px;color:#8a6a1a">· ${gradeLetter}</span></div>
+        </div>`;
+      }).join('') : '<div class="empty" style="grid-column:1/-1">No results for this semester.</div>';
+
+      $('#duxClassList').innerHTML = Object.keys(classTop).sort().length ? Object.keys(classTop).sort().map(cls => {
+        const top = classTop[cls];
+        return `<div class="leader-row" style="margin-bottom:8px">
+          <div style="font-size:12px;font-weight:800;color:#14213d">${esc(cls)}</div>
+          <div>${top.map((x,i) => {
+            const rank = i+1, stars = '★'.repeat(4-rank);
+            return `<span class="leader-chip rank-${rank}"><span style="color:#c99a2e;margin-right:4px">${stars}</span>${esc(x.student)} · ${x.avg.toFixed(1)}%</span>`;
+          }).join('')}</div>
+        </div>`;
+      }).join('') : '<div class="empty">No class results for this semester.</div>';
+    });
+  }
+
+  /* ---------------- MOBILE ---------------- */
+  function closeMobile(){
+    $('#sidebar')?.classList.remove('open');
+    $('#mobileOverlay')?.classList.remove('show');
+  }
+  $('#menuToggle')?.addEventListener('click', () => {
+    $('#sidebar').classList.add('open');
+    $('#mobileOverlay').classList.add('show');
+  });
+  $('#mobileOverlay')?.addEventListener('click', closeMobile);
+
+  /* ---------------- USER MENU ---------------- */
+  $('#userBtn')?.addEventListener('click', e => { e.stopPropagation(); $('#userMenuPop').classList.toggle('show'); });
+  document.addEventListener('click', () => $('#userMenuPop')?.classList.remove('show'));
+  $('#logoutBtn')?.addEventListener('click', () => E.logout());
+  $('#profileBtn')?.addEventListener('click', () => {
+    const u = E.currentUser();
+    if(!u) return;
+    E.openModal('My profile',
+      `<div class="full"><label>Name</label><input name="name" required value="${esc(u.name)}"></div>
+       <div class="full"><label>Username</label><input value="${esc(u.username)}" readonly></div>
+       <div><label>Role</label><input value="${esc(u.role)}" readonly></div>
+       <div><label>Email</label><input name="email" value="${esc(u.email||'')}"></div>
+       <div class="full"><label>Phone</label><input name="phone" value="${esc(u.phone||'')}"></div>`,
+      'Save profile',
+      d => {
+        const users = E.readStore(E.STORE_KEYS.users, []) || [];
+        const t = users.find(x => x.id === u.id);
+        if(!t) return;
+        Object.assign(t, { name: d.name, email: d.email || '', phone: d.phone || '' });
+        E.writeStore(E.STORE_KEYS.users, users);
+        syncHeaderUser();
+        E.closeModal();
+        E.toast('Profile updated.');
+      });
+  });
+
+  /* ---------------- DASHBOARD SHORTCUTS ---------------- */
+  document.addEventListener('click', e => {
+    const goto = e.target.closest('[data-goto]');
+    if(!goto) return;
+    const key = goto.dataset.goto;
+    const entry = E.PAGE_REGISTRY.find(p => p.key === key);
+    if(!entry) return;
+    if(entry.file){ window.location.href = entry.file; return; }
+    renderDashboard();
+  });
+
+  /* ---------------- BOOTSTRAP ---------------- */
+  async function bootstrap(){
+    await seedUsersIfNeeded();
+
+    const u = E.currentUser();
+    if(u){
+      $('#loginScreen').classList.add('hidden');
+      $('#appShell').classList.remove('hidden');
+      syncHeaderUser();
+      buildSidebar();
+      renderDashboard();
+      $('#todayText').textContent = new Date().toLocaleDateString(undefined,
+        { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+      return;
+    }
+
+    const users = E.readStore(E.STORE_KEYS.users, []) || [];
+    const picks = ['admin','principal1','registrar1','teacher1','student1','parent1'];
+    const passwords = { admin:'admin123', principal1:'demo123', registrar1:'demo123', teacher1:'demo123', student1:'demo123', parent1:'demo123' };
+    const chips = $('#demoChips');
+    chips.innerHTML = users.filter(x => picks.includes(x.username))
+      .map(x => `<button type="button" class="demo-chip" data-user="${esc(x.username)}">${esc(x.username)} <span style="color:var(--muted);font-weight:600">· ${esc(x.role)}</span></button>`)
+      .join('');
+    chips.querySelectorAll('[data-user]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const uname = btn.dataset.user;
+        $('#loginUser').value = uname;
+        $('#loginPass').value = passwords[uname] || 'demo123';
+      });
+    });
+
+    const authErr = sessionStorage.getItem('educoreAuthError');
+    if(authErr){
+      const el = $('#loginError');
+      el.textContent = authErr;
+      el.classList.add('show');
+      sessionStorage.removeItem('educoreAuthError');
+    }
+  }
+
+  /* ---------------- LOGIN SUBMIT ---------------- */
+  $('#loginForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const err = $('#loginError');
+    err.classList.remove('show');
+    const user = $('#loginUser').value.trim();
+    const pass = $('#loginPass').value;
+    const hash = await hashPassword(pass);
+    const res = login(user, hash);
+    if(!res.ok){
+      err.textContent = res.error;
+      err.classList.add('show');
+      return;
+    }
+    $('#loginScreen').classList.add('hidden');
+    $('#appShell').classList.remove('hidden');
+    syncHeaderUser();
+    buildSidebar();
+    renderDashboard();
+    $('#todayText').textContent = new Date().toLocaleDateString(undefined,
+      { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+    E.toast('Welcome, ' + res.user.name);
+  });
+
+  bootstrap();
+})();
+</script>
+</body>
+</html>

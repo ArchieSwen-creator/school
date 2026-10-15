@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Students | EduCore</title>
+<style>
+  :root{
+    --navy:#12315a;--navy2:#14213d;--blue:#3987ee;--pale:#eef5ff;--border:#d8e4f2;
+    --text:#23354d;--muted:#73849a;--green:#14805e;--orange:#d88922;--red:#d64545;
+    --gold:#c99a2e;--gold2:#fff4d6;--bg:#f5f7fb;--line:#e8ebf2;--white:#fff;
+    --shadow:0 8px 24px rgba(24,42,78,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:64px 16px 40px;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+
+  .page{width:100%;max-width:1200px;margin:0 auto}
+
+  .band{
+    background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
+    border-radius:16px;padding:22px 28px;margin-bottom:20px;
+    box-shadow:0 18px 50px #16345417;display:flex;justify-content:space-between;
+    align-items:center;gap:16px;flex-wrap:wrap;border-top:5px solid #58a4ff;
+  }
+  .band-left{display:flex;align-items:center;gap:14px}
+  .band-logo{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;place-items:center;
+    overflow:hidden;color:var(--navy);font-weight:900;font-size:18px;border:3px solid #d8e8ff;flex:0 0 48px}
+  .band-logo img{width:100%;height:100%;object-fit:contain}
+  .band h1{margin:0;font-size:19px;letter-spacing:.3px;text-transform:uppercase}
+  .band p{margin:4px 0 0;font-size:11px;color:#cfdcf5}
+  .band-user{display:flex;align-items:center;gap:10px;font-size:11px;color:#cfdcf5;
+    background:#ffffff14;border:1px solid #ffffff36;padding:7px 12px;border-radius:20px}
+  .band-user strong{color:#fff}
+
+  .toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;
+    flex-wrap:wrap;margin-bottom:16px}
+  .toolbar-left{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .field,.pick{border:1px solid var(--line);border-radius:9px;padding:10px 12px;
+    background:#fff;color:var(--text);font-size:12px;outline:none}
+  .field{min-width:230px}
+  .field:focus,.pick:focus{border-color:var(--blue)}
+
+  .btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{filter:brightness(.96)}
+  .btn.secondary{background:#eef2fb;color:#34415c}
+  .btn.outline{background:#fff;color:#34415c;border:1px solid var(--line)}
+  .btn.danger{background:#fff0f1;color:var(--red)}
+  .btn.green{background:#e6f7f0;color:#16835f}
+  .btn.warn{background:#fff2dd;color:#a86414}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);overflow:hidden}
+  .card-head{display:flex;justify-content:space-between;align-items:center;
+    padding:18px 22px;border-bottom:1px solid var(--line);gap:12px;flex-wrap:wrap}
+  .card-head h3{margin:0;font-size:14px}
+  .card-head .count{padding:4px 9px;border-radius:20px;background:#edf2ff;color:#3b5cc1;
+    font-size:10px;font-weight:800}
+
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;white-space:nowrap}
+  th{text-align:left;background:#fafbfe;color:#7a8498;font-size:10px;
+    text-transform:uppercase;letter-spacing:.6px;padding:13px 18px;
+    border-bottom:1px solid var(--line)}
+  td{padding:14px 18px;border-bottom:1px solid #f0f2f7;font-size:12px}
+  tbody tr:last-child td{border-bottom:0}
+
+  .person{display:flex;align-items:center;gap:10px}
+  .mini-avatar{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;
+    background:#edf2ff;color:#3859b7;font-size:10px;font-weight:700}
+  .person strong{display:block;font-size:12px}
+  .person small{display:block;color:var(--muted);font-size:10px;margin-top:4px}
+
+  .pill{display:inline-block;padding:5px 8px;border-radius:20px;font-size:10px;font-weight:700}
+  .pill.green{background:#e6f7f0;color:#16835f}
+  .pill.orange{background:#fff2dd;color:#aa6c14}
+  .pill.red{background:#ffeaec;color:#bd3b48}
+  .pill.blue{background:#edf2ff;color:#3b5cc1}
+
+  .row-actions{display:flex;gap:5px;flex-wrap:wrap}
+  .row-actions .btn{padding:8px 10px;font-size:11px}
+
+  .empty{padding:40px 20px;text-align:center;color:var(--muted);font-size:13px}
+  .check-cell{width:32px}
+
+  @media (max-width:650px){
+    body{padding:64px 8px 24px}
+    .band{padding:18px 20px}
+    .band h1{font-size:15px}
+    .field{min-width:0;width:100%}
+    .toolbar{flex-direction:column;align-items:stretch}
+    .toolbar-left{width:100%}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="band">
+    <div class="band-left">
+      <div class="band-logo" id="bandLogo">DS</div>
+      <div>
+        <h1 id="bandSchool">Students</h1>
+        <p id="bandSub">Student management</p>
+      </div>
+    </div>
+    <div class="band-user">
+      Signed in as <strong id="bandUser">—</strong>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <input class="field" id="search" placeholder="Search name, ID, guardian, phone...">
+      <select class="pick" id="classFilter"><option value="">All classes</option></select>
+      <select class="pick" id="statusFilter">
+        <option value="">All statuses</option>
+        <option>Active</option>
+        <option>Pending</option>
+        <option>Inactive</option>
+        <option>Graduated</option>
+      </select>
+    </div>
+    <div class="toolbar-left">
+      <button class="btn danger" id="bulkDeleteBtn" disabled>🗑 Delete selected</button>
+      <button class="btn secondary" id="exportBtn">↓ Export CSV</button>
+      <button class="btn" id="addBtn">＋ Add student</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h3>All students <span class="count" id="count">0</span></h3>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="check-cell"><input type="checkbox" id="selectAll" aria-label="Select all"></th>
+            <th>Student</th>
+            <th>Gender</th>
+            <th>Class</th>
+            <th>Guardian</th>
+            <th>Contact</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script src="educore-shared.js"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  /* ---------- GUARD ---------- */
+  const user = E.requirePerm('students', 'Students');
+  if(!user) return;
+
+  /* ---------- SUB-FEATURE PERMISSIONS ---------- */
+  const canAdd    = E.can('students.add');
+  const canEdit   = E.can('students.edit');
+  const canDelete = E.can('students.delete');
+  const canReport = E.can('students.report');
+  const canExport = E.can('students.export');
+
+  /* ---------- HEADER ---------- */
+  function paintHeader(){
+    const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const name = settings.name || 'EduCore High School';
+    if(settings.logo){
+      document.getElementById('bandLogo').innerHTML = `<img src="${settings.logo}" alt="">`;
+    } else {
+      document.getElementById('bandLogo').textContent =
+        name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
+    }
+    document.getElementById('bandSchool').textContent = name;
+    document.getElementById('bandSub').textContent = 'Student management';
+    document.getElementById('bandUser').textContent = user.name || user.username;
+  }
+
+  /* ---------- FILTERS ---------- */
+  function fillClassFilter(){
+    const classes = E.readStore(E.STORE_KEYS.classes, []) || [];
+    const visible = E.visibleClassNamesFor(user);
+    const sel = document.getElementById('classFilter');
+    const items = (user.role === 'Teacher' || user.role === 'Student' || user.role === 'Parent')
+      ? visible
+      : classes.map(c => c.name);
+    sel.innerHTML = '<option value="">All classes</option>' +
+      items.map(c => `<option>${E.esc(c)}</option>`).join('');
+  }
+
+  /* ---------- RENDER ---------- */
+  function statusPill(s){
+    const t = (s === 'Active') ? 'green'
+            : (s === 'Pending') ? 'orange'
+            : (s === 'Inactive') ? 'red'
+            : 'blue';
+    return `<span class="pill ${t}">${E.esc(s)}</span>`;
+  }
+
+  function paintTable(){
+    const scope = E.visibleStudentsFor(user);
+    const q  = document.getElementById('search').value.toLowerCase();
+    const cl = document.getElementById('classFilter').value;
+    const st = document.getElementById('statusFilter').value;
+    const arr = scope.filter(s =>
+      (`${s.name} ${s.id} ${s.guardian||''} ${s.phone||''}`).toLowerCase().includes(q) &&
+      (!cl || s.class === cl) &&
+      (!st || s.status === st)
+    );
+    const tb = document.getElementById('tbody');
+    tb.innerHTML = arr.map(s => `<tr>
+      ${canDelete ? `<td class="check-cell"><input type="checkbox" class="pick-row" data-id="${E.esc(s.id)}"></td>` : ''}
+      <td>
+        <div class="person">
+          <div class="mini-avatar">${E.initials(s.name)}</div>
+          <div>
+            <strong>${E.esc(s.name)}</strong>
+            <small>${E.esc(s.id)}</small>
+          </div>
+        </div>
+      </td>
+      <td>${E.esc(s.gender||'—')}</td>
+      <td>${E.esc(s.class)}</td>
+      <td>${E.esc(s.guardian||'—')}</td>
+      <td>${E.esc(s.phone||'—')}</td>
+      <td>${statusPill(s.status||'Active')}</td>
+      <td>
+        <div class="row-actions">
+          ${canEdit ? `<button class="btn secondary" data-edit="${E.esc(s.id)}">Edit</button>` : ''}
+          ${canReport ? `<button class="btn" data-report="${E.esc(s.id)}">Report</button>` : ''}
+          ${canDelete ? `<button class="btn danger" data-delete="${E.esc(s.id)}">Delete</button>` : ''}
+        </div>
+      </td>
+    </tr>`).join('') || `<tr><td colspan="${canDelete ? 8 : 7}" class="empty">No students match your search.</td></tr>`;
+
+    document.getElementById('count').textContent = arr.length;
+    updateBulkDelete();
+  }
+
+  function getSelectedIds(){
+    return Array.from(document.querySelectorAll('.pick-row:checked')).map(x => x.dataset.id);
+  }
+  function updateBulkDelete(){
+    const btn = document.getElementById('bulkDeleteBtn');
+    if(!btn) return;
+    const n = getSelectedIds().length;
+    btn.disabled = n === 0;
+    btn.textContent = n > 0 ? `🗑 Delete selected (${n})` : '🗑 Delete selected';
+  }
+
+  /* ---------- ADD / EDIT ---------- */
+  function openStudentModal(existing){
+    const s = existing || {};
+    const classes = E.readStore(E.STORE_KEYS.classes, []) || [];
+    const html = `
+      <div class="full"><label>Full name</label><input name="name" required value="${E.esc(s.name||'')}"></div>
+      <div><label>Gender</label>
+        <select name="gender">
+          <option ${s.gender === 'Female' ? 'selected' : ''}>Female</option>
+          <option ${s.gender === 'Male' ? 'selected' : ''}>Male</option>
+        </select>
+      </div>
+      <div><label>Class</label>
+        <select name="class">
+          ${classes.map(c => `<option ${s.class === c.name ? 'selected' : ''}>${E.esc(c.name)}</option>`).join('')}
+        </select>
+      </div>
+      <div><label>Guardian</label><input name="guardian" required value="${E.esc(s.guardian||'')}"></div>
+      <div><label>Contact</label><input name="phone" required value="${E.esc(s.phone||'')}"></div>
+      <div class="full"><label>Status</label>
+        <select name="status">
+          <option ${s.status === 'Active' ? 'selected' : ''}>Active</option>
+          <option ${s.status === 'Pending' ? 'selected' : ''}>Pending</option>
+          <option ${s.status === 'Inactive' ? 'selected' : ''}>Inactive</option>
+          <option ${s.status === 'Graduated' ? 'selected' : ''}>Graduated</option>
+        </select>
+      </div>`;
+    E.openModal(existing ? 'Edit student' : 'Add new student', html, 'Save student', d => {
+      const students = E.readStore(E.STORE_KEYS.students, []) || [];
+      const fees     = E.readStore(E.STORE_KEYS.fees, []) || [];
+      if(existing){
+        const target = students.find(x => x.id === existing.id);
+        if(!target) return;
+        const oldClass = target.class;
+        Object.assign(target, d);
+        if(oldClass !== d.class){ enroll(target.id, d.class); }
+        E.audit('update', `Student ${target.id}`, '', d.name);
+      } else {
+        const nid = 'STU-' + (1001 + Math.max(0, ...students.map(x => Number((x.id||'').split('-')[1]) - 1001)) + 1);
+        students.push({ id: nid, ...d });
+        fees.push({ id: nid, name: d.name, class: d.class, total: 1200, paid: 0 });
+        enroll(nid, d.class);
+        E.audit('create', `Student ${nid}`, '', d.name);
+      }
+      E.writeStore(E.STORE_KEYS.students, students);
+      E.writeStore(E.STORE_KEYS.fees, fees);
+      E.closeModal();
+      paintTable();
+      E.toast('Student saved.');
+    });
+  }
+
+  function enroll(studentId, className){
+    const list = E.readStore(E.STORE_KEYS.enrollments, []) || [];
+    list.forEach(e => {
+      if(e.studentId === studentId && e.status === 'active'){
+        e.status = 'closed';
+        e.closedAt = new Date().toISOString();
+      }
+    });
+    list.push({
+      studentId,
+      className,
+      session: '2025/2026',
+      term: 'First Term',
+      enrolledAt: new Date().toISOString(),
+      status: 'active'
+    });
+    E.writeStore(E.STORE_KEYS.enrollments, list);
+  }
+
+  /* ---------- DELETE ---------- */
+  function deleteStudent(studentId){
+    const s = (E.readStore(E.STORE_KEYS.students, []) || []).find(x => x.id === studentId);
+    if(!s) return;
+    const related = {
+      results:    (E.readStore(E.STORE_KEYS.results, []) || []).filter(r => r.student === s.name && r.class === s.class).length,
+      fees:       (E.readStore(E.STORE_KEYS.fees, []) || []).filter(f => f.id === studentId).length,
+      payments:   (E.readStore(E.STORE_KEYS.payments, []) || []).filter(p => p.studentId === studentId).length,
+      attendance: Object.values(E.readStore(E.STORE_KEYS.attendance, {}) || {}).filter(rec => rec[studentId]).length,
+      enrollments: (E.readStore(E.STORE_KEYS.enrollments, []) || []).filter(x => x.studentId === studentId).length,
+      transfers:  (E.readStore(E.STORE_KEYS.transfers, []) || []).filter(x => x.studentId === studentId).length,
+      transcripts:(E.readStore(E.STORE_KEYS.transcripts, []) || []).filter(x => x.studentId === studentId).length,
+      recommendations:(E.readStore(E.STORE_KEYS.recommendations, []) || []).filter(x => x.studentId === studentId).length,
+      photos:     (E.readStore(E.STORE_KEYS.photos, {}) || {})[studentId] ? 1 : 0,
+      linkedUsers: (E.readStore(E.STORE_KEYS.users, []) || []).filter(u => u.linkedStudentId === studentId).length
+    };
+    const total = Object.values(related).reduce((a,b) => a+b, 0);
+    const lines = Object.entries(related).filter(([, n]) => n > 0).map(([k, n]) => `• ${k}: ${n}`).join('\n');
+    const msg = `Delete student ${s.name} (${studentId})?\n\n` +
+      (total ? `This will also remove their related records:\n${lines}\n\n` : 'No related records found.\n\n') +
+      `This action cannot be undone.`;
+    if(!confirm(msg)) return;
+    const typed = prompt(`Type the student's ID (${studentId}) to confirm:`);
+    if(typed !== studentId){ E.toast('Confirmation did not match.'); return; }
+
+    let students = (E.readStore(E.STORE_KEYS.students, []) || []).filter(x => x.id !== studentId);
+    let results  = (E.readStore(E.STORE_KEYS.results, []) || []).filter(r => !(r.student === s.name && r.class === s.class));
+    let fees     = (E.readStore(E.STORE_KEYS.fees, []) || []).filter(f => f.id !== studentId);
+    let payments = (E.readStore(E.STORE_KEYS.payments, []) || []).filter(p => p.studentId !== studentId);
+    let attendance = E.readStore(E.STORE_KEYS.attendance, {}) || {};
+    Object.keys(attendance).forEach(k => { if(attendance[k]?.[studentId]) delete attendance[k][studentId]; });
+
+    E.writeStore(E.STORE_KEYS.students, students);
+    E.writeStore(E.STORE_KEYS.results, results);
+    E.writeStore(E.STORE_KEYS.fees, fees);
+    E.writeStore(E.STORE_KEYS.payments, payments);
+    E.writeStore(E.STORE_KEYS.attendance, attendance);
+    E.writeStore(E.STORE_KEYS.enrollments, (E.readStore(E.STORE_KEYS.enrollments, []) || []).filter(x => x.studentId !== studentId));
+    E.writeStore(E.STORE_KEYS.transfers, (E.readStore(E.STORE_KEYS.transfers, []) || []).filter(x => x.studentId !== studentId));
+    E.writeStore(E.STORE_KEYS.transcripts, (E.readStore(E.STORE_KEYS.transcripts, []) || []).filter(x => x.studentId !== studentId));
+    E.writeStore(E.STORE_KEYS.recommendations, (E.readStore(E.STORE_KEYS.recommendations, []) || []).filter(x => x.studentId !== studentId));
+
+    const photos = E.readStore(E.STORE_KEYS.photos, {}) || {};
+    if(photos[studentId]){ delete photos[studentId]; E.writeStore(E.STORE_KEYS.photos, photos); }
+
+    const users = E.readStore(E.STORE_KEYS.users, []) || [];
+    let unlinked = 0;
+    users.forEach(u => { if(u.linkedStudentId === studentId){ u.linkedStudentId = null; unlinked++; } });
+    if(unlinked) E.writeStore(E.STORE_KEYS.users, users);
+
+    E.audit('delete', `Student ${studentId}`, s.name, '');
+    paintTable();
+    E.toast(`Student ${s.name} deleted${unlinked ? ` · ${unlinked} user account unlinked` : ''}.`);
+  }
+
+  function deleteSelected(){
+    const ids = getSelectedIds();
+    if(!ids.length){ E.toast('No students selected.'); return; }
+    const students = E.readStore(E.STORE_KEYS.students, []) || [];
+    const names = students.filter(s => ids.includes(s.id)).map(s => `${s.name} (${s.id})`).join('\n');
+    if(!confirm(`Delete ${ids.length} student${ids.length===1?'':'s'}?\n\n${names}\n\nAll related results, fees, attendance, and requests will also be removed.\nThis action cannot be undone.`)) return;
+    if(!confirm('Final confirmation — proceed with deletion?')) return;
+
+    ids.forEach(id => {
+      const s = students.find(x => x.id === id);
+      if(!s) return;
+      E.writeStore(E.STORE_KEYS.students, (E.readStore(E.STORE_KEYS.students, []) || []).filter(x => x.id !== id));
+      E.writeStore(E.STORE_KEYS.results,
+        (E.readStore(E.STORE_KEYS.results, []) || []).filter(r => !(r.student === s.name && r.class === s.class)));
+      E.writeStore(E.STORE_KEYS.fees,
+        (E.readStore(E.STORE_KEYS.fees, []) || []).filter(f => f.id !== id));
+      E.writeStore(E.STORE_KEYS.payments,
+        (E.readStore(E.STORE_KEYS.payments, []) || []).filter(p => p.studentId !== id));
+      let att = E.readStore(E.STORE_KEYS.attendance, {}) || {};
+      Object.keys(att).forEach(k => { if(att[k]?.[id]) delete att[k][id]; });
+      E.writeStore(E.STORE_KEYS.attendance, att);
+      E.writeStore(E.STORE_KEYS.enrollments, (E.readStore(E.STORE_KEYS.enrollments, []) || []).filter(x => x.studentId !== id));
+      E.writeStore(E.STORE_KEYS.transfers, (E.readStore(E.STORE_KEYS.transfers, []) || []).filter(x => x.studentId !== id));
+      E.writeStore(E.STORE_KEYS.transcripts, (E.readStore(E.STORE_KEYS.transcripts, []) || []).filter(x => x.studentId !== id));
+      E.writeStore(E.STORE_KEYS.recommendations, (E.readStore(E.STORE_KEYS.recommendations, []) || []).filter(x => x.studentId !== id));
+      const photos = E.readStore(E.STORE_KEYS.photos, {}) || {};
+      if(photos[id]){ delete photos[id]; E.writeStore(E.STORE_KEYS.photos, photos); }
+      const users = E.readStore(E.STORE_KEYS.users, []) || [];
+      users.forEach(u => { if(u.linkedStudentId === id) u.linkedStudentId = null; });
+      E.writeStore(E.STORE_KEYS.users, users);
+      E.audit('delete', `Student ${id}`, s.name, '');
+    });
+    paintTable();
+    E.toast(`${ids.length} student${ids.length===1?'':'s'} deleted.`);
+  }
+
+  /* ---------- REPORT ---------- */
+  function openReport(studentId){
+    if(user.role === 'Teacher'){
+      const visible = new Set(E.visibleClassNamesFor(user));
+      const s = (E.readStore(E.STORE_KEYS.students, []) || []).find(x => x.id === studentId);
+      if(s && visible.size && !visible.has(s.class)){
+        E.toast('That student is outside your assigned classes.');
+        return;
+      }
+    }
+    const sid = user.role === 'Student' ? (user.linkedStudentId || studentId) : studentId;
+    window.open('report-card-print.html?student=' + encodeURIComponent(sid), '_blank');
+  }
+
+  /* ---------- EXPORT ---------- */
+  function exportCSV(){
+    const scope = E.visibleStudentsFor(user);
+    if(!scope.length){ E.toast('No students to export.'); return; }
+    const rows = [
+      ['Student ID','Name','Gender','Class','Guardian','Phone','Status'],
+      ...scope.map(s => [s.id, s.name, s.gender, s.class, s.guardian, s.phone, s.status])
+    ];
+    const csv = rows.map(r => r.map(v => '"' + String(v ?? '').replace(/"/g,'""') + '"').join(',')).join('\r\n');
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = 'students.csv'; a.click();
+    URL.revokeObjectURL(url);
+    E.toast('CSV exported.');
+  }
+
+  /* ---------- EVENTS ---------- */
+  document.getElementById('search').addEventListener('input', paintTable);
+  document.getElementById('classFilter').addEventListener('change', paintTable);
+  document.getElementById('statusFilter').addEventListener('change', paintTable);
+  document.getElementById('addBtn').addEventListener('click', () => openStudentModal(null));
+  document.getElementById('bulkDeleteBtn').addEventListener('click', deleteSelected);
+  document.getElementById('exportBtn').addEventListener('click', exportCSV);
+  document.getElementById('selectAll').addEventListener('change', e => {
+    document.querySelectorAll('.pick-row').forEach(cb => cb.checked = e.target.checked);
+    updateBulkDelete();
+  });
+  document.getElementById('tbody').addEventListener('change', e => {
+    if(e.target.matches('.pick-row')) updateBulkDelete();
+  });
+
+  document.getElementById('tbody').addEventListener('click', e => {
+    const edit   = e.target.closest('[data-edit]');
+    const del    = e.target.closest('[data-delete]');
+    const rep    = e.target.closest('[data-report]');
+    if(edit){
+      const s = (E.readStore(E.STORE_KEYS.students, []) || []).find(x => x.id === edit.dataset.edit);
+      if(s) openStudentModal(s);
+    }
+    if(del) deleteStudent(del.dataset.delete);
+    if(rep) openReport(rep.dataset.report);
+  });
+
+  /* ---------- INIT ---------- */
+  paintHeader();
+  fillClassFilter();
+  paintTable();
+
+  /* Hide actions the user doesn't have permission for */
+  if(!canAdd)    document.getElementById('addBtn').style.display = 'none';
+  if(!canExport) document.getElementById('exportBtn').style.display = 'none';
+  if(!canDelete){
+    document.getElementById('bulkDeleteBtn').style.display = 'none';
+    document.getElementById('selectAll').style.display = 'none';
+  }
+})();
+</script>
+</body>
+</html>

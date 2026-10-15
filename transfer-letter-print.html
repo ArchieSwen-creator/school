@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transfer Letter | EduCore</title>
+<style>
+  :root{--navy:#12315a;--blue:#3987ee;--border:#d8e4f2;--text:#23354d;--muted:#73849a}
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px 16px;background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button{font:inherit;cursor:pointer}
+
+  /* top action bar */
+  .bar{width:100%;max-width:850px;margin:0 auto 16px;display:flex;justify-content:space-between;
+    gap:10px;flex-wrap:wrap}
+  .btn{border:0;border-radius:8px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-weight:700;font-size:12px}
+  .btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--border)}
+
+  /* the printable sheet */
+  .sheet{position:relative;width:100%;max-width:850px;margin:0 auto;background:#fff;
+    border-radius:14px;padding:44px 52px;box-shadow:0 18px 50px #16345417}
+  .serial{position:absolute;right:48px;top:44px;font-size:9px;color:#9aa4b6;font-family:monospace}
+
+  .head{display:flex;align-items:center;gap:18px;padding-bottom:18px;border-bottom:3px double #273c63;
+    margin-bottom:24px}
+  .logo{width:74px;height:74px;border-radius:50%;border:3px solid #d8e8ff;background:#fff;
+    display:grid;place-items:center;overflow:hidden;color:var(--navy);font-weight:800;flex:0 0 74px}
+  .logo img{width:100%;height:100%;object-fit:contain}
+  .head-info h1{margin:0;font-size:20px;color:var(--navy);text-transform:uppercase;letter-spacing:.4px}
+  .head-info p{margin:4px 0 0;color:#657089;font-size:11px;line-height:1.5}
+
+  .subject{margin:26px 0 18px;font-weight:800;color:var(--navy);letter-spacing:.5px;font-size:13px}
+
+  .meta{display:grid;grid-template-columns:160px 1fr;gap:6px 14px;margin:18px 0 22px;font-size:12px}
+  .meta dt{color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.6px;font-size:10px}
+  .meta dd{margin:0;color:var(--navy);font-weight:700}
+
+  p.para{font-size:13px;line-height:1.85;margin:0 0 14px;text-align:justify}
+
+  .sign{display:grid;grid-template-columns:1fr 1fr;gap:60px;margin-top:54px}
+  .sign .blk{font-size:11px}
+  .sign .img{height:44px;display:flex;align-items:center;margin-bottom:6px}
+  .sign .img img{max-height:44px;max-width:200px;object-fit:contain}
+  .sign .line{border-top:1px solid #526079;margin-bottom:8px}
+  .sign strong{display:block;color:var(--navy);font-size:12px}
+  .sign small{color:var(--muted);font-size:10px;display:block;margin-top:3px}
+
+  /* not-found card */
+  .notfound{max-width:520px;margin:80px auto;padding:36px;text-align:center;background:#fff;
+    border:1px solid var(--border);border-radius:16px;box-shadow:0 18px 50px #16345417}
+  .notfound .icon{font-size:44px;margin-bottom:12px}
+  .notfound h1{font-size:18px;color:var(--navy);margin:0 0 8px}
+  .notfound p{font-size:13px;color:var(--muted);line-height:1.6;margin:0 0 20px}
+  .notfound a{display:inline-block;background:var(--blue);color:#fff;padding:11px 18px;
+    border-radius:9px;text-decoration:none;font-weight:700;font-size:12px}
+
+  @media print{
+    @page{size:A4 portrait;margin:14mm}
+    body{padding:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .bar,#educoreBackPill{display:none!important}
+    .sheet{box-shadow:none;border-radius:0;padding:0;max-width:none}
+  }
+  @media (max-width:650px){
+    body{padding:64px 8px 24px}
+    .sheet{padding:24px 20px}
+    .head{flex-direction:column;align-items:flex-start;gap:10px}
+    .sign{grid-template-columns:1fr;gap:30px}
+    .serial{position:static;text-align:right;margin-bottom:8px}
+  }
+</style>
+</head>
+<body>
+
+<div class="bar no-print">
+  <button class="btn ghost" onclick="window.close()">Close</button>
+  <button class="btn" onclick="window.print()">🖶 Print letter</button>
+</div>
+
+<div id="content"></div>
+
+<script src="educore-shared.js"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+  const $ = id => document.getElementById(id);
+
+  /* ---------- PARAM ---------- */
+  const params = new URLSearchParams(location.search);
+  const id = params.get('id');
+
+  /* ---------- DATA ---------- */
+  const settings  = E.readStore(E.STORE_KEYS.settings, {}) || {};
+  const transfers = E.readStore(E.STORE_KEYS.transfers, []) || [];
+  const record    = transfers.find(t => t.id === id);
+
+  /* ---------- NOT FOUND ---------- */
+  if(!record){
+    document.getElementById('content').innerHTML = `
+      <div class="notfound">
+        <div class="icon">📄</div>
+        <h1>Transfer letter not found</h1>
+        <p>This link doesn't point to a valid transfer record. It may have been deleted or the URL was mistyped.</p>
+        <a href="educore.html">← Back to Dashboard</a>
+      </div>`;
+    return;
+  }
+
+  /* ---------- BUILD LETTER ---------- */
+  const schoolName = settings.name || 'EduCore High School';
+  const logoHTML = settings.logo
+    ? `<img src="${settings.logo}" alt="">`
+    : schoolName.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase();
+
+  const principalSigHTML = settings.principalSignature
+    ? `<img src="${settings.principalSignature}" alt="">`
+    : '';
+
+  const serial = 'LTR-' + (id || 'UNKNOWN').slice(-8).toUpperCase();
+  const issueDate = E.fmtDate(record.issuedAt || record.createdAt);
+  const effectiveDate = E.fmtDate(record.effectiveDate || record.issuedAt || record.createdAt);
+  const destination = record.destination || '';
+  const isOut = record.type === 'out';
+
+  const subjectLine = isOut ? 'LETTER OF TRANSFER' : 'LETTER OF CLASS CHANGE';
+
+  const pronoun = record.gender === 'Male' ? 'his' : record.gender === 'Female' ? 'her' : 'their';
+
+  const destPhrase = destination
+    ? (isOut
+        ? ` to <strong>${E.esc(destination)}</strong>`
+        : ` to <strong>${E.esc(destination)}</strong>`)
+    : '';
+
+  const intro = isOut
+    ? `This is to certify that <strong>${E.esc(record.studentName)}</strong> (ID: <strong>${E.esc(record.studentId)}</strong>), who was enrolled in <strong>${E.esc(record.className)}</strong>, has been granted a transfer from <strong>${E.esc(schoolName)}</strong>${destPhrase} with effect from <strong>${effectiveDate}</strong>.`
+    : `This is to certify that <strong>${E.esc(record.studentName)}</strong> (ID: <strong>${E.esc(record.studentId)}</strong>) has been reassigned from <strong>${E.esc(record.className)}</strong>${destPhrase} with effect from <strong>${effectiveDate}</strong>.`;
+
+  const reasonsLine = record.reason
+    ? `<dt>Reason</dt><dd>${E.esc(record.reason)}</dd>`
+    : '';
+
+  document.getElementById('content').innerHTML = `
+    <div class="sheet">
+      <div class="serial">${E.esc(serial)}</div>
+
+      <div class="head">
+        <div class="logo">${logoHTML}</div>
+        <div class="head-info">
+          <h1>${E.esc(schoolName)}</h1>
+          ${settings.motto ? `<p>${E.esc(settings.motto)}</p>` : ''}
+          ${settings.location ? `<p>${E.esc(settings.location)}</p>` : ''}
+          ${settings.phone ? `<p>${E.esc(settings.phone)}</p>` : ''}
+        </div>
+      </div>
+
+      <div class="subject">SUBJECT: ${subjectLine}</div>
+
+      <dl class="meta">
+        <dt>Student</dt><dd>${E.esc(record.studentName)}</dd>
+        <dt>Student ID</dt><dd>${E.esc(record.studentId)}</dd>
+        <dt>Class</dt><dd>${E.esc(record.className)}</dd>
+        <dt>Date of issue</dt><dd>${issueDate}</dd>
+        <dt>Destination</dt><dd>${E.esc(destination || '—')}</dd>
+        ${reasonsLine}
+      </dl>
+
+      <p class="para">${intro}</p>
+
+      <p class="para">
+        The above-named student has been a student of this institution and, at the time of leaving,
+        had no outstanding financial or disciplinary obligation to the school. Records of their
+        academic performance are held on file and may be forwarded upon written request from the
+        receiving institution.
+      </p>
+
+      <p class="para">We wish them well in their future academic pursuits.</p>
+
+      <div class="sign">
+        <div class="blk">
+          <div class="img">${principalSigHTML}</div>
+          <div class="line"></div>
+          <strong>${E.esc(settings.principal || 'Principal')}</strong>
+          <small>Principal / Head Teacher</small>
+        </div>
+        <div class="blk">
+          <div class="img"></div>
+          <div class="line"></div>
+          <strong>School Stamp</strong>
+          <small>&nbsp;</small>
+        </div>
+      </div>
+    </div>`;
+
+  /* ---------- PAGE TITLE ---------- */
+  document.title = `${subjectLine} · ${record.studentName} | ${schoolName}`;
+})();
+</script>
+</body>
+</html>

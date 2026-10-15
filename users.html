@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Management | EduCore</title>
+<style>
+  :root{
+    --navy:#12315a;--navy2:#14213d;--blue:#3987ee;--pale:#eef5ff;--border:#d8e4f2;
+    --text:#23354d;--muted:#73849a;--green:#14805e;--orange:#d88922;--red:#d64545;
+    --gold:#c99a2e;--gold2:#fff4d6;--bg:#f5f7fb;--line:#e8ebf2;--white:#fff;
+    --shadow:0 8px 24px rgba(24,42,78,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:64px 16px 40px;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+
+  .page{width:100%;max-width:1240px;margin:0 auto}
+
+  .band{
+    background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
+    border-radius:16px;padding:22px 28px;margin-bottom:20px;
+    box-shadow:0 18px 50px #16345417;display:flex;justify-content:space-between;
+    align-items:center;gap:16px;flex-wrap:wrap;border-top:5px solid #58a4ff;
+  }
+  .band-left{display:flex;align-items:center;gap:14px}
+  .band-logo{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;place-items:center;
+    overflow:hidden;color:var(--navy);font-weight:900;font-size:18px;border:3px solid #d8e8ff;flex:0 0 48px}
+  .band-logo img{width:100%;height:100%;object-fit:contain}
+  .band h1{margin:0;font-size:19px;letter-spacing:.3px;text-transform:uppercase}
+  .band p{margin:4px 0 0;font-size:11px;color:#cfdcf5}
+  .band-user{display:flex;align-items:center;gap:10px;font-size:11px;color:#cfdcf5;
+    background:#ffffff14;border:1px solid #ffffff36;padding:7px 12px;border-radius:20px}
+  .band-user strong{color:#fff}
+
+  .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:16px 18px;
+    box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--blue)}
+  .stat.green::before{background:var(--green)}
+  .stat.orange::before{background:var(--orange)}
+  .stat.red::before{background:var(--red)}
+  .stat small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.8px;
+    color:var(--muted);font-weight:800;margin-bottom:8px}
+  .stat strong{font-size:22px;color:var(--navy);font-weight:800}
+
+  .toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;
+    flex-wrap:wrap;margin-bottom:16px}
+  .toolbar-left{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .field,.pick{border:1px solid var(--line);border-radius:9px;padding:10px 12px;
+    background:#fff;color:var(--text);font-size:12px;outline:none}
+  .field{min-width:230px}
+  .field:focus,.pick:focus{border-color:var(--blue)}
+
+  .btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{filter:brightness(.96)}
+  .btn.secondary{background:#eef2fb;color:#34415c}
+  .btn.outline{background:#fff;color:#34415c;border:1px solid var(--line)}
+  .btn.danger{background:#fff0f1;color:var(--red)}
+  .btn.green{background:#e6f7f0;color:#16835f}
+  .btn.warn{background:#fff2dd;color:#a86414}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);overflow:hidden}
+  .card-head{display:flex;justify-content:space-between;align-items:center;
+    padding:18px 22px;border-bottom:1px solid var(--line);gap:12px;flex-wrap:wrap}
+  .card-head h3{margin:0;font-size:14px}
+  .card-head .count{padding:4px 9px;border-radius:20px;background:#edf2ff;color:#3b5cc1;
+    font-size:10px;font-weight:800}
+
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;white-space:nowrap}
+  th{text-align:left;background:#fafbfe;color:#7a8498;font-size:10px;
+    text-transform:uppercase;letter-spacing:.6px;padding:13px 18px;
+    border-bottom:1px solid var(--line)}
+  td{padding:13px 18px;border-bottom:1px solid #f0f2f7;font-size:12px}
+  tbody tr:last-child td{border-bottom:0}
+
+  .person{display:flex;align-items:center;gap:10px}
+  .mini-avatar{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;
+    background:#edf2ff;color:#3859b7;font-size:10px;font-weight:700}
+  .person strong{display:block;font-size:12px}
+  .person small{display:block;color:var(--muted);font-size:10px;margin-top:4px}
+
+  .role-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;
+    border-radius:20px;font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase}
+  .role-badge.principal{background:#eaf0fb;color:#2f4d8a}
+  .role-badge.registrar{background:#fff2dd;color:#a86414}
+  .role-badge.teacher{background:#e6f7f0;color:#16835f}
+  .role-badge.student{background:#f4eaff;color:#6b3da5}
+  .role-badge.parent{background:#e6f0fb;color:#1d4d82}
+
+  .pill{display:inline-block;padding:5px 8px;border-radius:20px;font-size:10px;font-weight:700}
+  .pill.green{background:#e6f7f0;color:#16835f}
+  .pill.red{background:#ffeaec;color:#bd3b48}
+  .pill.blue{background:#edf2ff;color:#3b5cc1}
+
+  .row-actions{display:flex;gap:5px;flex-wrap:wrap}
+  .row-actions .btn{padding:7px 10px;font-size:11px}
+
+  .empty{padding:60px 20px;text-align:center;color:var(--muted);font-size:13px}
+
+  /* ============================================================
+     PERMISSION SECTIONS (main menu + nested sub-features)
+     ============================================================ */
+  .perm-section{margin-top:14px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .perm-section-head{padding:11px 14px;background:#f8faff;font-size:11px;font-weight:800;
+    color:#34415c;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--line)}
+
+  /* one menu block */
+  .perm-item{
+    border-bottom:1px solid #f0f2f7;
+    padding:10px 14px 12px;
+    transition:background .15s;
+  }
+  .perm-item:last-child{border-bottom:0}
+  .perm-item.disabled{background:#fbfbfd}
+
+  /* the main row: text + big toggle */
+  .perm-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:14px;
+  }
+  .perm-text strong{display:block;font-size:12px;color:var(--text)}
+  .perm-text small{display:block;font-size:10px;color:var(--muted);margin-top:3px}
+
+  /* big toggle */
+  .toggle{position:relative;display:inline-block;width:44px;height:24px;flex:0 0 44px}
+  .toggle input{opacity:0;width:0;height:0}
+  .toggle .slider{position:absolute;cursor:pointer;inset:0;background:#c9d1e0;border-radius:24px;transition:.2s}
+  .toggle .slider:before{content:"";position:absolute;height:18px;width:18px;left:3px;top:3px;
+    background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+  .toggle input:checked + .slider{background:#245d9c}
+  .toggle input:checked + .slider:before{transform:translateX(20px)}
+  .toggle input:disabled + .slider{opacity:.4;cursor:not-allowed}
+
+  /* sub-features grid, indented, small sliders */
+  .sub-features{
+    margin-top:10px;
+    margin-left:14px;
+    padding-left:12px;
+    border-left:2px solid #eef2fb;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:6px 18px;
+  }
+  .sub-feature{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    padding:5px 4px;
+    opacity:1;
+    transition:opacity .15s;
+  }
+  .sub-features.disabled .sub-feature{opacity:.35}
+
+  .sub-feature .sub-text strong{display:block;font-size:11px;font-weight:700;color:#3b4a63}
+  .sub-feature .sub-text small{display:block;font-size:9px;color:var(--muted);margin-top:2px;line-height:1.35}
+
+  /* small toggle */
+  .toggle.sm{width:34px;height:20px;flex:0 0 34px}
+  .toggle.sm .slider:before{height:14px;width:14px;left:3px;top:3px}
+  .toggle.sm input:checked + .slider:before{transform:translateX(14px)}
+
+  .role-preset-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .role-preset-btn{border:1px dashed #b9c8e8;background:#f8faff;border-radius:8px;
+    padding:7px 12px;font-size:11px;font-weight:800;color:#2f4d8a;cursor:pointer;letter-spacing:.3px}
+  .role-preset-btn:hover{background:#eef2fb}
+  .role-preset-btn.active{background:#245d9c;color:#fff;border-style:solid;border-color:#245d9c}
+
+  .perm-search{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
+  .perm-search input{flex:1 1 200px;border:1px solid #dfe4ee;border-radius:8px;
+    padding:9px 11px;font-size:12px;outline:none}
+
+  .link-btn{border:0;background:transparent;color:var(--blue);font-size:11px;font-weight:700;cursor:pointer}
+
+  /* child picker (unchanged) */
+  .child-picker-wrap{border:1px solid var(--line);border-radius:10px;background:#fff;margin-top:6px;overflow:hidden}
+  .child-picker-head{display:flex;justify-content:space-between;align-items:center;gap:10px;
+    padding:9px 12px;background:#f8faff;border-bottom:1px solid var(--line);font-size:11px;flex-wrap:wrap}
+  .child-picker-head .selected-count{font-weight:800;color:var(--navy)}
+  .child-picker-head .mini-actions{display:flex;gap:6px}
+  .child-picker-head .mini-actions button{border:1px solid var(--line);background:#fff;
+    border-radius:6px;padding:5px 9px;font-size:10px;font-weight:700;color:#34415c;cursor:pointer}
+  .child-picker-head .mini-actions button:hover{background:#eef2fb}
+  .child-picker-search{padding:8px 12px;border-bottom:1px solid #f0f2f7;background:#fff}
+  .child-picker-search input{width:100%;border:1px solid #dfe4ee;border-radius:8px;
+    padding:8px 10px;font-size:12px;outline:none}
+  .child-picker-search input:focus{border-color:var(--blue)}
+  .child-picker-list{max-height:260px;overflow-y:auto;padding:6px}
+  .child-pick{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid transparent;
+    border-radius:8px;cursor:pointer;transition:.12s}
+  .child-pick:hover{background:#f3f6fd}
+  .child-pick.ticked{background:#eaf2ff;border-color:#b9d1f6}
+  .child-pick input{width:16px;height:16px;flex:0 0 16px;accent-color:#245d9c}
+  .child-pick .who{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+  .child-pick .who strong{font-size:12px;color:var(--navy);font-weight:700}
+  .child-pick .who small{font-size:10px;color:var(--muted)}
+  .child-pick .mini-avatar{width:28px;height:28px;font-size:9px;border-radius:8px}
+
+  @media (max-width:850px){
+    .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .sub-features{grid-template-columns:1fr}
+  }
+  @media (max-width:650px){
+    body{padding:64px 8px 24px}
+    .band{padding:18px 20px}
+    .band h1{font-size:15px}
+    .field,.pick{min-width:0;width:100%}
+    .toolbar{flex-direction:column;align-items:stretch}
+    .toolbar-left{width:100%}
+    .stats{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="band">
+    <div class="band-left">
+      <div class="band-logo" id="bandLogo">DS</div>
+      <div>
+        <h1 id="bandSchool">User Management</h1>
+        <p id="bandSub">Create users, assign roles, and control what each account can see</p>
+      </div>
+    </div>
+    <div class="band-user">
+      Signed in as <strong id="bandUser">—</strong>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><small>Total users</small><strong id="kTotal">0</strong></div>
+    <div class="stat green"><small>Active</small><strong id="kActive">0</strong></div>
+    <div class="stat orange"><small>Disabled</small><strong id="kDisabled">0</strong></div>
+    <div class="stat red"><small>Linked accounts</small><strong id="kLinked">0</strong></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <input class="field" id="search" placeholder="Search name or username...">
+      <select class="pick" id="roleFilter">
+        <option value="">All roles</option>
+        <option>Principal</option>
+        <option>Registrar</option>
+        <option>Teacher</option>
+        <option>Student</option>
+        <option>Parent</option>
+      </select>
+      <select class="pick" id="statusFilter">
+        <option value="">All statuses</option>
+        <option value="active">Active only</option>
+        <option value="disabled">Disabled only</option>
+      </select>
+    </div>
+    <div class="toolbar-left">
+      <button class="btn" id="addBtn">＋ Create user</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h3>All users <span class="count" id="count">0</span></h3>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Username</th>
+            <th>Role</th>
+            <th>Linked</th>
+            <th>Permissions</th>
+            <th>Status</th>
+            <th>Last login</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script src="educore-shared.js"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  /* ---------- GUARD ---------- */
+  const user = E.requirePerm('userManagement', 'User Management');
+  if(!user) return;
+
+  /* ---------- HEADER ---------- */
+  function paintHeader(){
+    const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const name = settings.name || 'EduCore High School';
+    if(settings.logo){
+      document.getElementById('bandLogo').innerHTML = `<img src="${settings.logo}" alt="">`;
+    } else {
+      document.getElementById('bandLogo').textContent =
+        name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
+    }
+    document.getElementById('bandSchool').textContent = name;
+    document.getElementById('bandSub').textContent = 'Create users, assign roles, and control what each account can see';
+    document.getElementById('bandUser').textContent = user.name || user.username;
+  }
+
+  /* ---------- ROLE BADGE ---------- */
+  function roleBadge(r){
+    return `<span class="role-badge ${(r||'').toLowerCase()}">${E.esc(r||'—')}</span>`;
+  }
+
+  /* ---------- STATUS PILL ---------- */
+  function statusPill(active){
+    return active ? '<span class="pill green">Active</span>' : '<span class="pill red">Disabled</span>';
+  }
+
+  /* ---------- LINKED LABEL ---------- */
+  function linkedNameFor(u){
+    if(u.role === 'Student' && u.linkedStudentId){
+      const s = (E.readStore(E.STORE_KEYS.students, []) || []).find(x => x.id === u.linkedStudentId);
+      return s ? `${s.name} (${s.id})` : u.linkedStudentId;
+    }
+    if(u.role === 'Teacher' && u.linkedTeacherId){
+      const t = (E.readStore(E.STORE_KEYS.teachers, []) || []).find(x => x.id === u.linkedTeacherId);
+      return t ? t.name : u.linkedTeacherId;
+    }
+    if(u.role === 'Parent'){
+      const ids = Array.isArray(u.linkedStudentIds) ? u.linkedStudentIds
+                : (u.linkedStudentId ? [u.linkedStudentId] : []);
+      if(!ids.length) return '—';
+      const students = E.readStore(E.STORE_KEYS.students, []) || [];
+      const names = ids
+        .map(id => students.find(s => s.id === id))
+        .filter(Boolean)
+        .map(s => s.name);
+      return names.length ? names.join(', ') : '—';
+    }
+    return '—';
+  }
+
+  /* ---------- RENDER TABLE ---------- */
+  function paintTable(){
+    const users = E.readStore(E.STORE_KEYS.users, []) || [];
+    const q = document.getElementById('search').value.toLowerCase();
+    const role = document.getElementById('roleFilter').value;
+    const status = document.getElementById('statusFilter').value;
+
+    const arr = users.filter(u => {
+      if(q && !(`${u.name} ${u.username}`).toLowerCase().includes(q)) return false;
+      if(role && u.role !== role) return false;
+      if(status === 'active' && !u.active) return false;
+      if(status === 'disabled' && u.active) return false;
+      return true;
+    }).sort((a,b) => {
+      const order = { Principal:0, Registrar:1, Teacher:2, Student:3, Parent:4 };
+      const ra = order[a.role] ?? 9, rb = order[b.role] ?? 9;
+      if(ra !== rb) return ra - rb;
+      return (a.name||a.username).localeCompare(b.name||b.username);
+    });
+
+    const active = users.filter(u => u.active).length;
+    const disabled = users.length - active;
+    const linked = users.filter(u => u.role === 'Teacher' || u.role === 'Student' || u.role === 'Parent').length;
+    document.getElementById('kTotal').textContent = users.length;
+    document.getElementById('kActive').textContent = active;
+    document.getElementById('kDisabled').textContent = disabled;
+    document.getElementById('kLinked').textContent = linked;
+
+    const tb = document.getElementById('tbody');
+    tb.innerHTML = arr.map(u => {
+      /* Counts: main menus ON and sub-features ON separately */
+      const permCount = Object.values(u.permissions || {}).filter(Boolean).length;
+      const totalPerms = E.ALL_KEYS.length;
+      const isSelf = u.id === user.id;
+
+      return `<tr>
+        <td>
+          <div class="person">
+            <div class="mini-avatar">${E.initials(u.name || u.username)}</div>
+            <div><strong>${E.esc(u.name || u.username)}</strong><small>${isSelf ? 'You' : ''}</small></div>
+          </div>
+        </td>
+        <td>${E.esc(u.username)}</td>
+        <td>${roleBadge(u.role)}</td>
+        <td>${E.esc(linkedNameFor(u))}</td>
+        <td><span class="pill blue">${permCount} / ${totalPerms}</span></td>
+        <td>${statusPill(u.active)}</td>
+        <td>${u.lastLogin ? E.fmtDateTime(u.lastLogin) : '—'}</td>
+        <td>
+          <div class="row-actions">
+            <button class="btn secondary" data-edit="${E.esc(u.id)}">Edit</button>
+            ${!isSelf ? `<button class="btn ${u.active?'danger':'green'}" data-toggle="${E.esc(u.id)}">
+              ${u.active ? 'Disable' : 'Enable'}
+            </button>` : ''}
+          </div>
+        </td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="8" class="empty">No users match your filters.</td></tr>';
+
+    document.getElementById('count').textContent = arr.length;
+  }
+
+  /* ---------- PASSWORD HELPERS ---------- */
+  function strongPassword(){
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#%*';
+    let out = '';
+    for(let i=0;i<12;i++) out += chars[Math.floor(Math.random() * chars.length)];
+    return out;
+  }
+
+  async function hashPassword(plain){
+    try{
+      const enc = new TextEncoder().encode('educore::' + plain);
+      const buf = await crypto.subtle.digest('SHA-256', enc);
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+    }catch(e){
+      let h = 0;
+      for(let i=0;i<plain.length;i++){ h = (h*31 + plain.charCodeAt(i)) >>> 0; }
+      return 'fb' + h.toString(16);
+    }
+  }
+
+  /* ============================================================
+     PERMISSION SLIDERS RENDERER
+     Main menu row (big toggle) + nested sub-features (small toggles)
+     ============================================================ */
+  function buildPermSections(u){
+    /* Fill missing keys with sensible defaults:
+       - main menus default to their value in the user record (true/false)
+       - sub-features default to the parent menu value (backwards compat) */
+    const perms = Object.assign({}, u.permissions || {});
+
+    return E.PERMISSION_GROUPS.map(g => {
+      const items = g.items.map(it => {
+        const menuOn = !!perms[it.key];
+
+        const subHTML = (it.subFeatures || []).map(sf => {
+          const fullKey = it.key + '.' + sf.key;
+          /* If the user has an explicit value, use it.
+             Otherwise fall back to the parent menu value. */
+          const value = Object.prototype.hasOwnProperty.call(perms, fullKey)
+            ? !!perms[fullKey]
+            : menuOn;
+          return `
+            <div class="sub-feature"
+                 data-sub-label="${E.esc((sf.label + ' ' + sf.desc).toLowerCase())}">
+              <div class="sub-text">
+                <strong>${E.esc(sf.label)}</strong>
+                <small>${E.esc(sf.desc)}</small>
+              </div>
+              <label class="toggle sm">
+                <input type="checkbox"
+                  data-perm-toggle="${E.esc(fullKey)}"
+                  data-parent-menu="${E.esc(it.key)}"
+                  ${value ? 'checked' : ''}>
+                <span class="slider"></span>
+              </label>
+            </div>`;
+        }).join('');
+
+        const hasSubs = (it.subFeatures || []).length > 0;
+        const subBlock = hasSubs
+          ? `<div class="sub-features ${menuOn ? '' : 'disabled'}" data-sub-block="${E.esc(it.key)}">
+               ${subHTML}
+             </div>`
+          : '';
+
+        return `
+          <div class="perm-item ${menuOn ? '' : 'disabled'}"
+               data-perm-key="${E.esc(it.key)}"
+               data-label="${E.esc((it.label + ' ' + it.desc).toLowerCase())}">
+            <div class="perm-row">
+              <div class="perm-text">
+                <strong>${E.esc(it.label)}</strong>
+                <small>${E.esc(it.desc)}</small>
+              </div>
+              <label class="toggle">
+                <input type="checkbox"
+                  data-perm-toggle="${E.esc(it.key)}"
+                  data-main-menu="${E.esc(it.key)}"
+                  ${menuOn ? 'checked' : ''}>
+                <span class="slider"></span>
+              </label>
+            </div>
+            ${subBlock}
+          </div>`;
+      }).join('');
+
+      return `
+        <div class="perm-section" data-group="${E.esc(g.title)}">
+          <div class="perm-section-head">${E.esc(g.title)}</div>
+          ${items}
+        </div>`;
+    }).join('');
+  }
+
+  /* ============================================================
+     USER MODAL
+     ============================================================ */
+  async function openUserModal(existingId){
+    const users    = E.readStore(E.STORE_KEYS.users, []) || [];
+    const students = E.readStore(E.STORE_KEYS.students, []) || [];
+    const teachers = E.readStore(E.STORE_KEYS.teachers, []) || [];
+
+    const isNew = !existingId;
+    const u = isNew
+      ? { name:'', username:'', role:'Teacher', active:true,
+          linkedStudentId:'', linkedStudentIds:[], linkedTeacherId:'',
+          permissions: { ...E.ROLE_PRESETS.Teacher } }
+      : JSON.parse(JSON.stringify(users.find(x => x.id === existingId) || {}));
+
+    if(!u.id && !isNew) return;
+
+    if(!Array.isArray(u.linkedStudentIds)){
+      u.linkedStudentIds = u.linkedStudentId ? [u.linkedStudentId] : [];
+    }
+
+    const currentRole = { value: u.role };
+
+    /* Build the permission sections */
+    const permSections = buildPermSections(u);
+
+    /* Dropdowns for single-link */
+    const studentOptions = students.map(s =>
+      `<option value="${E.esc(s.id)}" ${u.linkedStudentId === s.id ? 'selected' : ''}>${E.esc(s.name)} — ${E.esc(s.id)} (${E.esc(s.class)})</option>`).join('');
+    const teacherOptions = teachers.map(t =>
+      `<option value="${E.esc(t.id)}" ${u.linkedTeacherId === t.id ? 'selected' : ''}>${E.esc(t.name)} — ${E.esc(t.department||'')}</option>`).join('');
+
+    /* Multi-child picker */
+    const parentStudentList = students.length
+      ? students.slice().sort((a,b) => a.name.localeCompare(b.name)).map(s => {
+          const ticked = u.linkedStudentIds.includes(s.id);
+          return `
+            <label class="child-pick ${ticked ? 'ticked' : ''}" data-search="${E.esc((s.name + ' ' + s.id + ' ' + s.class).toLowerCase())}">
+              <input type="checkbox" data-parent-student="${E.esc(s.id)}" ${ticked ? 'checked' : ''}>
+              <span class="mini-avatar">${E.initials(s.name)}</span>
+              <span class="who">
+                <strong>${E.esc(s.name)}</strong>
+                <small>${E.esc(s.id)} · ${E.esc(s.class)}</small>
+              </span>
+            </label>`;
+        }).join('')
+      : '<div class="empty" style="padding:20px">No students in the system yet.</div>';
+
+    const html = `
+      <input type="hidden" name="role" id="roleHiddenInput" value="${E.esc(u.role)}">
+
+      <div class="full"><label>Full name</label>
+        <input name="name" required value="${E.esc(u.name||'')}">
+      </div>
+      <div><label>Username</label>
+        <input name="username" required value="${E.esc(u.username||'')}" autocomplete="off"
+          ${isNew ? '' : 'readonly style="background:#f4f6fb;color:#7a8498"'}>
+      </div>
+      <div><label>${isNew ? 'Password' : 'Password (use Reset below)'}</label>
+        ${isNew
+          ? `<input name="password" type="text" required autocomplete="off" placeholder="Type or generate below">
+             <div style="margin-top:6px">
+               <button type="button" class="btn outline" id="genPassBtn" style="padding:7px 11px;font-size:11px">
+                 🎲 Generate strong password
+               </button>
+             </div>`
+          : `<input value="••••••••" readonly style="background:#f4f6fb;color:#7a8498">`}
+      </div>
+      <div><label>Email</label>
+        <input name="email" type="email" value="${E.esc(u.email||'')}">
+      </div>
+      <div><label>Phone</label>
+        <input name="phone" value="${E.esc(u.phone||'')}">
+      </div>
+
+      <div class="full">
+        <label>Role (starting preset)</label>
+        <div class="role-preset-row" id="rolePresetRow">
+          ${['Principal','Registrar','Teacher','Student','Parent'].map(r =>
+            `<button type="button" class="role-preset-btn ${u.role === r ? 'active' : ''}" data-role="${r}">${r}</button>`
+          ).join('')}
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5">
+          Picking a role applies its recommended permissions (including sub-features). You can fine-tune the sliders below.
+        </div>
+      </div>
+
+      <div class="full" id="linkedStudentField" style="${u.role === 'Student' ? '' : 'display:none'}">
+        <label>Linked student record (required for Student role)</label>
+        <select name="linkedStudentId">
+          <option value="">— Pick a student —</option>
+          ${studentOptions}
+        </select>
+      </div>
+
+      <div class="full" id="linkedParentField" style="${u.role === 'Parent' ? '' : 'display:none'}">
+        <label>Linked children (select one or more students)</label>
+        <div class="child-picker-wrap">
+          <div class="child-picker-head">
+            <span class="selected-count" id="childCountLabel">0 children selected</span>
+            <div class="mini-actions">
+              <button type="button" id="childSelectAll">Select all</button>
+              <button type="button" id="childClearAll">Clear</button>
+            </div>
+          </div>
+          ${students.length ? `
+          <div class="child-picker-search">
+            <input type="text" id="childSearch" placeholder="Search student name, ID, or class...">
+          </div>` : ''}
+          <div class="child-picker-list" id="childPickerList">
+            ${parentStudentList}
+          </div>
+        </div>
+        <small style="color:var(--muted);font-size:11px;margin-top:6px;display:block">
+          Parents see only the students you tick here. You can tick as many as you like.
+        </small>
+      </div>
+
+      <div class="full" id="linkedTeacherField" style="${u.role === 'Teacher' ? '' : 'display:none'}">
+        <label>Linked teacher record (recommended for Teacher role)</label>
+        <select name="linkedTeacherId">
+          <option value="">— Pick a teacher —</option>
+          ${teacherOptions}
+        </select>
+        <small style="color:var(--muted);font-size:11px;margin-top:4px;display:block">
+          Links this login to a teacher so their classes and subjects are scoped correctly.
+        </small>
+      </div>
+
+      <div class="full">
+        <label>Active account</label>
+        <label class="toggle" style="display:inline-flex">
+          <input type="checkbox" name="active" value="1" ${u.active ? 'checked' : ''}>
+          <span class="slider"></span>
+        </label>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px">
+          Disabled accounts cannot sign in but the record is kept.
+        </div>
+      </div>
+
+      <div class="full">
+        <label style="font-size:12px;color:#34415c;letter-spacing:.5px;text-transform:uppercase">
+          Permissions
+        </label>
+        <div class="perm-search">
+          <input id="permSearch" placeholder="Search menus, sub-features...">
+          <button type="button" class="link-btn" id="permSelectAll">Select all</button>
+          <button type="button" class="link-btn" id="permClearAll">Deselect all</button>
+          <button type="button" class="link-btn" id="permResetRole">Reset to role preset</button>
+        </div>
+      </div>
+
+      <div class="full" id="permContainer">${permSections}</div>
+
+      ${!isNew ? `
+        <div class="full" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+          <button type="button" class="btn warn" id="resetPassBtn">🔑 Reset password</button>
+          <button type="button" class="btn danger" id="deleteUserBtn">🗑 Delete user</button>
+        </div>` : ''}`;
+
+    /* ============================================================
+       OPEN MODAL
+       ============================================================ */
+    E.openModal(isNew ? 'Create user' : `Edit user · ${u.username}`, html,
+      isNew ? 'Create user' : 'Save changes',
+      async d => {
+        const chosenRole = (d.role && String(d.role)) || currentRole.value || 'Teacher';
+
+        /* Collect permission values from every checkbox we rendered */
+        const perms = {};
+        E.ALL_KEYS.forEach(k => {
+          const cb = document.querySelector(`[data-perm-toggle="${k}"]`);
+          perms[k] = !!(cb && cb.checked);
+        });
+
+        /* Parent children */
+        const parentIds = Array.from(document.querySelectorAll('[data-parent-student]:checked'))
+          .map(x => x.dataset.parentStudent);
+
+        if(chosenRole === 'Student' && !d.linkedStudentId){
+          E.toast('Pick a linked student for a Student account.'); return;
+        }
+        if(chosenRole === 'Parent' && !parentIds.length){
+          E.toast('Tick at least one child for a Parent account.'); return;
+        }
+
+        const users = E.readStore(E.STORE_KEYS.users, []) || [];
+
+        if(isNew){
+          if(!d.username || !d.username.trim()){ E.toast('Username required.'); return; }
+          if(users.some(x => x.username.toLowerCase() === d.username.toLowerCase())){
+            E.toast('That username already exists.'); return;
+          }
+          if(!d.password || d.password.length < 4){ E.toast('Password must be at least 4 characters.'); return; }
+          const hash = await hashPassword(d.password);
+
+          users.push({
+            id: 'u-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6),
+            username: d.username.trim(),
+            passwordHash: hash,
+            name: d.name.trim(),
+            email: (d.email||'').trim(),
+            phone: (d.phone||'').trim(),
+            role: chosenRole,
+            linkedStudentId:  chosenRole === 'Student' ? d.linkedStudentId : null,
+            linkedStudentIds: chosenRole === 'Parent'  ? parentIds : null,
+            linkedTeacherId:  chosenRole === 'Teacher' ? d.linkedTeacherId : null,
+            permissions: perms,
+            active: !!d.active,
+            createdAt: new Date().toISOString(),
+            createdBy: user.username,
+            lastLogin: null
+          });
+          E.writeStore(E.STORE_KEYS.users, users);
+          E.audit('create', `User ${d.username}`, '', chosenRole);
+          E.toast('User created.');
+        } else {
+          const target = users.find(x => x.id === u.id);
+          if(!target) return;
+          target.name  = d.name.trim();
+          target.email = (d.email||'').trim();
+          target.phone = (d.phone||'').trim();
+          target.role  = chosenRole;
+          target.linkedStudentId  = chosenRole === 'Student' ? d.linkedStudentId : null;
+          target.linkedStudentIds = chosenRole === 'Parent'  ? parentIds : null;
+          target.linkedTeacherId  = chosenRole === 'Teacher' ? d.linkedTeacherId : null;
+          target.permissions = perms;
+          target.active = !!d.active;
+          target.updatedAt = new Date().toISOString();
+          E.writeStore(E.STORE_KEYS.users, users);
+          E.audit('update', `User ${target.username}`, '', 'permissions updated');
+          E.toast('User updated.');
+        }
+
+        E.closeModal();
+        paintTable();
+      }, true);
+
+    /* ============================================================
+       MODAL HELPERS
+       ============================================================ */
+
+    /* -------- Main menu toggles cascade to sub-features -------- */
+    function syncSubBlock(menuKey, menuOn){
+      const block = document.querySelector(`[data-sub-block="${menuKey}"]`);
+      const item = document.querySelector(`.perm-item[data-perm-key="${menuKey}"]`);
+      if(item) item.classList.toggle('disabled', !menuOn);
+      if(!block) return;
+
+      block.classList.toggle('disabled', !menuOn);
+      block.querySelectorAll('input[data-perm-toggle]').forEach(cb => {
+        cb.disabled = !menuOn;
+      });
+    }
+
+    document.querySelectorAll('[data-main-menu]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        syncSubBlock(cb.dataset.mainMenu, cb.checked);
+      });
+      /* Sync on open in case values are already stored */
+      syncSubBlock(cb.dataset.mainMenu, cb.checked);
+    });
+
+    /* -------- Role preset -------- */
+    function applyPreset(role){
+      currentRole.value = role;
+      const hidden = document.getElementById('roleHiddenInput');
+      if(hidden) hidden.value = role;
+
+      const preset = E.ROLE_PRESETS[role] || {};
+
+      /* Update all checkboxes (main + sub) */
+      E.ALL_KEYS.forEach(k => {
+        const cb = document.querySelector(`[data-perm-toggle="${k}"]`);
+        if(cb) cb.checked = !!preset[k];
+      });
+
+      /* Re-sync every menu block so the disabled state matches */
+      document.querySelectorAll('[data-main-menu]').forEach(cb => {
+        syncSubBlock(cb.dataset.mainMenu, cb.checked);
+      });
+
+      document.querySelectorAll('#rolePresetRow .role-preset-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.role === role));
+
+      const ls = document.getElementById('linkedStudentField');
+      const lp = document.getElementById('linkedParentField');
+      const lt = document.getElementById('linkedTeacherField');
+      if(ls) ls.style.display = role === 'Student' ? '' : 'none';
+      if(lp) lp.style.display = role === 'Parent'  ? '' : 'none';
+      if(lt) lt.style.display = role === 'Teacher' ? '' : 'none';
+    }
+
+    document.querySelectorAll('#rolePresetRow .role-preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const r = btn.dataset.role;
+        if(r === currentRole.value) return;
+        if(!confirm(`Apply the ${r} preset? All main menu and sub-feature sliders will be reset to that role's defaults.`)) return;
+        applyPreset(r);
+      });
+    });
+
+    document.getElementById('permResetRole')?.addEventListener('click', () => {
+      if(!confirm(`Reset all sliders to the ${currentRole.value} preset?`)) return;
+      applyPreset(currentRole.value);
+    });
+
+    /* -------- Select all / Deselect all -------- */
+    document.getElementById('permSelectAll').addEventListener('click', () => {
+      E.ALL_KEYS.forEach(k => {
+        const cb = document.querySelector(`[data-perm-toggle="${k}"]`);
+        if(cb){ cb.checked = true; cb.disabled = false; }
+      });
+      /* Re-enable and re-sync every sub block */
+      document.querySelectorAll('[data-main-menu]').forEach(cb => {
+        syncSubBlock(cb.dataset.mainMenu, true);
+      });
+    });
+    document.getElementById('permClearAll').addEventListener('click', () => {
+      E.ALL_KEYS.forEach(k => {
+        const cb = document.querySelector(`[data-perm-toggle="${k}"]`);
+        if(cb){ cb.checked = false; cb.disabled = false; }
+      });
+      document.querySelectorAll('[data-main-menu]').forEach(cb => {
+        syncSubBlock(cb.dataset.mainMenu, false);
+      });
+    });
+
+    /* -------- Permission search (matches menu label OR sub label) -------- */
+    document.getElementById('permSearch').addEventListener('input', e => {
+      const q = e.target.value.toLowerCase().trim();
+      document.querySelectorAll('#permContainer .perm-item').forEach(item => {
+        const menuLabel = item.dataset.label || '';
+        const subs = Array.from(item.querySelectorAll('.sub-feature'));
+        const subMatch = subs.some(sf => (sf.dataset.subLabel || '').includes(q));
+        const menuMatch = menuLabel.includes(q);
+        item.style.display = (!q || menuMatch || subMatch) ? '' : 'none';
+      });
+    });
+
+    /* -------- Password helpers -------- */
+    document.getElementById('genPassBtn')?.addEventListener('click', () => {
+      const p = strongPassword();
+      const field = document.querySelector('[name="password"]');
+      if(field){ field.value = p; field.type = 'text'; }
+    });
+
+    document.getElementById('resetPassBtn')?.addEventListener('click', async () => {
+      const np = prompt('Enter a new password for this user:', strongPassword());
+      if(!np) return;
+      const hash = await hashPassword(np);
+      const list = E.readStore(E.STORE_KEYS.users, []) || [];
+      const t = list.find(x => x.id === u.id);
+      if(!t) return;
+      t.passwordHash = hash;
+      E.writeStore(E.STORE_KEYS.users, list);
+      E.audit('update', `User ${t.username}`, '', 'password reset');
+      alert('New password for ' + t.username + ':\n\n' + np + '\n\nShare this with the user securely.');
+    });
+
+    document.getElementById('deleteUserBtn')?.addEventListener('click', () => {
+      const typed = prompt(`Type the username "${u.username}" to permanently delete this user:`);
+      if(typed !== u.username){ E.toast('Username did not match.'); return; }
+      const list = (E.readStore(E.STORE_KEYS.users, []) || []).filter(x => x.id !== u.id);
+      E.writeStore(E.STORE_KEYS.users, list);
+      E.audit('delete', `User ${u.username}`, '', '');
+      E.closeModal();
+      paintTable();
+      E.toast('User deleted.');
+    });
+
+    /* -------- Parent children picker -------- */
+    const childCountLabel = document.getElementById('childCountLabel');
+    const childPickerList = document.getElementById('childPickerList');
+    const childSearch     = document.getElementById('childSearch');
+
+    function refreshChildCount(){
+      const ticked = document.querySelectorAll('[data-parent-student]:checked').length;
+      if(childCountLabel){
+        childCountLabel.textContent = ticked === 0
+          ? 'No children selected'
+          : ticked === 1
+            ? '1 child selected'
+            : `${ticked} children selected`;
+      }
+      document.querySelectorAll('.child-pick').forEach(row => {
+        const cb = row.querySelector('input[data-parent-student]');
+        row.classList.toggle('ticked', !!(cb && cb.checked));
+      });
+    }
+
+    childPickerList?.addEventListener('change', e => {
+      if(e.target.matches('[data-parent-student]')) refreshChildCount();
+    });
+    childPickerList?.addEventListener('click', e => {
+      const row = e.target.closest('.child-pick');
+      if(!row) return;
+      if(e.target.tagName === 'INPUT') return;
+      setTimeout(refreshChildCount, 0);
+    });
+
+    document.getElementById('childSelectAll')?.addEventListener('click', () => {
+      document.querySelectorAll('[data-parent-student]').forEach(cb => { cb.checked = true; });
+      refreshChildCount();
+    });
+    document.getElementById('childClearAll')?.addEventListener('click', () => {
+      document.querySelectorAll('[data-parent-student]').forEach(cb => { cb.checked = false; });
+      refreshChildCount();
+    });
+
+    childSearch?.addEventListener('input', e => {
+      const q = e.target.value.trim().toLowerCase();
+      document.querySelectorAll('.child-pick').forEach(row => {
+        row.style.display = (!q || row.dataset.search.includes(q)) ? '' : 'none';
+      });
+    });
+
+    refreshChildCount();
+  }
+
+  /* ---------- TOGGLE ACTIVE ---------- */
+  function toggleActive(id){
+    const list = E.readStore(E.STORE_KEYS.users, []) || [];
+    const u = list.find(x => x.id === id);
+    if(!u) return;
+    if(u.id === user.id){ E.toast('You cannot disable your own account.'); return; }
+    if(u.active){
+      if(!confirm(`Disable ${u.name || u.username}?\n\nThey will not be able to sign in until re-enabled.`)) return;
+    }
+    u.active = !u.active;
+    E.writeStore(E.STORE_KEYS.users, list);
+    E.audit('update', `User ${u.username}`, '', u.active ? 'enabled' : 'disabled');
+    paintTable();
+    E.toast(`User ${u.active ? 'enabled' : 'disabled'}.`);
+  }
+
+  /* ---------- EVENTS ---------- */
+  document.getElementById('search').addEventListener('input', paintTable);
+  document.getElementById('roleFilter').addEventListener('change', paintTable);
+  document.getElementById('statusFilter').addEventListener('change', paintTable);
+  document.getElementById('addBtn').addEventListener('click', () => openUserModal(null));
+
+  document.getElementById('tbody').addEventListener('click', e => {
+    const edit = e.target.closest('[data-edit]');
+    const toggle = e.target.closest('[data-toggle]');
+    if(edit) openUserModal(edit.dataset.edit);
+    if(toggle) toggleActive(toggle.dataset.toggle);
+  });
+
+  /* ---------- INIT ---------- */
+  paintHeader();
+  paintTable();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teachers | EduCore</title>
+<style>
+  :root{
+    --navy:#12315a;--navy2:#14213d;--blue:#3987ee;--pale:#eef5ff;--border:#d8e4f2;
+    --text:#23354d;--muted:#73849a;--green:#14805e;--orange:#d88922;--red:#d64545;
+    --gold:#c99a2e;--gold2:#fff4d6;--bg:#f5f7fb;--line:#e8ebf2;--white:#fff;
+    --shadow:0 8px 24px rgba(24,42,78,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:64px 16px 40px;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+
+  .page{width:100%;max-width:1200px;margin:0 auto}
+
+  .band{
+    background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
+    border-radius:16px;padding:22px 28px;margin-bottom:20px;
+    box-shadow:0 18px 50px #16345417;display:flex;justify-content:space-between;
+    align-items:center;gap:16px;flex-wrap:wrap;border-top:5px solid #58a4ff;
+  }
+  .band-left{display:flex;align-items:center;gap:14px}
+  .band-logo{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;place-items:center;
+    overflow:hidden;color:var(--navy);font-weight:900;font-size:18px;border:3px solid #d8e8ff;flex:0 0 48px}
+  .band-logo img{width:100%;height:100%;object-fit:contain}
+  .band h1{margin:0;font-size:19px;letter-spacing:.3px;text-transform:uppercase}
+  .band p{margin:4px 0 0;font-size:11px;color:#cfdcf5}
+  .band-user{display:flex;align-items:center;gap:10px;font-size:11px;color:#cfdcf5;
+    background:#ffffff14;border:1px solid #ffffff36;padding:7px 12px;border-radius:20px}
+  .band-user strong{color:#fff}
+
+  .scope-note{background:#eef5ff;border:1px solid #c4d8f5;color:#2e4a7e;
+    border-radius:10px;padding:11px 16px;margin-bottom:16px;font-size:12px;line-height:1.6;
+    display:flex;gap:10px;align-items:flex-start}
+  .scope-note .icon{font-size:16px;flex:0 0 auto;padding-top:1px}
+
+  .toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;
+    flex-wrap:wrap;margin-bottom:16px}
+  .toolbar-left{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .field,.pick{border:1px solid var(--line);border-radius:9px;padding:10px 12px;
+    background:#fff;color:var(--text);font-size:12px;outline:none}
+  .field{min-width:230px}
+  .field:focus,.pick:focus{border-color:var(--blue)}
+
+  .btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{filter:brightness(.96)}
+  .btn.secondary{background:#eef2fb;color:#34415c}
+  .btn.outline{background:#fff;color:#34415c;border:1px solid var(--line)}
+  .btn.danger{background:#fff0f1;color:var(--red)}
+  .btn.green{background:#e6f7f0;color:#16835f}
+  .btn.warn{background:#fff2dd;color:#a86414}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);overflow:hidden}
+  .card-head{display:flex;justify-content:space-between;align-items:center;
+    padding:18px 22px;border-bottom:1px solid var(--line);gap:12px;flex-wrap:wrap}
+  .card-head h3{margin:0;font-size:14px}
+  .card-head .count{padding:4px 9px;border-radius:20px;background:#edf2ff;color:#3b5cc1;
+    font-size:10px;font-weight:800}
+
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;white-space:nowrap}
+  th{text-align:left;background:#fafbfe;color:#7a8498;font-size:10px;
+    text-transform:uppercase;letter-spacing:.6px;padding:13px 18px;
+    border-bottom:1px solid var(--line)}
+  td{padding:14px 18px;border-bottom:1px solid #f0f2f7;font-size:12px}
+  tbody tr:last-child td{border-bottom:0}
+
+  .person{display:flex;align-items:center;gap:10px}
+  .mini-avatar{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;
+    background:#edf2ff;color:#3859b7;font-size:10px;font-weight:700}
+  .person strong{display:block;font-size:12px}
+  .person small{display:block;color:var(--muted);font-size:10px;margin-top:4px}
+
+  .pill{display:inline-block;padding:5px 8px;border-radius:20px;font-size:10px;font-weight:700;margin:2px 3px 2px 0}
+  .pill.green{background:#e6f7f0;color:#16835f}
+  .pill.orange{background:#fff2dd;color:#aa6c14}
+  .pill.red{background:#ffeaec;color:#bd3b48}
+  .pill.blue{background:#edf2ff;color:#3b5cc1}
+  .pill.gold{background:var(--gold2);color:#8a6a1a;font-weight:800}
+
+  .row-actions{display:flex;gap:5px;flex-wrap:wrap}
+  .row-actions .btn{padding:8px 10px;font-size:11px}
+
+  .empty{padding:40px 20px;text-align:center;color:var(--muted);font-size:13px}
+  .chips-cell{white-space:normal;max-width:340px}
+
+  .tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:16px;grid-column:1/-1}
+  .tab{border:0;background:transparent;padding:10px 14px;font-size:12px;font-weight:700;
+    color:var(--muted);border-bottom:2px solid transparent;cursor:pointer}
+  .tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+
+  .assignment-row{display:flex;justify-content:space-between;align-items:center;gap:10px;
+    padding:10px 12px;background:#f8faff;border:1px solid var(--line);border-radius:9px;margin-bottom:8px}
+  .assignment-row .info strong{display:block;font-size:12px;color:var(--navy)}
+  .assignment-row .info small{display:block;font-size:10px;color:var(--muted);margin-top:3px}
+
+  .sponsor-row{padding:14px;background:linear-gradient(135deg,#fff9e6,#fef3d4);
+    border:1px solid #e4cd86;border-radius:10px;display:flex;justify-content:space-between;
+    align-items:center;gap:12px;margin-bottom:12px}
+  .sponsor-row .info strong{display:block;font-size:13px;color:#8a6a1a}
+  .sponsor-row .info small{display:block;font-size:11px;color:#8a6a1a;margin-top:3px;opacity:.75}
+
+  @media (max-width:650px){
+    body{padding:64px 8px 24px}
+    .band{padding:18px 20px}
+    .band h1{font-size:15px}
+    .field{min-width:0;width:100%}
+    .toolbar{flex-direction:column;align-items:stretch}
+    .toolbar-left{width:100%}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="band">
+    <div class="band-left">
+      <div class="band-logo" id="bandLogo">DS</div>
+      <div>
+        <h1 id="bandSchool">Teachers</h1>
+        <p id="bandSub">Teaching staff, assignments &amp; class sponsorship</p>
+      </div>
+    </div>
+    <div class="band-user">
+      Signed in as <strong id="bandUser">—</strong>
+    </div>
+  </div>
+
+  <div id="scopeNote"></div>
+
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <input class="field" id="search" placeholder="Search name, department...">
+      <select class="pick" id="statusFilter">
+        <option value="">All employment</option>
+        <option>Full-time</option>
+        <option>Part-time</option>
+        <option>Contract</option>
+      </select>
+    </div>
+    <div class="toolbar-left" id="addWrap">
+      <button class="btn" id="addBtn">＋ Add teacher</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h3>Teaching staff <span class="count" id="count">0</span></h3>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Teacher</th>
+            <th>Department</th>
+            <th>Teaching assignments</th>
+            <th>Class sponsor</th>
+            <th>Phone</th>
+            <th>Employment</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script src="educore-shared.js"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  /* ---------- GUARD ---------- */
+  const user = E.requirePerm('teachers', 'Teachers');
+  if(!user) return;
+
+  /* ---------- SCOPE ----------
+     Roles and what they see on this page:
+       Principal   → all teachers
+       Registrar   → all teachers
+       Teacher     → only their own record (self-service read-only)
+       Student     → not allowed (no teachers permission)
+       Parent      → not allowed
+  ------------------------------------------------------------- */
+  const canSeeAll = (user.role === 'Principal' || user.role === 'Registrar');
+  const myTeacherId = E.currentTeacherId();
+
+  /* ---------- SUB-FEATURE PERMISSIONS ---------- */
+  const canAdd         = canSeeAll && E.can('teachers.add');
+  const canEdit        = canSeeAll && E.can('teachers.edit');
+  const canDelete      = canSeeAll && E.can('teachers.delete');
+  const canAssignments = canSeeAll && E.can('teachers.assignments');
+  const canSponsorship = canSeeAll && E.can('teachers.sponsorship');
+
+  /* ---------- HEADER ---------- */
+  function paintHeader(){
+    const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const name = settings.name || 'EduCore High School';
+    if(settings.logo){
+      document.getElementById('bandLogo').innerHTML = `<img src="${settings.logo}" alt="">`;
+    } else {
+      document.getElementById('bandLogo').textContent =
+        name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
+    }
+    document.getElementById('bandSchool').textContent = name;
+    document.getElementById('bandSub').textContent = canSeeAll
+      ? 'Teaching staff, assignments & class sponsorship'
+      : 'Your teacher profile';
+    document.getElementById('bandUser').textContent = user.name || user.username;
+  }
+
+  /* ---------- SCOPE NOTE ---------- */
+  function paintScopeNote(){
+    const el = document.getElementById('scopeNote');
+    if(!canSeeAll){
+      el.innerHTML = `
+        <div class="scope-note">
+          <span class="icon">👤</span>
+          <div><strong>You are viewing your own teacher profile.</strong>
+          Only you and the school administration can see this page.
+          To see all teachers, sign in with a Registrar or Principal account.</div>
+        </div>`;
+    } else {
+      el.innerHTML = '';
+    }
+  }
+
+  /* ---------- SCOPE FILTER ---------- */
+  function scopedTeachers(){
+    const all = E.readStore(E.STORE_KEYS.teachers, []) || [];
+    if(canSeeAll) return all;
+    /* Teacher / anyone else: only their own record */
+    if(myTeacherId){
+      const self = all.find(t => t.id === myTeacherId);
+      return self ? [self] : [];
+    }
+    return [];
+  }
+
+  /* ---------- RENDER ---------- */
+  function statusPill(s){
+    const t = (s === 'Full-time') ? 'green'
+            : (s === 'Part-time') ? 'orange'
+            : 'blue';
+    return `<span class="pill ${t}">${E.esc(s||'Full-time')}</span>`;
+  }
+
+  function paintTable(){
+    const teachers = scopedTeachers();
+    const q = document.getElementById('search').value.toLowerCase();
+    const st = document.getElementById('statusFilter').value;
+    const arr = teachers.filter(t =>
+      (!q || (`${t.name} ${t.department||''}`).toLowerCase().includes(q)) &&
+      (!st || t.status === st)
+    );
+
+    const tb = document.getElementById('tbody');
+    tb.innerHTML = arr.map(t => {
+      const asn = E.assignmentsForTeacher(t.id);
+      const chips = asn.length
+        ? asn.map(a => `<span class="pill blue">${E.esc(E.subjectName(a.subject))} · ${E.esc(a.className)}</span>`).join('')
+        : '<span class="pill orange">No assignments</span>';
+      const sponsored = E.sponsorClassOf(t.id);
+      const sponsorCell = sponsored
+        ? `<span class="pill gold">👑 ${E.esc(sponsored)}</span>`
+        : '<span style="color:var(--muted);font-size:11px">—</span>';
+
+      const showAssignBtn = canAssignments || canSponsorship;
+      const actionBits = [];
+      if(canEdit) actionBits.push(`<button class="btn secondary" data-edit="${E.esc(t.id)}">Edit</button>`);
+      if(showAssignBtn) actionBits.push(`<button class="btn" data-assign="${E.esc(t.id)}">Assignments</button>`);
+      if(canDelete) actionBits.push(`<button class="btn danger" data-delete="${E.esc(t.id)}">Delete</button>`);
+
+      const actionCell = actionBits.length
+        ? `<td><div class="row-actions">${actionBits.join(' ')}</div></td>`
+        : `<td style="color:#c5cee0">—</td>`;
+
+      return `<tr>
+        <td>
+          <div class="person">
+            <div class="mini-avatar">${E.initials(t.name)}</div>
+            <div><strong>${E.esc(t.name)}</strong><small>${E.esc(t.id)}</small></div>
+          </div>
+        </td>
+        <td>${E.esc(t.department||'—')}</td>
+        <td class="chips-cell">${chips}</td>
+        <td>${sponsorCell}</td>
+        <td>${E.esc(t.phone||'—')}</td>
+        <td>${statusPill(t.status)}</td>
+        ${actionCell}
+      </tr>`;
+    }).join('') || `<tr><td colspan="7" class="empty">${
+      canSeeAll ? 'No teachers found.' : 'Your teacher record could not be located. Ask the admin to link your account.'
+    }</td></tr>`;
+
+    document.getElementById('count').textContent = arr.length;
+  }
+
+  /* ---------- ADD / EDIT ---------- */
+  function openTeacherModal(existing){
+    if(!canSeeAll){ E.toast("You don't have permission to edit teacher records."); return; }
+    const t = existing || {};
+    const html = `
+      <div class="full"><label>Full name</label><input name="name" required value="${E.esc(t.name||'')}"></div>
+      <div><label>Department</label><input name="department" value="${E.esc(t.department||'')}"></div>
+      <div><label>Phone</label><input name="phone" value="${E.esc(t.phone||'')}"></div>
+      <div class="full"><label>Employment</label>
+        <select name="status">
+          <option ${t.status === 'Full-time' ? 'selected' : ''}>Full-time</option>
+          <option ${t.status === 'Part-time' ? 'selected' : ''}>Part-time</option>
+          <option ${t.status === 'Contract' ? 'selected' : ''}>Contract</option>
+        </select>
+      </div>`;
+    E.openModal(existing ? `Edit teacher · ${t.name}` : 'Add teacher', html, 'Save teacher', d => {
+      const teachers = E.readStore(E.STORE_KEYS.teachers, []) || [];
+      if(existing){
+        const target = teachers.find(x => x.id === existing.id);
+        if(!target) return;
+        Object.assign(target, d);
+        E.audit('update', `Teacher ${target.id}`, '', d.name);
+      } else {
+        teachers.push({
+          id: 'TCH-' + String(teachers.length + 21).padStart(3, '0'),
+          ...d
+        });
+        E.audit('create', `Teacher ${d.name}`, '', d.department || '');
+      }
+      E.writeStore(E.STORE_KEYS.teachers, teachers);
+      E.closeModal();
+      paintTable();
+      E.toast('Teacher saved.');
+    });
+  }
+
+  /* ---------- DELETE ---------- */
+  function deleteTeacher(teacherId){
+    if(!canDelete){ E.toast("You don't have permission to delete teachers."); return; }
+    const t = (E.readStore(E.STORE_KEYS.teachers, []) || []).find(x => x.id === teacherId);
+    if(!t) return;
+    const asnCount = E.assignmentsForTeacher(teacherId).length;
+    const sponsored = E.sponsorClassOf(teacherId);
+    const linkedUsers = (E.readStore(E.STORE_KEYS.users, []) || []).filter(u => u.linkedTeacherId === teacherId).length;
+
+    const lines = [];
+    if(asnCount) lines.push(`• teaching assignments: ${asnCount}`);
+    if(sponsored) lines.push(`• class sponsorship: ${sponsored}`);
+    if(linkedUsers) lines.push(`• linked user accounts: ${linkedUsers}`);
+
+    const msg = `Delete teacher ${t.name}?\n\n` +
+      (lines.length ? `This will also remove or update:\n${lines.join('\n')}\n\n` : '') +
+      `This action cannot be undone.`;
+    if(!confirm(msg)) return;
+
+    const typed = prompt(`Type the teacher's ID (${teacherId}) to confirm deletion:`);
+    if(typed !== teacherId){ E.toast('Confirmation did not match.'); return; }
+
+    E.writeStore(E.STORE_KEYS.teachers,
+      (E.readStore(E.STORE_KEYS.teachers, []) || []).filter(x => x.id !== teacherId));
+
+    E.writeStore(E.STORE_KEYS.assignments,
+      (E.readStore(E.STORE_KEYS.assignments, []) || []).filter(x => x.teacherId !== teacherId));
+
+    E.clearSponsor(teacherId);
+
+    const users = E.readStore(E.STORE_KEYS.users, []) || [];
+    let unlinked = 0;
+    users.forEach(u => { if(u.linkedTeacherId === teacherId){ u.linkedTeacherId = null; unlinked++; } });
+    if(unlinked) E.writeStore(E.STORE_KEYS.users, users);
+
+    E.audit('delete', `Teacher ${teacherId}`, t.name, '');
+    paintTable();
+    E.toast(`Teacher ${t.name} deleted${unlinked ? ` · ${unlinked} user account unlinked` : ''}.`);
+  }
+
+  /* ---------- ASSIGNMENTS + SPONSOR MODAL ---------- */
+  function openAssignmentsModal(teacherId){
+    if(!canAssignments && !canSponsorship){
+      E.toast("You don't have permission to manage assignments.");
+      return;
+    }
+    const teachers = E.readStore(E.STORE_KEYS.teachers, []) || [];
+    const t = teachers.find(x => x.id === teacherId);
+    if(!t) return;
+
+    const asn = E.assignmentsForTeacher(teacherId);
+    const sponsored = E.sponsorClassOf(teacherId);
+
+    const subjects = E.getSubjects();
+    const classes  = E.readStore(E.STORE_KEYS.classes, []) || [];
+    if(!subjects.length){ E.toast('Add some subjects first.'); return; }
+    if(!classes.length){ E.toast('Add some classes first.'); return; }
+
+    const subjectOptions = subjects.map(s => `<option value="${E.esc(s.code)}">${E.esc(s.name)}</option>`).join('');
+    const classOptions   = classes.map(c => `<option>${E.esc(c.name)}</option>`).join('');
+    const termOptions    = ['First Term','Second Term','Third Term','Annual Report'].map(x => `<option>${x}</option>`).join('');
+
+    const rowsHTML = asn.length ? asn.map(a => `
+      <div class="assignment-row">
+        <div class="info">
+          <strong>${E.esc(E.subjectName(a.subject))} · ${E.esc(a.className)}</strong>
+          <small>${E.esc(a.term)} · ${a.periodsPerWeek || '-'} periods/week</small>
+        </div>
+        ${canAssignments ? `<button type="button" class="btn danger" data-remove-asn="${E.esc(a.id)}" style="padding:7px 11px;font-size:11px">Remove</button>` : ''}
+      </div>
+    `).join('') : '<div class="empty" style="padding:20px">No assignments yet.</div>';
+
+    const sponsorBlock = sponsored
+      ? `<div class="sponsor-row">
+           <div class="info">
+             <strong>👑 Class Sponsor of ${E.esc(sponsored)}</strong>
+             <small>A teacher can sponsor only one class at a time.</small>
+           </div>
+           ${canSponsorship ? `<button type="button" class="btn danger" id="removeSponsorBtn" style="padding:8px 12px;font-size:11px">Remove sponsorship</button>` : ''}
+         </div>`
+      : `<div class="sponsor-row" style="background:#f8faff;border-color:#e3e8f1">
+           <div class="info" style="color:#4a5874">
+             <strong style="color:#34415c">Not currently a class sponsor</strong>
+             <small>Choose a class below to make them its sponsor.</small>
+           </div>
+         </div>`;
+
+    const tabs = [];
+    if(canAssignments) tabs.push({ key:'teaching', label:'Teaching assignments (many)' });
+    if(canSponsorship) tabs.push({ key:'sponsor',  label:'Class sponsorship (one)' });
+    const defaultTab = tabs[0]?.key || 'teaching';
+
+    const tabsHTML = tabs.length > 1
+      ? `<div class="tabs" id="asnTabs">
+           ${tabs.map(tb => `<button type="button" class="tab ${tb.key === defaultTab ? 'active' : ''}" data-tab="${tb.key}">${tb.label}</button>`).join('')}
+         </div>`
+      : '';
+
+    const teachingBlock = canAssignments ? `
+      <div class="full" id="tab-teaching" style="${defaultTab === 'teaching' ? '' : 'display:none'}">
+        <label style="font-size:12px;color:#34415c;letter-spacing:.5px;text-transform:uppercase">Current teaching assignments</label>
+        <div style="margin-top:8px">${rowsHTML}</div>
+
+        <label style="margin-top:16px;font-size:12px;color:#34415c;letter-spacing:.5px;text-transform:uppercase">Add new assignment</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+          <select id="asnSubject">${subjectOptions}</select>
+          <select id="asnClass">${classOptions}</select>
+          <select id="asnTerm">${termOptions}</select>
+          <input id="asnPeriods" type="number" min="1" max="20" placeholder="Periods/week" value="5">
+        </div>
+        <button type="button" class="btn" id="asnAddBtn" style="margin-top:10px">Add assignment</button>
+      </div>` : '';
+
+    const sponsorBlockHTML = canSponsorship ? `
+      <div class="full" id="tab-sponsor" style="${defaultTab === 'sponsor' ? '' : 'display:none'}">
+        ${sponsorBlock}
+        ${!sponsored ? `
+          <label style="margin-top:16px;font-size:12px;color:#34415c;letter-spacing:.5px;text-transform:uppercase">Make this teacher the sponsor of</label>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <select id="sponsorClass" style="flex:1">${classOptions}</select>
+            <button type="button" class="btn" id="sponsorSetBtn">Set as sponsor</button>
+          </div>
+          <div style="margin-top:10px;font-size:11px;color:var(--muted);line-height:1.6">
+            If this teacher already sponsors another class, that sponsorship will be moved automatically so they sponsor only <strong>one</strong> class at a time.
+          </div>
+        ` : ''}
+      </div>` : '';
+
+    const html = `${tabsHTML}${teachingBlock}${sponsorBlockHTML}`;
+
+    E.openModal(`Manage · ${t.name}`, html, null, null, true);
+
+    const tabsEl = document.getElementById('asnTabs');
+    if(tabsEl){
+      tabsEl.querySelectorAll('.tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tab = btn.dataset.tab;
+          tabsEl.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b === btn));
+          const teaching = document.getElementById('tab-teaching');
+          const sponsor  = document.getElementById('tab-sponsor');
+          if(teaching) teaching.style.display = tab === 'teaching' ? 'block' : 'none';
+          if(sponsor)  sponsor.style.display  = tab === 'sponsor'  ? 'block' : 'none';
+        });
+      });
+    }
+
+    document.getElementById('asnAddBtn')?.addEventListener('click', () => {
+      const list = E.readStore(E.STORE_KEYS.assignments, []) || [];
+      const rec = {
+        id: 'as-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6),
+        teacherId: t.id,
+        teacherName: t.name,
+        subject: document.getElementById('asnSubject').value,
+        className: document.getElementById('asnClass').value,
+        term: document.getElementById('asnTerm').value,
+        periodsPerWeek: Number(document.getElementById('asnPeriods').value) || 5,
+        session: '2025/2026'
+      };
+      const dup = list.some(x =>
+        x.teacherId === rec.teacherId && x.subject === rec.subject &&
+        x.className === rec.className && x.term === rec.term);
+      if(dup){ E.toast('That assignment already exists.'); return; }
+      list.push(rec);
+      E.writeStore(E.STORE_KEYS.assignments, list);
+      E.audit('create', `Assignment ${t.name}`, '', `${E.subjectName(rec.subject)} · ${rec.className} · ${rec.term}`);
+      paintTable();
+      E.closeModal();
+      openAssignmentsModal(teacherId);
+    });
+
+    document.getElementById('sponsorSetBtn')?.addEventListener('click', () => {
+      const className = document.getElementById('sponsorClass').value;
+      const previously = E.sponsorClassOf(teacherId);
+      if(previously && previously !== className){
+        if(!confirm(`${t.name} currently sponsors ${previously}. Sponsorship will move to ${className}. Continue?`)) return;
+      }
+      E.setSponsor(className, teacherId);
+      E.audit('update', `Sponsor · ${t.name}`, previously || '—', className);
+      paintTable();
+      E.toast(`${t.name} is now the sponsor of ${className}.`);
+      E.closeModal();
+      openAssignmentsModal(teacherId);
+    });
+
+    document.getElementById('removeSponsorBtn')?.addEventListener('click', () => {
+      if(!confirm(`Remove ${t.name} as sponsor of ${sponsored}?`)) return;
+      E.clearSponsor(teacherId);
+      E.audit('update', `Sponsor · ${t.name}`, sponsored, '—');
+      paintTable();
+      E.toast('Sponsorship removed.');
+      E.closeModal();
+      openAssignmentsModal(teacherId);
+    });
+  }
+
+  /* ---------- DELEGATED REMOVE ASSIGNMENT ---------- */
+  document.addEventListener('click', e => {
+    const rmAsn = e.target.closest('[data-remove-asn]');
+    if(rmAsn){
+      if(!canAssignments){ E.toast("You don't have permission to remove assignments."); return; }
+      if(!confirm('Remove this assignment?')) return;
+      const list = (E.readStore(E.STORE_KEYS.assignments, []) || []).filter(x => x.id !== rmAsn.dataset.removeAsn);
+      E.writeStore(E.STORE_KEYS.assignments, list);
+      E.audit('delete', `Assignment ${rmAsn.dataset.removeAsn}`, '', '');
+      paintTable();
+      E.closeModal();
+    }
+  });
+
+  document.getElementById('tbody').addEventListener('click', e => {
+    const edit   = e.target.closest('[data-edit]');
+    const del    = e.target.closest('[data-delete]');
+    const assign = e.target.closest('[data-assign]');
+    if(edit){
+      const t = (E.readStore(E.STORE_KEYS.teachers, []) || []).find(x => x.id === edit.dataset.edit);
+      if(t) openTeacherModal(t);
+    }
+    if(del) deleteTeacher(del.dataset.delete);
+    if(assign) openAssignmentsModal(assign.dataset.assign);
+  });
+
+  /* ---------- FILTERS ---------- */
+  document.getElementById('search').addEventListener('input', paintTable);
+  document.getElementById('statusFilter').addEventListener('change', paintTable);
+  document.getElementById('addBtn').addEventListener('click', () => openTeacherModal(null));
+
+  /* ---------- INIT ---------- */
+  paintHeader();
+  paintScopeNote();
+  paintTable();
+
+  if(!canAdd) document.getElementById('addWrap').style.display = 'none';
+})();
+</script>
+</body>
+</html>

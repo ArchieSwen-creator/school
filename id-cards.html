@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ID Cards | EduCore</title>
+<style>
+  :root{
+    --navy:#12315a;--navy2:#14213d;--blue:#3987ee;--pale:#eef5ff;--border:#d8e4f2;
+    --text:#23354d;--muted:#73849a;--green:#14805e;--orange:#d88922;--red:#d64545;
+    --gold:#c99a2e;--gold2:#fff4d6;--bg:#f5f7fb;--line:#e8ebf2;--white:#fff;
+    --shadow:0 8px 24px rgba(24,42,78,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:64px 16px 40px;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+
+  .page{width:100%;max-width:1200px;margin:0 auto}
+
+  .band{
+    background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
+    border-radius:16px;padding:22px 28px;margin-bottom:20px;
+    box-shadow:0 18px 50px #16345417;display:flex;justify-content:space-between;
+    align-items:center;gap:16px;flex-wrap:wrap;border-top:5px solid #58a4ff;
+  }
+  .band-left{display:flex;align-items:center;gap:14px}
+  .band-logo{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;place-items:center;
+    overflow:hidden;color:var(--navy);font-weight:900;font-size:18px;border:3px solid #d8e8ff;flex:0 0 48px}
+  .band-logo img{width:100%;height:100%;object-fit:contain}
+  .band h1{margin:0;font-size:19px;letter-spacing:.3px;text-transform:uppercase}
+  .band p{margin:4px 0 0;font-size:11px;color:#cfdcf5}
+  .band-user{display:flex;align-items:center;gap:10px;font-size:11px;color:#cfdcf5;
+    background:#ffffff14;border:1px solid #ffffff36;padding:7px 12px;border-radius:20px}
+  .band-user strong{color:#fff}
+
+  .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:16px 18px;
+    box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--blue)}
+  .stat.green::before{background:var(--green)}
+  .stat.orange::before{background:var(--orange)}
+  .stat.red::before{background:var(--red)}
+  .stat small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.8px;
+    color:var(--muted);font-weight:800;margin-bottom:8px}
+  .stat strong{font-size:22px;color:var(--navy);font-weight:800}
+
+  .toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;
+    flex-wrap:wrap;margin-bottom:16px}
+  .toolbar-left{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .field,.pick{border:1px solid var(--line);border-radius:9px;padding:10px 12px;
+    background:#fff;color:var(--text);font-size:12px;outline:none}
+  .field{min-width:230px}
+  .field:focus,.pick:focus{border-color:var(--blue)}
+
+  .btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{filter:brightness(.96)}
+  .btn.secondary{background:#eef2fb;color:#34415c}
+  .btn.outline{background:#fff;color:#34415c;border:1px solid var(--line)}
+  .btn.danger{background:#fff0f1;color:var(--red)}
+  .btn.green{background:#e6f7f0;color:#16835f}
+  .btn.gold{background:linear-gradient(135deg,#f7d97a,#c99a2e);color:#5a3a00}
+  .btn.big{padding:14px 22px;font-size:14px}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+  .tile{background:#fff;border:1px solid var(--line);border-radius:14px;
+    box-shadow:var(--shadow);padding:16px;display:flex;flex-direction:column;position:relative}
+  .tile .photo{width:100%;aspect-ratio:1/1;background:#f8faff;border:1px dashed #d8e4f2;
+    border-radius:10px;overflow:hidden;display:grid;place-items:center;margin-bottom:12px;
+    position:relative}
+  .tile .photo img{width:100%;height:100%;object-fit:cover}
+  .tile .photo .placeholder{font-size:11px;color:var(--muted);text-align:center;padding:16px}
+  .tile .photo .placeholder .icon{font-size:32px;display:block;margin-bottom:6px;opacity:.5}
+  .tile .photo .badge{position:absolute;top:8px;right:8px;padding:4px 8px;border-radius:20px;
+    font-size:9px;font-weight:900;letter-spacing:.5px;background:#e6f7f0;color:#16835f}
+  .tile .photo .badge.missing{background:#fff2dd;color:#a86414}
+
+  .tile h3{margin:0;font-size:13px;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tile .meta{font-size:11px;color:var(--muted);margin-top:3px;margin-bottom:12px}
+  .tile .meta strong{color:var(--text)}
+
+  .tile .actions{display:flex;gap:5px;flex-wrap:wrap;margin-top:auto}
+  .tile .actions .btn{padding:7px 10px;font-size:10px;flex:1 1 auto;justify-content:center}
+
+  .empty{padding:60px 20px;text-align:center;color:var(--muted);font-size:13px;
+    background:#fff;border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow)}
+  .empty .icon{font-size:44px;opacity:.4;margin-bottom:12px}
+
+  .tile .pick{position:absolute;top:10px;left:10px;width:18px;height:18px;
+    border-radius:5px;background:#fff;border:1px solid var(--line);cursor:pointer;
+    appearance:none;-webkit-appearance:none;display:grid;place-items:center;z-index:2}
+  .tile .pick:checked{background:var(--navy);border-color:var(--navy)}
+  .tile .pick:checked::after{content:"✓";color:#fff;font-size:12px;font-weight:900;line-height:1}
+
+  /* ----- student mode: my card panel ----- */
+  .my-card-panel{background:#fff;border:1px solid var(--line);border-radius:14px;
+    box-shadow:var(--shadow);overflow:hidden;max-width:720px;margin:0 auto}
+  .my-card-head{background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
+    padding:26px 30px;border-top:5px solid #58a4ff;display:flex;justify-content:space-between;
+    align-items:center;gap:16px;flex-wrap:wrap}
+  .my-card-head .who{display:flex;align-items:center;gap:14px}
+  .my-card-head .avatar{width:52px;height:52px;border-radius:14px;background:#fff;
+    color:var(--navy);display:grid;place-items:center;font-weight:800;font-size:16px;flex:0 0 52px;
+    overflow:hidden}
+  .my-card-head .avatar img{width:100%;height:100%;object-fit:cover}
+  .my-card-head h2{margin:0;font-size:20px;letter-spacing:.3px}
+  .my-card-head p{margin:4px 0 0;font-size:12px;color:#cfdcf5}
+  .my-card-body{padding:26px 30px}
+  .my-card-body .row{display:flex;justify-content:space-between;align-items:center;
+    gap:16px;flex-wrap:wrap}
+  .my-card-body .row h3{margin:0;font-size:15px;color:var(--navy)}
+  .my-card-body .row p{margin:6px 0 0;font-size:12px;color:var(--muted);line-height:1.6}
+  .my-card-body .info-strip{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;
+    margin:22px 0}
+  .my-card-body .info-strip .s{background:#f8faff;border:1px solid var(--line);
+    border-radius:10px;padding:12px 14px}
+  .my-card-body .info-strip .s small{display:block;font-size:9px;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.7px;font-weight:800;margin-bottom:5px}
+  .my-card-body .info-strip .s strong{font-size:14px;color:var(--navy)}
+
+  @media (max-width:850px){
+    .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:650px){
+    body{padding:64px 8px 24px}
+    .band{padding:18px 20px}
+    .band h1{font-size:15px}
+    .field,.pick{min-width:0;width:100%}
+    .toolbar{flex-direction:column;align-items:stretch}
+    .toolbar-left{width:100%}
+    .stats{grid-template-columns:1fr}
+    .my-card-head{padding:20px}
+    .my-card-body{padding:20px}
+    .my-card-body .info-strip{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="band">
+    <div class="band-left">
+      <div class="band-logo" id="bandLogo">DS</div>
+      <div>
+        <h1 id="bandSchool">ID Cards</h1>
+        <p id="bandSub">Student photos, ID card design, and print</p>
+      </div>
+    </div>
+    <div class="band-user">
+      Signed in as <strong id="bandUser">—</strong>
+    </div>
+  </div>
+
+  <div id="pageBody"></div>
+
+</div>
+
+<input type="file" id="photoInput" accept="image/*" hidden>
+
+<script src="educore-shared.js"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  /* ---------- GUARD ---------- */
+  const user = E.requirePerm('idcards', 'ID Cards');
+  if(!user) return;
+
+  const isStudent = user.role === 'Student';
+
+  /* ---------- SUB-FEATURE PERMISSIONS ---------- */
+  const canUploadPhoto = E.can('idcards.upload_photo');
+  const canRemovePhoto = E.can('idcards.remove_photo');
+  const canPrintSingle = E.can('idcards.print_single');
+  const canPrintBatch  = E.can('idcards.print_batch');
+
+  /* ---------- HEADER ---------- */
+  function paintHeader(){
+    const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const name = settings.name || 'EduCore High School';
+    if(settings.logo){
+      document.getElementById('bandLogo').innerHTML = `<img src="${settings.logo}" alt="">`;
+    } else {
+      document.getElementById('bandLogo').textContent =
+        name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
+    }
+    document.getElementById('bandSchool').textContent = name;
+    document.getElementById('bandSub').textContent = isStudent
+      ? 'Your student ID card'
+      : 'Student photos, ID card design, and print';
+    document.getElementById('bandUser').textContent = user.name || user.username;
+  }
+
+  /* ============================================================
+     STUDENT MODE
+     ============================================================ */
+  function paintStudentMode(){
+    const body = document.getElementById('pageBody');
+    const student = (E.readStore(E.STORE_KEYS.students, []) || [])
+      .find(s => s.id === user.linkedStudentId);
+    const photos = E.readStore(E.STORE_KEYS.photos, {}) || {};
+
+    if(!student){
+      body.innerHTML = `
+        <div class="empty">
+          <div class="icon">🪪</div>
+          <strong style="display:block;color:var(--navy);font-size:15px;margin-bottom:8px">
+            Your account is not linked to a student record
+          </strong>
+          Contact the school office if you believe this is a mistake.
+        </div>`;
+      return;
+    }
+
+    const photo = photos[student.id];
+
+    body.innerHTML = `
+      <div class="my-card-panel">
+        <div class="my-card-head">
+          <div class="who">
+            <div class="avatar">
+              ${photo
+                ? `<img src="${photo}" alt="">`
+                : E.esc(E.initials(student.name))}
+            </div>
+            <div>
+              <h2>${E.esc(student.name)}</h2>
+              <p>${E.esc(student.class)} · ${E.esc(student.id)}</p>
+            </div>
+          </div>
+          <span class="pill ${photo ? 'green' : 'orange'}"
+            style="padding:6px 12px;border-radius:20px;font-size:11px;font-weight:800">
+            ${photo ? '📷 Photo on file' : '⚠ No photo yet'}
+          </span>
+        </div>
+
+        <div class="my-card-body">
+          <div class="info-strip">
+            <div class="s"><small>Student name</small><strong>${E.esc(student.name)}</strong></div>
+            <div class="s"><small>Student ID</small><strong>${E.esc(student.id)}</strong></div>
+            <div class="s"><small>Grade / Class</small><strong>${E.esc(student.class)}</strong></div>
+            <div class="s"><small>Status</small><strong>${E.esc(student.status || 'Active')}</strong></div>
+          </div>
+
+          <div class="row">
+            <div>
+              <h3>Your student ID card</h3>
+              <p>
+                ${photo
+                  ? 'Your photo is on file. Click below to open and print your ID card.'
+                  : 'No photo is on file yet. Ask the school office to take or upload your photo, then come back to print your card.'}
+              </p>
+            </div>
+            <div>
+              ${canPrintSingle
+                ? `<button class="btn big gold" id="printMyCardBtn">🖶 Print my ID card</button>`
+                : `<button class="btn big outline" disabled>ID card print unavailable</button>`}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('printMyCardBtn')?.addEventListener('click', () => {
+      if(!canPrintSingle){ E.toast("You don't have permission to print your ID card."); return; }
+      const url = 'id-card-print.html?student=' + encodeURIComponent(student.id);
+      window.open(url, '_blank');
+    });
+  }
+
+  /* ============================================================
+     STAFF MODE
+     ============================================================ */
+  function paintStaffMode(){
+    const body = document.getElementById('pageBody');
+
+    body.innerHTML = `
+      <div class="stats">
+        <div class="stat"><small>Total students</small><strong id="kTotal">0</strong></div>
+        <div class="stat green"><small>With photo</small><strong id="kWithPhoto">0</strong></div>
+        <div class="stat orange"><small>Missing photo</small><strong id="kMissing">0</strong></div>
+        <div class="stat red"><small>Selected</small><strong id="kSelected">0</strong></div>
+      </div>
+
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <input class="field" id="search" placeholder="Search student or ID...">
+          <select class="pick" id="classFilter"><option value="">All classes</option></select>
+          <select class="pick" id="photoFilter">
+            <option value="">All photos</option>
+            <option value="has">With photo</option>
+            <option value="missing">Missing photo</option>
+          </select>
+        </div>
+        <div class="toolbar-left" id="batchActions">
+          <button class="btn secondary" id="selectAllBtn">Select all</button>
+          <button class="btn secondary" id="clearSelBtn">Clear selection</button>
+          <button class="btn gold" id="printSelBtn" disabled>🖶 Print selected</button>
+        </div>
+      </div>
+
+      <div class="grid" id="grid"></div>`;
+
+    /* fill class filter */
+    const classes = (user.role === 'Teacher' || user.role === 'Parent')
+      ? E.visibleClassNamesFor(user)
+      : (E.readStore(E.STORE_KEYS.classes, []) || []).map(c => c.name);
+    document.getElementById('classFilter').innerHTML = '<option value="">All classes</option>' +
+      classes.map(c => `<option>${E.esc(c)}</option>`).join('');
+
+    /* bind events */
+    document.getElementById('search').addEventListener('input', paintGrid);
+    document.getElementById('classFilter').addEventListener('change', paintGrid);
+    document.getElementById('photoFilter').addEventListener('change', paintGrid);
+    document.getElementById('selectAllBtn').addEventListener('click', () => {
+      if(!canPrintBatch){ E.toast("You don't have permission to batch print."); return; }
+      document.querySelectorAll('.pick').forEach(cb => cb.checked = true);
+      updateSelectionStats();
+    });
+    document.getElementById('clearSelBtn').addEventListener('click', () => {
+      document.querySelectorAll('.pick').forEach(cb => cb.checked = false);
+      updateSelectionStats();
+    });
+    document.getElementById('printSelBtn').addEventListener('click', printSelected);
+    document.getElementById('grid').addEventListener('click', e => {
+      const upload = e.target.closest('[data-upload]');
+      const remove = e.target.closest('[data-remove]');
+      const print  = e.target.closest('[data-print]');
+      if(upload) pickPhoto(upload.dataset.upload);
+      if(remove) removePhoto(remove.dataset.remove);
+      if(print)  printCard(print.dataset.print);
+    });
+    document.getElementById('grid').addEventListener('change', e => {
+      if(e.target.matches('.pick')) updateSelectionStats();
+    });
+
+    /* hide batch if not allowed */
+    if(!canPrintBatch){
+      document.getElementById('batchActions').style.display = 'none';
+    }
+
+    paintGrid();
+  }
+
+  /* ---------- RENDER GRID (staff) ---------- */
+  function paintGrid(){
+    const photos = E.readStore(E.STORE_KEYS.photos, {}) || {};
+    const q = document.getElementById('search').value.toLowerCase();
+    const cl = document.getElementById('classFilter').value;
+    const pf = document.getElementById('photoFilter').value;
+
+    const students = E.visibleStudentsFor(user).filter(s => {
+      if(q && !(`${s.name} ${s.id}`).toLowerCase().includes(q)) return false;
+      if(cl && s.class !== cl) return false;
+      const hasPhoto = !!photos[s.id];
+      if(pf === 'has' && !hasPhoto) return false;
+      if(pf === 'missing' && hasPhoto) return false;
+      return true;
+    }).sort((a,b) => a.name.localeCompare(b.name));
+
+    const grid = document.getElementById('grid');
+
+    if(!students.length){
+      grid.innerHTML = `<div class="empty" style="grid-column:1/-1">
+        <div class="icon">🪪</div>
+        No students match your filters.
+      </div>`;
+    } else {
+      grid.innerHTML = students.map(s => {
+        const photo = photos[s.id];
+        const hasPhoto = !!photo;
+
+        const bits = [];
+        if(canUploadPhoto){
+          bits.push(`<button class="btn ${hasPhoto?'secondary':''}" data-upload="${E.esc(s.id)}">${hasPhoto ? '🖶 Replace' : '📷 Upload'}</button>`);
+        }
+        if(canRemovePhoto && hasPhoto){
+          bits.push(`<button class="btn danger" data-remove="${E.esc(s.id)}">Remove</button>`);
+        }
+        if(canPrintSingle){
+          bits.push(`<button class="btn gold" data-print="${E.esc(s.id)}">🖶 Print</button>`);
+        }
+
+        const actionsHTML = bits.length
+          ? `<div class="actions">${bits.join(' ')}</div>`
+          : `<div class="actions" style="color:#c5cee0;justify-content:center;font-size:11px">View only</div>`;
+
+        const pickHTML = canPrintBatch
+          ? `<input type="checkbox" class="pick" data-id="${E.esc(s.id)}" aria-label="Select ${E.esc(s.name)}">`
+          : '';
+
+        return `<div class="tile" data-student="${E.esc(s.id)}">
+          ${pickHTML}
+          <div class="photo">
+            <span class="badge ${hasPhoto ? '' : 'missing'}">${hasPhoto ? 'PHOTO' : 'NO PHOTO'}</span>
+            ${hasPhoto
+              ? `<img src="${photo}" alt="">`
+              : `<div class="placeholder"><span class="icon">👤</span>No photo uploaded yet</div>`}
+          </div>
+          <h3>${E.esc(s.name)}</h3>
+          <div class="meta"><strong>${E.esc(s.id)}</strong> · ${E.esc(s.class)}</div>
+          ${actionsHTML}
+        </div>`;
+      }).join('');
+    }
+
+    const allVisible = E.visibleStudentsFor(user);
+    const withPhoto = allVisible.filter(s => !!photos[s.id]).length;
+    document.getElementById('kTotal').textContent = allVisible.length;
+    document.getElementById('kWithPhoto').textContent = withPhoto;
+    document.getElementById('kMissing').textContent = allVisible.length - withPhoto;
+    updateSelectionStats();
+  }
+
+  /* ---------- SELECTION ---------- */
+  function getSelected(){
+    return Array.from(document.querySelectorAll('.pick:checked')).map(x => x.dataset.id);
+  }
+  function updateSelectionStats(){
+    const ids = getSelected();
+    const k = document.getElementById('kSelected');
+    if(k) k.textContent = ids.length;
+    const btn = document.getElementById('printSelBtn');
+    if(!btn) return;
+    btn.disabled = ids.length === 0 || !canPrintBatch;
+    btn.textContent = ids.length
+      ? `🖶 Print selected (${ids.length})`
+      : '🖶 Print selected';
+  }
+
+  /* ---------- PHOTO UPLOAD ---------- */
+  let pendingUploadId = null;
+  const fileInput = document.getElementById('photoInput');
+
+  function pickPhoto(studentId){
+    if(!canUploadPhoto){ E.toast("You don't have permission to upload photos."); return; }
+    pendingUploadId = studentId;
+    fileInput.value = '';
+    fileInput.click();
+  }
+
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files[0];
+    if(!file || !pendingUploadId) return;
+    if(!file.type.startsWith('image/')){ E.toast('Please select an image file.'); return; }
+    if(file.size > 4 * 1024 * 1024){ E.toast('Image is too large (max 4 MB).'); return; }
+
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const photos = E.readStore(E.STORE_KEYS.photos, {}) || {};
+      photos[pendingUploadId] = ev.target.result;
+      try {
+        E.writeStore(E.STORE_KEYS.photos, photos);
+      } catch(err){
+        E.toast('Could not save photo — storage may be full.');
+        return;
+      }
+      E.audit('update', `Photo ${pendingUploadId}`, '', 'uploaded');
+      paintGrid();
+      E.toast('Photo saved.');
+      pendingUploadId = null;
+    };
+    reader.onerror = () => E.toast('Could not read that file.');
+    reader.readAsDataURL(file);
+  });
+
+  /* ---------- REMOVE PHOTO ---------- */
+  function removePhoto(studentId){
+    if(!canRemovePhoto){ E.toast("You don't have permission to remove photos."); return; }
+    const photos = E.readStore(E.STORE_KEYS.photos, {}) || {};
+    if(!photos[studentId]) return;
+    if(!confirm('Remove this student\'s photo?')) return;
+    delete photos[studentId];
+    E.writeStore(E.STORE_KEYS.photos, photos);
+    E.audit('delete', `Photo ${studentId}`, '', 'removed');
+    paintGrid();
+    E.toast('Photo removed.');
+  }
+
+  /* ---------- PRINT ---------- */
+  function printCard(studentId){
+    if(!canPrintSingle){ E.toast("You don't have permission to print ID cards."); return; }
+    window.open('id-card-print.html?student=' + encodeURIComponent(studentId), '_blank');
+  }
+  function printSelected(){
+    if(!canPrintBatch){ E.toast("You don't have permission to batch print."); return; }
+    const ids = getSelected();
+    if(!ids.length){ E.toast('Select at least one student.'); return; }
+    if(ids.length === 1){ printCard(ids[0]); return; }
+    window.open('id-card-print.html?students=' + encodeURIComponent(ids.join(',')), '_blank');
+    E.audit('create', 'Batch ID cards', '', `${ids.length} students`);
+  }
+
+  /* ---------- INIT ---------- */
+  paintHeader();
+  if(isStudent){
+    paintStudentMode();
+  } else {
+    paintStaffMode();
+  }
+})();
+</script>
+</body>
+</html>

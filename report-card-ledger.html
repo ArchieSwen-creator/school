@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gradesheet Ledger | EduCore</title>
+<style>
+  :root{
+    --navy:#12315a;--blue:#3987ee;--line:#e8ebf2;--text:#23354d;--muted:#73849a;
+    --green:#14805e;--orange:#d88922;--red:#d64545;--gold:#c99a2e;--gold2:#fff4d6;
+    --shadow:0 8px 24px rgba(24,42,78,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:64px 16px 40px;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button,input,select{font:inherit}
+  button{cursor:pointer}
+  .page{width:100%;max-width:1600px;margin:0 auto}
+  .band{background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
+    border-radius:16px;padding:22px 28px;margin-bottom:20px;
+    box-shadow:0 18px 50px #16345417;display:flex;justify-content:space-between;
+    align-items:center;gap:16px;flex-wrap:wrap;border-top:5px solid #58a4ff}
+  .band-left{display:flex;align-items:center;gap:14px}
+  .band-logo{width:48px;height:48px;border-radius:50%;background:#fff;
+    display:grid;place-items:center;overflow:hidden;color:var(--navy);
+    font-weight:900;font-size:18px;border:3px solid #d8e8ff;flex:0 0 48px}
+  .band-logo img{width:100%;height:100%;object-fit:contain}
+  .band h1{margin:0;font-size:19px;letter-spacing:.3px;text-transform:uppercase}
+  .band p{margin:4px 0 0;font-size:11px;color:#cfdcf5}
+  .band-user{display:flex;align-items:center;gap:10px;font-size:11px;color:#cfdcf5;
+    background:#ffffff14;border:1px solid #ffffff36;padding:7px 12px;border-radius:20px}
+  .band-user strong{color:#fff}
+
+  .toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;
+    flex-wrap:wrap;margin-bottom:16px}
+  .toolbar-left{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .field,.pick{border:1px solid var(--line);border-radius:9px;padding:10px 12px;
+    background:#fff;color:var(--text);font-size:12px;outline:none}
+  .field{min-width:220px}
+  .field:focus,.pick:focus{border-color:var(--blue)}
+
+  .btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{filter:brightness(.96)}
+  .btn.secondary{background:#eef2fb;color:#34415c}
+  .btn.gold{background:linear-gradient(135deg,#f7d97a,#c99a2e);color:#5a3a00}
+  .btn:disabled{opacity:.85;cursor:not-allowed}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);overflow:hidden}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;white-space:nowrap;font-size:11.5px}
+  thead th{background:#eaf0fb;color:#263b61;font-size:10px;text-transform:uppercase;
+    letter-spacing:.5px;padding:10px 8px;text-align:center;border:1px solid #dbe4f2}
+  thead th.sem1{background:#eaf0fb}
+  thead th.sem2{background:#f4eaff}
+  thead th.avg{background:#eafaf1}
+  thead th.yearly{background:#fff4d6}
+  thead th.subject{text-align:left;padding-left:14px;min-width:170px}
+  thead th.period-header{font-size:9px;padding:7px 6px;background:#f6f8fd;
+    border-bottom:1px solid #dbe4f2}
+  thead tr.subhead th{font-size:9px;padding:6px 4px;background:#f6f8fd}
+  tbody td{border:1px solid #eef1f7;padding:9px 8px;text-align:center;font-size:11.5px}
+  tbody td.subject{text-align:left;padding-left:14px;font-weight:700;color:var(--navy);background:#fbfdff}
+  tbody tr:hover td{background:#fafdff}
+  tbody td.avg{font-family:monospace;font-weight:700}
+  tbody td.grade{font-weight:800}
+  .grade-a{color:#16835f}
+  .grade-b{color:#3b5cc1}
+  .grade-c{color:#a86414}
+  .grade-d{color:#a86414}
+  .grade-f{color:#bd3b48}
+  .missing{color:#c5cee0}
+  .empty-cell{color:#c5cee0}
+
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin:14px 0 0;font-size:11px;color:var(--muted)}
+  .legend .item{display:inline-flex;align-items:center;gap:6px}
+  .legend .swatch{width:14px;height:14px;border-radius:4px;border:1px solid #c8d3e3}
+
+  .empty{padding:60px 30px;text-align:center;color:var(--muted);font-size:13px;
+    background:#fff;border:1px solid var(--line);border-radius:13px}
+  .empty .icon{font-size:48px;margin-bottom:14px;opacity:.5;display:block}
+
+  .meta-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;font-size:11px}
+  .meta-chip{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;
+    background:#fff;border:1px solid var(--line);border-radius:20px;color:#34415c;font-weight:700}
+  .meta-chip .dot{width:7px;height:7px;border-radius:50%;background:#94a3b8}
+  .meta-chip.cat-nursery .dot{background:#9c2a63}
+  .meta-chip.cat-numeric .dot{background:#0f6b4b}
+
+  @media (max-width:900px){
+    .field{min-width:0;width:100%}
+    .toolbar{flex-direction:column;align-items:stretch}
+    .toolbar-left{width:100%}
+  }
+  @media (max-width:650px){
+    body{padding:64px 8px 24px}
+    .band{padding:18px 20px}
+    .band h1{font-size:15px}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="band">
+    <div class="band-left">
+      <div class="band-logo" id="bandLogo">EC</div>
+      <div>
+        <h1 id="bandSchool">Gradesheet Ledger</h1>
+        <p id="bandSub">Consolidated annual record — subjects × periods × semesters</p>
+      </div>
+    </div>
+    <div class="band-user">Signed in as <strong id="bandUser">—</strong></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <select class="pick" id="yearSelect"></select>
+      <select class="pick" id="classSelect"></select>
+      <select class="pick" id="subjectFilter"><option value="">All subjects</option></select>
+      <input class="field" id="search" placeholder="Search student or ID...">
+    </div>
+    <div class="toolbar-left">
+      <button class="btn secondary" id="exportBtn">↓ Export CSV</button>
+    </div>
+  </div>
+
+  <div class="meta-bar" id="metaBar"></div>
+  <div id="pageBody"></div>
+  <div class="legend">
+    <span class="item"><span class="swatch" style="background:#eaf0fb"></span> Semester One (P1 · P2 · P3 · S1 Exam)</span>
+    <span class="item"><span class="swatch" style="background:#f4eaff"></span> Semester Two (P4 · P5 · P6 · S2 Exam)</span>
+    <span class="item"><span class="swatch" style="background:#eafaf1"></span> Semester average</span>
+    <span class="item"><span class="swatch" style="background:#fff4d6"></span> Yearly average</span>
+    <span class="item">— missing score</span>
+  </div>
+
+</div>
+
+<script src="educore-shared.js"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  /* ---------- GUARD ---------- */
+  const user = E.requirePerm('reportcard', 'Gradesheet Ledger');
+  if(!user) return;
+
+  /* ---------- FEE THRESHOLD GATE (viewer-level) ---------- */
+  const gsAccess = E.viewerGradesheetAccess();
+  if(!gsAccess.allowed){
+    E.renderGradesheetLocked(gsAccess, 'Gradesheet Ledger');
+    return;
+  }
+
+  /* ---------- ROLE ---------- */
+  const isStudent = user.role === 'Student';
+  const isParent  = user.role === 'Parent';
+  const isTeacher = user.role === 'Teacher';
+
+  /* ---------- STATE ---------- */
+  const state = {
+    year: E.currentAcademicYear(),
+    className: '', subjectFilter: '', query: ''
+  };
+
+  /* ---------- HEADER ---------- */
+  function paintHeader(){
+    const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const name = settings.name || 'EduCore High School';
+    if(settings.logo){
+      document.getElementById('bandLogo').innerHTML = `<img src="${settings.logo}" alt="">`;
+    } else {
+      document.getElementById('bandLogo').textContent =
+        name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
+    }
+    document.getElementById('bandSchool').textContent = name;
+    document.getElementById('bandSub').textContent = isStudent
+      ? 'Your annual academic record'
+      : isParent
+      ? "Your children's annual academic records"
+      : 'Consolidated annual record — subjects × periods × semesters';
+    document.getElementById('bandUser').textContent = user.name || user.username;
+  }
+
+  /* ---------- STUDENT POOL ---------- */
+  function scopedStudentsInClass(className){
+    const all = (E.readStore(E.STORE_KEYS.students, []) || []).filter(s => s.class === className);
+    if(isStudent) return all.filter(s => s.id === user.linkedStudentId);
+    if(isParent){
+      const ids = new Set(E.childrenOf(user).map(k => k.id));
+      return all.filter(s => ids.has(s.id));
+    }
+    if(isTeacher){
+      const visible = new Set(E.visibleStudentsFor(user).map(s => s.id));
+      return all.filter(s => visible.has(s.id));
+    }
+    return all;
+  }
+
+  function fillYears(){
+    const s = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const year = s.academicYear || '2025/2026';
+    document.getElementById('yearSelect').innerHTML = `<option>${E.esc(year)}</option>`;
+    state.year = year;
+  }
+  function fillClasses(){
+    const sel = document.getElementById('classSelect');
+    let classes = E.visibleClassNamesFor(user);
+    if(isStudent){
+      const me = (E.readStore(E.STORE_KEYS.students, []) || []).find(s => s.id === user.linkedStudentId);
+      classes = me ? [me.class] : [];
+    }
+    if(!classes.length){ sel.innerHTML = '<option value="">No classes</option>'; sel.disabled = true; return; }
+    sel.innerHTML = classes.map(c => `<option>${E.esc(c)}</option>`).join('');
+    state.className = classes[0];
+    sel.value = state.className;
+  }
+  function fillSubjects(){
+    const sel = document.getElementById('subjectFilter');
+    const cls = E.classByName(state.className);
+    let subjects = [];
+    if(cls && Array.isArray(cls.subjects) && cls.subjects.length){
+      subjects = cls.subjects.map(code => E.subjectName(code));
+    } else {
+      const set = new Set();
+      (E.readStore(E.STORE_KEYS.results, []) || []).filter(r => r.class === state.className)
+        .forEach(r => set.add(r.subject));
+      subjects = Array.from(set).sort();
+    }
+    sel.innerHTML = '<option value="">All subjects</option>' +
+      subjects.map(s => `<option>${E.esc(s)}</option>`).join('');
+    state.subjectFilter = '';
+  }
+  function paintMeta(){
+    const cat = E.classCategoryFor(state.className);
+    const isNursery = E.isNurseryCategory(cat);
+    document.getElementById('metaBar').innerHTML = `
+      <span class="meta-chip ${isNursery ? 'cat-nursery' : 'cat-numeric'}">
+        <span class="dot"></span>${isNursery ? 'Nursery · Letter grading' : (cat || 'No category') + ' · Numeric grading'}
+      </span>
+      <span class="meta-chip">Class: <strong>${E.esc(state.className)}</strong></span>
+      <span class="meta-chip">Session: <strong>${E.esc(state.year)}</strong></span>
+      ${isStudent ? `<span class="meta-chip">Your own record</span>` : ''}
+      ${isParent ? `<span class="meta-chip">Your children only</span>` : ''}
+    `;
+  }
+
+  function studentsFor(){
+    let students = scopedStudentsInClass(state.className).sort((a,b) => a.name.localeCompare(b.name));
+    if(state.query){
+      const q = state.query.toLowerCase();
+      students = students.filter(s => (`${s.name} ${s.id}`).toLowerCase().includes(q));
+    }
+    return students;
+  }
+  function subjectsFor(){
+    const cls = E.classByName(state.className);
+    let list = [];
+    if(cls && Array.isArray(cls.subjects) && cls.subjects.length){
+      list = cls.subjects.map(code => E.subjectName(code));
+    } else {
+      const set = new Set();
+      (E.readStore(E.STORE_KEYS.results, []) || []).filter(r => r.class === state.className)
+        .forEach(r => set.add(r.subject));
+      list = Array.from(set).sort();
+    }
+    if(state.subjectFilter) list = list.filter(s => s === state.subjectFilter);
+    return list;
+  }
+
+  function gradeCls(letter){ return ({ A:'a', B:'b', C:'c', D:'d', F:'f' }[letter] || 'b'); }
+
+  function paint(){
+    const body = document.getElementById('pageBody');
+    const students = studentsFor();
+    const subjects = subjectsFor();
+
+    if(!students.length){
+      if(isStudent){
+        body.innerHTML = `<div class="empty"><span class="icon">🔒</span>
+          Your student record could not be located in <strong>${E.esc(state.className)}</strong>.</div>`;
+      } else if(isParent){
+        body.innerHTML = `<div class="empty"><span class="icon">👨‍👩‍👧</span>
+          None of your children are enrolled in <strong>${E.esc(state.className)}</strong>.</div>`;
+      } else {
+        body.innerHTML = `<div class="empty"><span class="icon">👥</span>
+          No students match your filters in <strong>${E.esc(state.className)}</strong>.</div>`;
+      }
+      return;
+    }
+    if(!subjects.length){
+      body.innerHTML = `<div class="empty"><span class="icon">📚</span>
+        No subjects configured for <strong>${E.esc(state.className)}</strong>.</div>`;
+      return;
+    }
+
+    const showPicker = !isStudent;
+
+    body.innerHTML = `
+      <div style="background:#fff;border:1px solid var(--line);border-radius:13px;
+        box-shadow:var(--shadow);padding:14px 18px;margin-bottom:14px;
+        display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
+        ${showPicker ? `
+          <div style="display:flex;align-items:center;gap:12px">
+            <label style="font-size:10px;font-weight:800;color:var(--muted);
+              text-transform:uppercase;letter-spacing:.8px">
+              ${isParent ? 'Child' : 'Student'}
+            </label>
+            <select id="studentSelect" class="pick" style="min-width:260px">
+              ${students.map(s => `<option value="${E.esc(s.id)}">${E.esc(s.name)} · ${E.esc(s.id)}</option>`).join('')}
+            </select>
+          </div>
+        ` : `
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-size:11px;color:var(--muted)">Showing your own record</span>
+          </div>
+        `}
+      </div>
+      <div id="ledgerPanel"></div>
+    `;
+
+    const studentSel = document.getElementById('studentSelect');
+    const defaultId = isStudent ? user.linkedStudentId : students[0].id;
+    if(studentSel){
+      const saved = sessionStorage.getItem('educoreLedgerStudent');
+      if(saved && students.some(s => s.id === saved)) studentSel.value = saved;
+      else studentSel.value = defaultId;
+    }
+    let currentStudentId = studentSel ? studentSel.value : defaultId;
+
+    function renderLedger(){
+      const sid = currentStudentId;
+      sessionStorage.setItem('educoreLedgerStudent', sid);
+      if(!students.some(s => s.id === sid)){
+        document.getElementById('ledgerPanel').innerHTML = '<div class="empty">That student is not available to you.</div>';
+        return;
+      }
+      const student = students.find(s => s.id === sid);
+      if(!student){ document.getElementById('ledgerPanel').innerHTML = ''; return; }
+
+      const cat = E.classCategoryFor(student.class);
+      const rows = subjects.map(sub => {
+        const row = E.subjectLedgerRow(student.name, student.class, sub, state.year);
+        return { subject: sub, ...row };
+      });
+
+      const s1Nums = rows.map(r => r.s1Avg?.number).filter(n => Number.isFinite(n));
+      const s2Nums = rows.map(r => r.s2Avg?.number).filter(n => Number.isFinite(n));
+      const yrNums = rows.map(r => r.yearly?.number).filter(n => Number.isFinite(n));
+      const s1Avg = s1Nums.length ? s1Nums.reduce((a,b) => a+b, 0) / s1Nums.length : null;
+      const s2Avg = s2Nums.length ? s2Nums.reduce((a,b) => a+b, 0) / s2Nums.length : null;
+      const yrAvg = yrNums.length ? yrNums.reduce((a,b) => a+b, 0) / yrNums.length : null;
+
+      document.getElementById('ledgerPanel').innerHTML = `
+        <div class="card">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--line);
+            display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:40px;height:40px;border-radius:12px;background:#edf2ff;
+                color:#3859b7;display:grid;place-items:center;font-weight:800">
+                ${E.initials(student.name)}
+              </div>
+              <div>
+                <div style="font-size:14px;font-weight:800;color:var(--navy)">${E.esc(student.name)}</div>
+                <div style="font-size:11px;color:var(--muted);margin-top:3px">
+                  ${E.esc(student.class)} · ${E.esc(student.id)} · ${E.esc(state.year)}
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;gap:16px;font-size:11px;flex-wrap:wrap">
+              <div><span style="color:var(--muted)">S1 Avg:</span>
+                <strong style="font-family:monospace">${s1Avg != null ? s1Avg.toFixed(1) + '%' : '—'}</strong></div>
+              <div><span style="color:var(--muted)">S2 Avg:</span>
+                <strong style="font-family:monospace">${s2Avg != null ? s2Avg.toFixed(1) + '%' : '—'}</strong></div>
+              <div><span style="color:var(--muted)">Yearly:</span>
+                <strong style="font-family:monospace;color:#8a6a1a">${yrAvg != null ? yrAvg.toFixed(1) + '%' : '—'}</strong>
+                  ${yrAvg != null ? `<span class="grade-pill ${gradeCls(E.gradeFromNumber(yrAvg, cat))}">${E.gradeFromNumber(yrAvg, cat)}</span>` : ''}</div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th class="subject" rowspan="2">Subject</th>
+                  <th class="sem1" colspan="5">Semester One</th>
+                  <th class="sem2" colspan="5">Semester Two</th>
+                  <th class="yearly" rowspan="2">Yearly Avg</th>
+                </tr>
+                <tr class="subhead">
+                  <th class="period-header">P1</th>
+                  <th class="period-header">P2</th>
+                  <th class="period-header">P3</th>
+                  <th class="period-header">S1 Exam</th>
+                  <th class="avg">S1 Avg</th>
+                  <th class="period-header" style="background:#f6e9fd">P4</th>
+                  <th class="period-header" style="background:#f6e9fd">P5</th>
+                  <th class="period-header" style="background:#f6e9fd">P6</th>
+                  <th class="period-header" style="background:#f6e9fd">S2 Exam</th>
+                  <th class="avg">S2 Avg</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.map(r => renderRow(r, cat)).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderRow(r, cat){
+      const cell = v => v === '' || v === undefined || v === null
+        ? '<span class="empty-cell">—</span>' : E.esc(String(v));
+      const avgCell = a => a
+        ? `<span class="avg">${a.number.toFixed(1)}</span> <span class="grade-${gradeCls(a.letter)} grade">${a.letter}</span>`
+        : '<span class="missing">—</span>';
+      return `<tr>
+        <td class="subject">${E.esc(r.subject)}</td>
+        <td>${cell(r.p1)}</td><td>${cell(r.p2)}</td><td>${cell(r.p3)}</td><td>${cell(r.e1)}</td>
+        <td class="avg">${avgCell(r.s1Avg)}</td>
+        <td>${cell(r.p4)}</td><td>${cell(r.p5)}</td><td>${cell(r.p6)}</td><td>${cell(r.e2)}</td>
+        <td class="avg">${avgCell(r.s2Avg)}</td>
+        <td class="avg" style="background:#fffbf0">${avgCell(r.yearly)}</td>
+      </tr>`;
+    }
+
+    renderLedger();
+    if(studentSel){
+      studentSel.addEventListener('change', () => {
+        currentStudentId = studentSel.value;
+        renderLedger();
+      });
+    }
+  }
+
+  /* ---------- EVENTS ---------- */
+  document.getElementById('classSelect').addEventListener('change', e => {
+    state.className = e.target.value; fillSubjects(); paintMeta(); paint();
+  });
+  document.getElementById('subjectFilter').addEventListener('change', e => {
+    state.subjectFilter = e.target.value; paint();
+  });
+  document.getElementById('search').addEventListener('input', e => {
+    state.query = e.target.value.trim(); paint();
+  });
+  document.getElementById('yearSelect').addEventListener('change', e => {
+    state.year = e.target.value; paintMeta(); paint();
+  });
+  document.getElementById('exportBtn').addEventListener('click', () => {
+    const students = studentsFor();
+    const subjects = subjectsFor();
+    if(!students.length || !subjects.length){ E.toast('Nothing to export.'); return; }
+    const rows = [[
+      'Student ID','Student','Class','Subject',
+      'P1','P2','P3','S1 Exam','S1 Avg','S1 Grade',
+      'P4','P5','P6','S2 Exam','S2 Avg','S2 Grade',
+      'Yearly Avg','Yearly Grade'
+    ]];
+    students.forEach(s => {
+      subjects.forEach(sub => {
+        const r = E.subjectLedgerRow(s.name, s.class, sub, state.year);
+        rows.push([
+          s.id, s.name, s.class, sub,
+          r.p1, r.p2, r.p3, r.e1,
+          r.s1Avg ? r.s1Avg.number.toFixed(1) : '',
+          r.s1Avg ? r.s1Avg.letter : '',
+          r.p4, r.p5, r.p6, r.e2,
+          r.s2Avg ? r.s2Avg.number.toFixed(1) : '',
+          r.s2Avg ? r.s2Avg.letter : '',
+          r.yearly ? r.yearly.number.toFixed(1) : '',
+          r.yearly ? r.yearly.letter : ''
+        ]);
+      });
+    });
+    const csv = rows.map(r => r.map(v => '"' + String(v ?? '').replace(/"/g,'""') + '"').join(',')).join('\r\n');
+    const blob = new Blob(['\ufeff' + csv], { type:'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = `ledger-${state.className}-${state.year}.csv`; a.click();
+    URL.revokeObjectURL(url);
+    E.toast('Ledger exported.');
+  });
+
+  /* ---------- INIT ---------- */
+  paintHeader();
+  fillYears();
+  fillClasses();
+  if(!document.getElementById('classSelect').disabled){
+    fillSubjects(); paintMeta(); paint();
+  } else {
+    document.getElementById('pageBody').innerHTML = `
+      <div class="empty"><span class="icon">📚</span>No classes are available to you.</div>`;
+  }
+})();
+</script>
+</body>
+</html>

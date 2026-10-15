@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fees | EduCore</title>
+<style>
+  :root{
+    --navy:#12315a;--blue:#3987ee;--pale:#eef5ff;--border:#d8e4f2;
+    --text:#23354d;--muted:#73849a;--green:#14805e;--orange:#d88922;--red:#d64545;
+    --gold:#c99a2e;--gold2:#fff4d6;--line:#e8ebf2;
+    --shadow:0 8px 24px rgba(24,42,78,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:64px 16px 40px;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+
+  .page{width:100%;max-width:1300px;margin:0 auto}
+
+  .band{background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
+    border-radius:16px;padding:22px 28px;margin-bottom:20px;
+    box-shadow:0 18px 50px #16345417;display:flex;justify-content:space-between;
+    align-items:center;gap:16px;flex-wrap:wrap;border-top:5px solid #58a4ff}
+  .band-left{display:flex;align-items:center;gap:14px}
+  .band-logo{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;place-items:center;
+    overflow:hidden;color:var(--navy);font-weight:900;font-size:18px;border:3px solid #d8e8ff;flex:0 0 48px}
+  .band-logo img{width:100%;height:100%;object-fit:contain}
+  .band h1{margin:0;font-size:19px;letter-spacing:.3px;text-transform:uppercase}
+  .band p{margin:4px 0 0;font-size:11px;color:#cfdcf5}
+  .band-user{display:flex;align-items:center;gap:10px;font-size:11px;color:#cfdcf5;
+    background:#ffffff14;border:1px solid #ffffff36;padding:7px 12px;border-radius:20px}
+  .band-user strong{color:#fff}
+
+  .section-title{display:flex;justify-content:space-between;align-items:center;
+    gap:12px;margin:26px 0 14px;flex-wrap:wrap}
+  .section-title:first-of-type{margin-top:0}
+  .section-title h2{margin:0;font-size:17px;color:var(--navy);letter-spacing:.3px}
+  .section-title p{margin:4px 0 0;font-size:11.5px;color:var(--muted)}
+  .section-title .icon{display:inline-grid;place-items:center;width:36px;height:36px;
+    border-radius:10px;background:#eef2fb;color:#2f4d8a;font-size:16px;margin-right:10px}
+  .section-title .left{display:flex;align-items:center}
+
+  .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:16px 18px;
+    box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--blue)}
+  .stat.green::before{background:var(--green)}
+  .stat.orange::before{background:var(--orange)}
+  .stat.red::before{background:var(--red)}
+  .stat small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.8px;
+    color:var(--muted);font-weight:800;margin-bottom:8px}
+  .stat strong{font-size:20px;color:var(--navy);font-weight:800}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);overflow:hidden}
+  .card-head{display:flex;justify-content:space-between;align-items:center;
+    padding:16px 20px;border-bottom:1px solid var(--line);gap:12px;flex-wrap:wrap}
+  .card-head h3{margin:0;font-size:14px}
+  .card-head .count{padding:4px 9px;border-radius:20px;background:#edf2ff;color:#3b5cc1;
+    font-size:10px;font-weight:800}
+
+  .toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;
+    flex-wrap:wrap;margin-bottom:14px}
+  .toolbar-left{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .field,.pick{border:1px solid var(--line);border-radius:9px;padding:10px 12px;
+    background:#fff;color:var(--text);font-size:12px;outline:none}
+  .field{min-width:220px}
+  .field:focus,.pick:focus{border-color:var(--blue)}
+
+  .btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{filter:brightness(.96)}
+  .btn.secondary{background:#eef2fb;color:#34415c}
+  .btn.outline{background:#fff;color:#34415c;border:1px solid var(--line)}
+  .btn.danger{background:#fff0f1;color:var(--red)}
+  .btn.green{background:#e6f7f0;color:#16835f}
+  .btn.gold{background:linear-gradient(135deg,#f7d97a,#c99a2e);color:#5a3a00}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;white-space:nowrap}
+  th{text-align:left;background:#fafbfe;color:#7a8498;font-size:10px;
+    text-transform:uppercase;letter-spacing:.6px;padding:13px 18px;
+    border-bottom:1px solid var(--line)}
+  td{padding:11px 18px;border-bottom:1px solid #f0f2f7;font-size:12px}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:hover{background:#fbfdff}
+  tbody tr.dirty{background:#fffbe6}
+  tbody tr.dirty:hover{background:#fff8d9}
+
+  .person{display:flex;align-items:center;gap:10px}
+  .mini-avatar{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;
+    background:#edf2ff;color:#3859b7;font-size:10px;font-weight:700}
+  .person strong{display:block;font-size:12px}
+  .person small{display:block;color:var(--muted);font-size:10px;margin-top:4px}
+
+  .pill{display:inline-block;padding:5px 8px;border-radius:20px;font-size:10px;font-weight:700}
+  .pill.green{background:#e6f7f0;color:#16835f}
+  .pill.orange{background:#fff2dd;color:#aa6c14}
+  .pill.red{background:#ffeaec;color:#bd3b48}
+  .pill.blue{background:#edf2ff;color:#3b5cc1}
+  .pill.gold{background:var(--gold2);color:#8a6a1a}
+  .pill.grey{background:#eef1f6;color:#59647c}
+
+  .amount{font-family:monospace;font-weight:700;color:var(--navy);font-size:12px}
+  .amount.paid{color:var(--green)}
+  .amount.bal{color:var(--red)}
+  .amount.credit{color:var(--green);font-weight:800}
+
+  /* Editable paid cell */
+  .paid-cell{display:flex;align-items:center;gap:6px}
+  .paid-input{
+    width:110px;border:1px solid #dfe4ee;border-radius:7px;padding:6px 9px;
+    font-family:monospace;font-weight:700;font-size:12px;text-align:right;
+    color:var(--green);outline:none;background:#fff;transition:.15s;
+  }
+  .paid-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(57,135,238,.12)}
+  .paid-input.invalid{border-color:var(--red);background:#fff0f1}
+  .paid-static{font-family:monospace;font-weight:700;color:var(--green);font-size:12px}
+  .paid-pencil{
+    border:0;background:transparent;padding:4px 6px;border-radius:6px;
+    color:#7a8498;cursor:pointer;font-size:12px;
+  }
+  .paid-pencil:hover{background:#eef2fb;color:var(--blue)}
+
+  .progress-bar{height:6px;background:#eef1f7;border-radius:20px;overflow:hidden;width:80px;
+    display:inline-block;vertical-align:middle;margin-right:8px}
+  .progress-bar span{display:block;height:100%;border-radius:20px;background:#14805e;
+    transition:width .25s ease, background .25s ease}
+  .progress-bar span.partial{background:#d88922}
+  .progress-bar span.empty{background:#c5cee0}
+
+  .row-actions{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+  .row-actions .btn{padding:6px 9px;font-size:11px}
+  .save-mini{background:#14805e;color:#fff;border:0;border-radius:6px;
+    padding:6px 10px;font-size:10px;font-weight:800;letter-spacing:.4px;cursor:pointer}
+  .save-mini:hover{filter:brightness(.95)}
+  .cancel-mini{background:#fff;color:#34415c;border:1px solid var(--line);border-radius:6px;
+    padding:6px 10px;font-size:10px;font-weight:800;cursor:pointer}
+  .cancel-mini:hover{background:#f3f6fd}
+
+  .empty{padding:40px 20px;text-align:center;color:var(--muted);font-size:13px}
+
+  .threshold-banner{display:flex;justify-content:space-between;align-items:center;gap:14px;
+    padding:14px 18px;background:#fff8e6;border:1px solid #f3d999;border-radius:12px;
+    margin-bottom:16px;font-size:12px;color:#8a6a1a;flex-wrap:wrap}
+  .threshold-banner strong{color:#5a3a00}
+  .threshold-banner.off{background:#eef7ff;border-color:#cfe3ff;color:#1d4d82}
+
+  .class-fee-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+  .class-fee-card{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:#fbfcff}
+  .class-fee-card h4{margin:0 0 4px;font-size:13px;color:var(--navy)}
+  .class-fee-card .cat{font-size:10.5px;color:var(--muted);margin-bottom:10px;
+    text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+  .class-fee-card .line{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;
+    border-bottom:1px dashed #eef2f7}
+  .class-fee-card .line:last-of-type{border-bottom:0}
+  .class-fee-card .total{font-weight:800;color:var(--navy);border-top:1px solid var(--line);
+    padding-top:8px;margin-top:4px}
+  .class-fee-card .actions{display:flex;gap:6px;margin-top:10px}
+  .class-fee-card .actions .btn{padding:7px 10px;font-size:11px}
+
+  .info-strip{background:#eef5ff;border:1px solid #c4d8f5;color:#2e4a7e;
+    border-radius:10px;padding:11px 14px;margin-bottom:14px;font-size:11.5px;line-height:1.6;
+    display:flex;gap:10px;align-items:flex-start}
+  .info-strip .icon{font-size:15px;flex:0 0 auto;padding-top:1px}
+
+  @media (max-width:900px){
+    .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:650px){
+    body{padding:64px 8px 24px}
+    .band{padding:18px 20px}
+    .band h1{font-size:15px}
+    .field,.pick{min-width:0;width:100%}
+    .toolbar{flex-direction:column;align-items:stretch}
+    .toolbar-left{width:100%}
+    .stats{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="band">
+    <div class="band-left">
+      <div class="band-logo" id="bandLogo">EC</div>
+      <div>
+        <h1 id="bandSchool">Fees</h1>
+        <p id="bandSub">Class tuition, student payments, and teacher salaries</p>
+      </div>
+    </div>
+    <div class="band-user">Signed in as <strong id="bandUser">—</strong></div>
+  </div>
+
+  <div id="pageBody"></div>
+
+</div>
+
+<script src="educore-shared.js"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  /* ---------- GUARD ---------- */
+  const user = E.requirePerm('fees', 'Fees');
+  if(!user) return;
+
+  const isStudent   = user.role === 'Student';
+  const isParent    = user.role === 'Parent';
+  const isTeacher   = user.role === 'Teacher';
+  const isStaff     = user.role === 'Principal' || user.role === 'Registrar';
+
+  /* ---------- PERMISSIONS ---------- */
+  const canSetClassFees   = isStaff && E.can('fees.class_fees');
+  const canRecordPayment  = isStaff && E.can('fees.record_payment');
+  const canReversePayment = isStaff && E.can('fees.reverse_payment');
+  const canRecordSalary   = isStaff && E.can('fees.salary');
+  const canReverseSalary  = isStaff && E.can('fees.reverse_salary');
+  const canManageThreshold = isStaff;
+
+  /* ---------- HEADER ---------- */
+  function paintHeader(){
+    const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const name = settings.name || 'EduCore High School';
+    if(settings.logo){
+      document.getElementById('bandLogo').innerHTML = `<img src="${settings.logo}" alt="">`;
+    } else {
+      document.getElementById('bandLogo').textContent =
+        name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
+    }
+    document.getElementById('bandSchool').textContent = name;
+    document.getElementById('bandSub').textContent = isStaff
+      ? 'Class tuition, student payments, and teacher salaries'
+      : isStudent
+      ? 'Your fee account and payment history'
+      : isParent
+      ? "Your children's fee accounts"
+      : 'Your account and payments';
+    document.getElementById('bandUser').textContent = user.name || user.username;
+  }
+
+  /* ============================================================
+     HELPERS — for staff table
+     ============================================================ */
+
+  /* Total fees for a class = tuition + extra from classFees record */
+  function classTotal(className){
+    const rec = E.classFeeFor(className);
+    if(!rec) return 0;
+    return Number(rec.tuition || 0) + Number(rec.extra || 0);
+  }
+
+  /* Amount a student has paid (sum of non-reversed payments) */
+  function paidFor(studentId){
+    return (E.readStore(E.STORE_KEYS.payments, []) || [])
+      .filter(p => p.studentId === studentId && !p.reversed)
+      .reduce((s, p) => s + Number(p.amount || 0), 0);
+  }
+
+  /* Live balance + status from totals */
+  function deriveStatus(totalFees, paid){
+    if(totalFees <= 0) return 'Paid';
+    if(paid >= totalFees - 0.005) return 'Paid';
+    if(paid > 0) return 'Part-paid';
+    return 'Pending';
+  }
+
+  /* ============================================================
+     VIEWER MODE (Student / Parent)
+     ============================================================ */
+  function paintViewerMode(){
+    const body = document.getElementById('pageBody');
+    const kids = isStudent
+      ? (E.readStore(E.STORE_KEYS.students, []) || []).filter(s => s.id === user.linkedStudentId)
+      : E.childrenOf(user);
+
+    if(!kids.length){
+      body.innerHTML = `
+        <div class="card"><div style="padding:60px;text-align:center;color:var(--muted)">
+          <div style="font-size:48px;opacity:.5;margin-bottom:14px">＄</div>
+          <strong style="display:block;color:var(--navy);font-size:15px;margin-bottom:8px">
+            No fee account on file
+          </strong>
+          Contact the school office if you believe this is a mistake.
+        </div></div>`;
+      return;
+    }
+
+    body.innerHTML = kids.map(k => {
+      const totalFees = classTotal(k.class);
+      const paid = paidFor(k.id);
+      const balance = totalFees - paid;
+      const status = deriveStatus(totalFees, paid);
+      const pct = totalFees > 0 ? Math.min(100, Math.round(paid / totalFees * 100)) : 100;
+      const payments = (E.readStore(E.STORE_KEYS.payments, []) || [])
+        .filter(p => p.studentId === k.id)
+        .sort((a,b) => new Date(b.at) - new Date(a.at));
+
+      return `
+        <div class="card" style="margin-bottom:18px">
+          <div class="card-head">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div class="mini-avatar" style="width:42px;height:42px;border-radius:12px;font-size:13px">${E.initials(k.name)}</div>
+              <div>
+                <div style="font-size:15px;font-weight:800;color:var(--navy)">${E.esc(k.name)}</div>
+                <div style="font-size:11px;color:var(--muted);margin-top:3px">
+                  ${E.esc(k.class)} · ${E.esc(k.id)}
+                </div>
+              </div>
+            </div>
+            <div style="text-align:right">
+              <small style="display:block;font-size:10px;text-transform:uppercase;letter-spacing:.8px;
+                color:var(--muted);font-weight:800;margin-bottom:4px">
+                ${balance < 0 ? 'Credit' : 'Balance'}
+              </small>
+              <strong style="font-size:22px;font-family:monospace;color:${balance < 0 ? 'var(--green)' : 'var(--red)'}">
+                ${E.money(Math.abs(balance))}
+              </strong>
+            </div>
+          </div>
+
+          <div style="padding:20px 22px">
+            <div class="stats" style="margin-bottom:14px">
+              <div class="stat"><small>Total fees</small><strong>${E.money(totalFees)}</strong></div>
+              <div class="stat green"><small>Paid</small><strong>${E.money(paid)}</strong></div>
+              <div class="stat red"><small>Outstanding</small><strong>${E.money(Math.max(0, balance))}</strong></div>
+              <div class="stat orange"><small>Status</small><strong>${status}</strong></div>
+            </div>
+
+            <div class="progress-bar" style="width:100%;height:10px">
+              <span class="${status === 'Paid' ? '' : status === 'Part-paid' ? 'partial' : 'empty'}" style="width:${pct}%"></span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:6px">
+              <span>${pct}% paid</span>
+              <span>${E.money(Math.max(0, balance))} remaining</span>
+            </div>
+
+            ${payments.length ? `
+              <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;
+                color:var(--muted);font-weight:800;margin:20px 0 8px">Payment history</div>
+              <div class="table-wrap" style="border:1px solid var(--line);border-radius:10px;overflow:hidden">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Receipt</th>
+                      <th>Method</th>
+                      <th style="text-align:right">Amount</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${payments.slice(0, 15).map(p => `
+                      <tr style="${p.reversed ? 'opacity:.55' : ''}">
+                        <td>${E.fmtDate(p.at)}</td>
+                        <td style="font-family:monospace;font-size:11px">${E.esc(p.receiptNo)}</td>
+                        <td>${E.esc(p.method || '—')}${p.reversed ? ' <span class="pill red">Reversed</span>' : ''}</td>
+                        <td style="text-align:right"><span class="amount paid">${E.money(p.amount)}</span></td>
+                        <td style="text-align:right">
+                          <button class="btn secondary" style="padding:6px 10px;font-size:10px"
+                            data-receipt="${E.esc(p.id)}">🖶 Receipt</button>
+                        </td>
+                      </tr>`).join('')}
+                  </tbody>
+                </table>
+              </div>` : '<div class="empty" style="margin-top:16px">No payments yet.</div>'}
+          </div>
+        </div>`;
+    }).join('');
+
+    body.querySelectorAll('[data-receipt]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        window.open('receipt-print.html?id=' + encodeURIComponent(btn.dataset.receipt), '_blank');
+      });
+    });
+  }
+
+  /* ============================================================
+     STAFF MODE
+     ============================================================ */
+  function paintStaffMode(){
+    const body = document.getElementById('pageBody');
+    body.innerHTML = `
+      <!-- ====== TEACHER SALARIES ====== -->
+      <div class="section-title">
+        <div class="left">
+          <span class="icon">₨</span>
+          <div>
+            <h2>Teacher salaries</h2>
+            <p>Record a salary disbursement. Advance and tax are deducted automatically.</p>
+          </div>
+        </div>
+        <div>
+          ${canRecordSalary ? `<button class="btn gold" id="addSalaryBtn">＋ Record salary</button>` : ''}
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><small>Teachers on payroll</small><strong id="kTeachers">0</strong></div>
+        <div class="stat green"><small>Total paid this year</small><strong id="kSalaryPaid">$0.00</strong></div>
+        <div class="stat orange"><small>Advances this year</small><strong id="kAdvances">$0.00</strong></div>
+        <div class="stat red"><small>Tax withheld this year</small><strong id="kTax">$0.00</strong></div>
+      </div>
+
+      <div class="card" style="margin-bottom:26px">
+        <div class="card-head">
+          <h3>Salary transactions <span class="count" id="salaryCount">0</span></h3>
+          <div class="toolbar-left">
+            <select class="pick" id="salaryTeacherFilter"><option value="">All teachers</option></select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Teacher</th>
+                <th style="text-align:right">Total salary</th>
+                <th style="text-align:right">Advance</th>
+                <th style="text-align:right">Tax</th>
+                <th style="text-align:right">Net balance</th>
+                <th>Receipt</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="salaryTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ====== STUDENT FEES ====== -->
+      <div class="section-title">
+        <div class="left">
+          <span class="icon">＄</span>
+          <div>
+            <h2>Student fees</h2>
+            <p>Set the tuition and extra fees once per class. Edit the Paid field per student — balance and status update live.</p>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          ${canSetClassFees ? `<button class="btn secondary" id="editClassFeesBtn">✎ Edit class fees</button>` : ''}
+          ${canRecordPayment ? `<button class="btn" id="addPaymentBtn">＋ Record payment</button>` : ''}
+        </div>
+      </div>
+
+      ${canManageThreshold ? `<div id="thresholdBanner"></div>` : ''}
+
+      <div class="info-strip">
+        <span class="icon">💡</span>
+        <div>
+          <strong>Edit Paid directly:</strong> click the pencil (✎) next to a student's Paid amount.
+          Type the new total paid — the Balance, Progress bar, and Status update automatically.
+          Click <strong>💾 Save</strong> to commit; a receipt is generated for the adjustment.
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><small>Total billed (net)</small><strong id="kBill">$0.00</strong></div>
+        <div class="stat green"><small>Total collected</small><strong id="kPaid">$0.00</strong></div>
+        <div class="stat red"><small>Outstanding</small><strong id="kOut">$0.00</strong></div>
+        <div class="stat orange"><small>Pending accounts</small><strong id="kPend">0</strong></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Students <span class="count" id="studentCount">0</span></h3>
+          <div class="toolbar-left">
+            <input class="field" id="studentSearch" placeholder="Search student or ID...">
+            <select class="pick" id="studentClassFilter"><option value="">All classes</option></select>
+            <select class="pick" id="studentStatusFilter">
+              <option value="">All statuses</option>
+              <option value="Paid">Paid</option>
+              <option value="Part-paid">Part-paid</option>
+              <option value="Pending">Pending</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Class</th>
+                <th style="text-align:right">Total fees</th>
+                <th style="text-align:right">Paid</th>
+                <th style="text-align:right">Balance</th>
+                <th>Progress</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="studentTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    `;
+
+    const teachers = E.getTeachers();
+    document.getElementById('salaryTeacherFilter').innerHTML =
+      '<option value="">All teachers</option>' +
+      teachers.map(t => `<option value="${E.esc(t.id)}">${E.esc(t.name)}</option>`).join('');
+
+    const classes = E.getClasses();
+    document.getElementById('studentClassFilter').innerHTML =
+      '<option value="">All classes</option>' +
+      classes.map(c => `<option>${E.esc(c.name)}</option>`).join('');
+
+    document.getElementById('addSalaryBtn')?.addEventListener('click', openSalaryModal);
+    document.getElementById('addPaymentBtn')?.addEventListener('click', () => openPaymentModal(null));
+    document.getElementById('editClassFeesBtn')?.addEventListener('click', openClassFeeEditor);
+    document.getElementById('salaryTeacherFilter').addEventListener('change', paintSalary);
+    document.getElementById('studentSearch').addEventListener('input', paintStudents);
+    document.getElementById('studentClassFilter').addEventListener('change', paintStudents);
+    document.getElementById('studentStatusFilter').addEventListener('change', paintStudents);
+
+    document.getElementById('salaryTbody').addEventListener('click', e => {
+      const receipt = e.target.closest('[data-receipt]');
+      const reverse = e.target.closest('[data-reverse]');
+      if(receipt) window.open('receipt-print.html?salaryId=' + encodeURIComponent(receipt.dataset.receipt), '_blank');
+      if(reverse) handleReverseSalary(reverse.dataset.reverse);
+    });
+
+    paintSalaryStats();
+    paintSalary();
+    paintFeesStats();
+    paintStudents();
+    paintThresholdBanner();
+
+    bindStudentTableEvents();
+  }
+
+  /* ============================================================
+     SALARY SECTION
+     ============================================================ */
+  function paintSalaryStats(){
+    const teachers = E.getTeachers();
+    const tx = E.getSalaryPayments().filter(t => !t.reversed);
+    const year = new Date().getFullYear();
+    const thisYear = tx.filter(t => new Date(t.createdAt).getFullYear() === year);
+    const totalNet = thisYear.reduce((a,t) => a + Number(t.netBalance || 0), 0);
+    const totalAdvances = thisYear.reduce((a,t) => a + Number(t.advance || 0), 0);
+    const totalTax = thisYear.reduce((a,t) => a + Number(t.taxAmount || 0), 0);
+    document.getElementById('kTeachers').textContent = teachers.length;
+    document.getElementById('kSalaryPaid').textContent = E.money(totalNet);
+    document.getElementById('kAdvances').textContent = E.money(totalAdvances);
+    document.getElementById('kTax').textContent = E.money(totalTax);
+  }
+
+  function paintSalary(){
+    const teacherId = document.getElementById('salaryTeacherFilter').value;
+    const tx = E.getSalaryPayments()
+      .filter(t => !teacherId || t.teacherId === teacherId)
+      .sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    const tb = document.getElementById('salaryTbody');
+    tb.innerHTML = tx.map(t => {
+      const reverseBtn = (canReverseSalary && !t.reversed)
+        ? `<button class="btn danger" data-reverse="${E.esc(t.id)}">Reverse</button>` : '';
+      return `<tr style="${t.reversed ? 'opacity:.55' : ''}">
+        <td>${E.fmtDateTime(t.createdAt)}</td>
+        <td><div class="person">
+          <div class="mini-avatar">${E.initials(t.teacherName)}</div>
+          <div><strong>${E.esc(t.teacherName)}</strong><small>${E.esc(t.teacherId)}</small></div>
+        </div></td>
+        <td style="text-align:right"><span class="amount">${E.money(t.totalSalary)}</span></td>
+        <td style="text-align:right"><span class="amount" style="color:var(--orange)">${t.advance ? '- ' + E.money(t.advance) : '—'}</span></td>
+        <td style="text-align:right"><span class="amount" style="color:var(--red)">${t.taxAmount ? '- ' + E.money(t.taxAmount) + ' (' + t.taxPercent + '%)' : '—'}</span></td>
+        <td style="text-align:right"><span class="amount paid">${E.money(t.netBalance)}</span></td>
+        <td><span class="pill blue" style="font-family:monospace">${E.esc(t.receiptNo)}</span>${t.reversed ? ' <span class="pill red">Reversed</span>' : ''}</td>
+        <td><div class="row-actions">
+          <button class="btn secondary" data-receipt="${E.esc(t.id)}">🖶 Receipt</button>
+          ${reverseBtn}
+        </div></td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="8" class="empty">No salary transactions yet.</td></tr>';
+
+    document.getElementById('salaryCount').textContent = tx.length;
+  }
+
+  function openSalaryModal(){
+    if(!canRecordSalary){ E.toast("You don't have permission to record salaries."); return; }
+    const teachers = E.getTeachers();
+    if(!teachers.length){ E.toast('No teachers in the system yet.'); return; }
+
+    const options = teachers
+      .slice().sort((a,b) => a.name.localeCompare(b.name))
+      .map(t => `<option value="${E.esc(t.id)}">${E.esc(t.name)} · ${E.esc(t.department || t.id)}</option>`)
+      .join('');
+
+    const html = `
+      <div class="full">
+        <label style="font-size:11px;font-weight:800;color:#34415c;text-transform:uppercase;letter-spacing:.7px">Select teacher</label>
+        <select name="teacherId" id="salaryTeacherSelect" required style="width:100%;border:1px solid #dfe4ee;border-radius:8px;padding:11px;font-size:12px;outline:none;margin-top:6px">
+          <option value="">— Pick a teacher —</option>
+          ${options}
+        </select>
+      </div>
+      <div>
+        <label>Total salary</label>
+        <input name="totalSalary" id="salTotal" type="number" min="0" step="0.01" required placeholder="0.00">
+      </div>
+      <div>
+        <label>Advance (optional)</label>
+        <input name="advance" id="salAdv" type="number" min="0" step="0.01" placeholder="0.00">
+      </div>
+      <div>
+        <label>Tax % (optional)</label>
+        <input name="taxPercent" id="salTax" type="number" min="0" max="100" step="0.01" placeholder="0">
+      </div>
+      <div>
+        <label>Net balance (auto)</label>
+        <input id="salNet" type="text" readonly style="background:#f4f6fb;color:#14213d;font-weight:800;font-family:monospace">
+      </div>
+      <div>
+        <label>Payment method</label>
+        <select name="method">
+          <option>Bank transfer</option>
+          <option>Cash</option>
+          <option>Mobile Money</option>
+          <option>Cheque</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div>
+        <label>Payment date</label>
+        <input name="date" type="date" value="${E.todayISO()}">
+      </div>
+      <div class="full">
+        <label>Reference (optional)</label>
+        <input name="reference" placeholder="e.g. bank txn #, cheque #">
+      </div>
+      <div class="full">
+        <label>Note (optional)</label>
+        <input name="note" placeholder="e.g. November salary">
+      </div>
+      <div class="full" style="font-size:11px;color:var(--muted);background:#f8faff;
+        border:1px solid #e8ebf2;border-radius:8px;padding:10px 12px;line-height:1.6">
+        Formula: <strong>Net balance = Total salary − Advance − Tax</strong>.
+        A receipt is generated automatically.
+      </div>`;
+
+    E.openModal('Record teacher salary', html, 'Save &amp; generate receipt', d => {
+      const teacher = teachers.find(t => t.id === d.teacherId);
+      if(!teacher){ E.toast('Pick a teacher.'); return; }
+      const total = Number(d.totalSalary);
+      const adv = Number(d.advance) || 0;
+      const tax = Number(d.taxPercent) || 0;
+      if(!Number.isFinite(total) || total <= 0){ E.toast('Enter a valid total salary.'); return; }
+      if(adv < 0 || tax < 0 || tax > 100){ E.toast('Check advance / tax values.'); return; }
+
+      const tx = E.recordSalary({
+        teacherId: teacher.id,
+        teacherName: teacher.name,
+        totalSalary: total,
+        advance: adv,
+        taxPercent: tax,
+        method: d.method || 'Bank transfer',
+        date: d.date,
+        reference: d.reference || '',
+        note: d.note || ''
+      });
+      E.audit('create', `Salary ${teacher.id}`, '', `${E.money(total)} → net ${E.money(tx.netBalance)}`);
+      E.closeModal();
+      paintSalaryStats();
+      paintSalary();
+      E.toast(`Salary recorded · receipt ${tx.receiptNo}`);
+      window.open('receipt-print.html?salaryId=' + encodeURIComponent(tx.id), '_blank');
+    }, true);
+
+    function updateNet(){
+      const total = Number(document.getElementById('salTotal').value) || 0;
+      const adv = Number(document.getElementById('salAdv').value) || 0;
+      const tax = Number(document.getElementById('salTax').value) || 0;
+      const calc = E.computeSalary({ totalSalary: total, advance: adv, taxPercent: tax });
+      document.getElementById('salNet').value = E.money(calc.netBalance);
+    }
+    ['salTotal','salAdv','salTax'].forEach(id => {
+      document.getElementById(id)?.addEventListener('input', updateNet);
+    });
+    updateNet();
+  }
+
+  function handleReverseSalary(id){
+    if(!canReverseSalary){ E.toast("You don't have permission."); return; }
+    const tx = E.getSalaryPayments().find(t => t.id === id);
+    if(!tx || tx.reversed) return;
+    if(!confirm(`Reverse this salary transaction?\n\n${tx.teacherName} · ${E.money(tx.netBalance)} · ${tx.receiptNo}`)) return;
+    const reason = prompt('Reason (optional):');
+    if(reason === null) return;
+    E.reverseSalary(id, reason);
+    E.audit('update', `Salary ${tx.teacherId}`, tx.receiptNo, 'reversed');
+    paintSalaryStats();
+    paintSalary();
+    E.toast('Salary reversed.');
+  }
+
+  /* ============================================================
+     STUDENT FEES — stats + table
+     ============================================================ */
+  function paintFeesStats(){
+    const students = (E.readStore(E.STORE_KEYS.students, []) || []);
+    let bill = 0, paid = 0, out = 0, pending = 0;
+    students.forEach(s => {
+      const total = classTotal(s.class);
+      const p = paidFor(s.id);
+      const bal = total - p;
+      bill += total;
+      paid += p;
+      out += Math.max(0, bal);
+      if(bal > 0.005) pending++;
+    });
+    document.getElementById('kBill').textContent = E.money(bill);
+    document.getElementById('kPaid').textContent = E.money(paid);
+    document.getElementById('kOut').textContent  = E.money(out);
+    document.getElementById('kPend').textContent = pending;
+  }
+
+  /* Live editing state — keyed by studentId */
+  const editingState = {}; // { [studentId]: { value: number } }
+
+  function paintStudents(){
+    const students = E.readStore(E.STORE_KEYS.students, []) || [];
+    const q = document.getElementById('studentSearch').value.toLowerCase();
+    const cl = document.getElementById('studentClassFilter').value;
+    const st = document.getElementById('studentStatusFilter').value;
+
+    const rows = students
+      .filter(s =>
+        (!q || (`${s.name} ${s.id}`).toLowerCase().includes(q)) &&
+        (!cl || s.class === cl))
+      .map(s => {
+        const total = classTotal(s.class);
+        const paid = paidFor(s.id);
+        const balance = total - paid;
+        const status = deriveStatus(total, paid);
+        return { student: s, total, paid, balance, status };
+      })
+      .filter(x => !st || x.status === st)
+      .sort((a,b) => a.student.name.localeCompare(b.student.name));
+
+    const tb = document.getElementById('studentTbody');
+    tb.innerHTML = rows.map(({ student: s, total, paid, balance, status }) => {
+      const editing = editingState[s.id];
+      const livePaid = editing ? editing.value : paid;
+      const liveBalance = total - livePaid;
+      const liveStatus = deriveStatus(total, livePaid);
+      const pct = total > 0 ? Math.max(0, Math.min(100, Math.round(livePaid / total * 100))) : 100;
+      const statusClass = liveStatus === 'Paid' ? 'green'
+                       : liveStatus === 'Part-paid' ? 'orange' : 'red';
+      const barClass = liveStatus === 'Paid' ? '' : liveStatus === 'Part-paid' ? 'partial' : 'empty';
+      const balanceCls = liveBalance < -0.005 ? 'credit' : (liveBalance > 0.005 ? 'bal' : 'paid');
+      const balanceText = liveBalance < -0.005
+        ? E.money(-liveBalance) + ' cr'
+        : E.money(Math.max(0, liveBalance));
+
+      /* Paid cell: static + pencil, or editable input */
+      const paidCellHTML = editing
+        ? `<div class="paid-cell">
+             <input type="number" min="0" step="0.01" class="paid-input"
+               data-paid-input="${E.esc(s.id)}"
+               value="${Number(editing.value).toFixed(2)}">
+           </div>`
+        : `<div class="paid-cell">
+             <span class="paid-static">${E.money(paid)}</span>
+             ${canRecordPayment ? `<button class="paid-pencil" data-edit-paid="${E.esc(s.id)}" title="Edit amount paid">✎</button>` : ''}
+           </div>`;
+
+      /* Action cell */
+      const actionBits = [];
+      if(editing){
+        actionBits.push(`<button class="save-mini" data-save-paid="${E.esc(s.id)}">💾 SAVE</button>`);
+        actionBits.push(`<button class="cancel-mini" data-cancel-paid="${E.esc(s.id)}">✕ Cancel</button>`);
+      } else {
+        if(canRecordPayment) actionBits.push(`<button class="btn" data-pay="${E.esc(s.id)}">💵 Record</button>`);
+        actionBits.push(`<button class="btn secondary" data-history="${E.esc(s.id)}">History</button>`);
+      }
+
+      return `<tr data-row="${E.esc(s.id)}" class="${editing ? 'dirty' : ''}">
+        <td><div class="person">
+          <div class="mini-avatar">${E.initials(s.name)}</div>
+          <div><strong>${E.esc(s.name)}</strong><small>${E.esc(s.id)}</small></div>
+        </div></td>
+        <td>${E.esc(s.class)}</td>
+        <td style="text-align:right"><span class="amount">${E.money(total)}</span></td>
+        <td style="text-align:right">${paidCellHTML}</td>
+        <td style="text-align:right"><span class="amount ${balanceCls}">${balanceText}</span></td>
+        <td>
+          <span class="progress-bar"><span class="${barClass}" style="width:${pct}%"></span></span>
+          <span style="font-size:11px;color:var(--muted)">${pct}%</span>
+        </td>
+        <td><span class="pill ${statusClass}">${E.esc(liveStatus)}</span></td>
+        <td><div class="row-actions">${actionBits.join(' ')}</div></td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="8" class="empty">No students match your filters.</td></tr>';
+
+    document.getElementById('studentCount').textContent = rows.length;
+
+    /* Autofocus the input if we're in editing mode */
+    if(Object.keys(editingState).length === 1){
+      const onlyId = Object.keys(editingState)[0];
+      const input = tb.querySelector(`[data-paid-input="${onlyId}"]`);
+      if(input){ input.focus(); input.select(); }
+    }
+  }
+
+  /* ============================================================
+     LIVE EDIT — event handling
+     ============================================================ */
+  function bindStudentTableEvents(){
+    const tb = document.getElementById('studentTbody');
+
+    /* Click: enter/exit edit, save, cancel, record payment, history */
+    tb.addEventListener('click', e => {
+      /* --- Enter edit --- */
+      const editBtn = e.target.closest('[data-edit-paid]');
+      if(editBtn){
+        const sid = editBtn.dataset.editPaid;
+        const s = (E.readStore(E.STORE_KEYS.students, []) || []).find(x => x.id === sid);
+        if(!s) return;
+        /* Cancel any other edit first */
+        Object.keys(editingState).forEach(k => delete editingState[k]);
+        editingState[sid] = { value: paidFor(sid) };
+        paintStudents();
+        return;
+      }
+
+      /* --- Save --- */
+      const saveBtn = e.target.closest('[data-save-paid]');
+      if(saveBtn){
+        commitPaidChange(saveBtn.dataset.savePaid);
+        return;
+      }
+
+      /* --- Cancel --- */
+      const cancelBtn = e.target.closest('[data-cancel-paid]');
+      if(cancelBtn){
+        delete editingState[cancelBtn.dataset.cancelPaid];
+        paintStudents();
+        return;
+      }
+
+      /* --- Standard actions --- */
+      const pay = e.target.closest('[data-pay]');
+      const hist = e.target.closest('[data-history]');
+      if(pay) openPaymentModal(pay.dataset.pay);
+      if(hist) openStudentHistory(hist.dataset.history);
+    });
+
+    /* Live input: update the state and re-render only the affected row visually */
+    tb.addEventListener('input', e => {
+      const input = e.target.closest('[data-paid-input]');
+      if(!input) return;
+      const sid = input.dataset.paidInput;
+      const value = Number(input.value);
+      if(!Number.isFinite(value) || value < 0){
+        input.classList.add('invalid');
+        return;
+      }
+      input.classList.remove('invalid');
+      editingState[sid] = { value };
+      /* Update the row visually without losing focus on the input */
+      updateRowLive(sid, value);
+    });
+
+    /* Keyboard: Enter to save, Escape to cancel */
+    tb.addEventListener('keydown', e => {
+      const input = e.target.closest('[data-paid-input]');
+      if(!input) return;
+      if(e.key === 'Enter'){
+        e.preventDefault();
+        commitPaidChange(input.dataset.paidInput);
+      } else if(e.key === 'Escape'){
+        e.preventDefault();
+        delete editingState[input.dataset.paidInput];
+        paintStudents();
+      }
+    });
+  }
+
+  /* Update just the derived cells (balance, progress, status) — without re-rendering the whole table */
+  function updateRowLive(studentId, livePaid){
+    const row = document.querySelector(`tr[data-row="${studentId}"]`);
+    if(!row) return;
+    const s = (E.readStore(E.STORE_KEYS.students, []) || []).find(x => x.id === studentId);
+    if(!s) return;
+    const total = classTotal(s.class);
+    const balance = total - livePaid;
+    const status = deriveStatus(total, livePaid);
+    const pct = total > 0 ? Math.max(0, Math.min(100, Math.round(livePaid / total * 100))) : 100;
+    const cells = row.querySelectorAll('td');
+
+    /* Balance cell (index 4) */
+    const balCell = cells[4]?.querySelector('.amount');
+    if(balCell){
+      const balCls = balance < -0.005 ? 'credit' : (balance > 0.005 ? 'bal' : 'paid');
+      balCell.className = 'amount ' + balCls;
+      balCell.textContent = balance < -0.005 ? E.money(-balance) + ' cr' : E.money(Math.max(0, balance));
+    }
+
+    /* Progress cell (index 5) */
+    const bar = cells[5]?.querySelector('.progress-bar span');
+    if(bar){
+      bar.style.width = pct + '%';
+      bar.className = status === 'Paid' ? '' : status === 'Part-paid' ? 'partial' : 'empty';
+    }
+    const pctLabel = cells[5]?.querySelector('span:last-child');
+    if(pctLabel) pctLabel.textContent = pct + '%';
+
+    /* Status cell (index 6) */
+    const statusPill = cells[6]?.querySelector('.pill');
+    if(statusPill){
+      statusPill.className = 'pill ' + (status === 'Paid' ? 'green' : status === 'Part-paid' ? 'orange' : 'red');
+      statusPill.textContent = status;
+    }
+  }
+
+  /* Commit the change: create a manual adjustment payment to reconcile */
+  function commitPaidChange(studentId){
+    const edit = editingState[studentId];
+    if(!edit) return;
+
+    const s = (E.readStore(E.STORE_KEYS.students, []) || []).find(x => x.id === studentId);
+    if(!s) return;
+
+    const total = classTotal(s.class);
+    const previousPaid = paidFor(studentId);
+    const newPaid = Number(edit.value);
+    if(!Number.isFinite(newPaid) || newPaid < 0){ E.toast('Enter a valid amount.'); return; }
+
+    if(Math.abs(newPaid - previousPaid) < 0.005){
+      delete editingState[studentId];
+      paintStudents();
+      E.toast('No change.');
+      return;
+    }
+
+    /* Reconciliation strategy:
+       - If newPaid > previousPaid: record a top-up payment for the difference.
+       - If newPaid < previousPaid: reduce by adding a NEGATIVE payment row
+         (marked as a correction), so the audit trail stays intact.
+    */
+    const diff = newPaid - previousPaid;
+    const u = E.currentUser();
+    const payments = E.readStore(E.STORE_KEYS.payments, []) || [];
+    const isTopUp = diff > 0;
+
+    const row = {
+      id: 'p-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6),
+      studentId: s.id,
+      studentName: s.name,
+      className: s.class,
+      amount: Math.abs(diff),
+      method: isTopUp ? 'Manual adjustment' : 'Correction',
+      date: E.todayISO(),
+      reference: '',
+      note: isTopUp
+        ? `Paid adjusted from ${E.money(previousPaid)} to ${E.money(newPaid)}`
+        : `Paid corrected from ${E.money(previousPaid)} to ${E.money(newPaid)}`,
+      receiptNo: E.nextReceiptNumber(isTopUp ? 'RCP' : 'COR'),
+      receivedBy: u ? u.username : '',
+      at: new Date().toISOString(),
+      reversed: false,
+      correction: !isTopUp   // flag for reference
+    };
+
+    /* If it's a correction (reduction) we need to make paidFor() subtract.
+       Simplest approach: store the row with a negative amount. Then paidFor()
+       sums correctly because it just adds `amount`. */
+    if(!isTopUp){
+      row.amount = -Math.abs(diff);
+      row.note = `Correction: paid reduced from ${E.money(previousPaid)} to ${E.money(newPaid)}`;
+    }
+
+    payments.push(row);
+    E.writeStore(E.STORE_KEYS.payments, payments);
+
+    E.audit(isTopUp ? 'create' : 'update',
+      `Manual fee edit ${s.id}`,
+      E.money(previousPaid),
+      E.money(newPaid),
+      isTopUp ? 'top-up' : 'correction');
+
+    delete editingState[studentId];
+    paintFeesStats();
+    paintStudents();
+
+    /* Show receipt for top-ups (they represent actual money received) */
+    if(isTopUp){
+      E.toast(`Payment recorded · receipt ${row.receiptNo}`);
+      window.open('receipt-print.html?id=' + encodeURIComponent(row.id), '_blank');
+    } else {
+      E.toast(`Paid amount corrected to ${E.money(newPaid)}.`);
+    }
+  }
+
+  /* ============================================================
+     RECORD PAYMENT MODAL
+     ============================================================ */
+  function openPaymentModal(studentId){
+    if(!canRecordPayment){ E.toast("You don't have permission to record payments."); return; }
+    const students = E.readStore(E.STORE_KEYS.students, []) || [];
+    if(!students.length){ E.toast('No students in the system yet.'); return; }
+
+    const target = studentId ? students.find(s => s.id === studentId) : students[0];
+    const total = classTotal(target.class);
+    const paid = paidFor(target.id);
+    const balance = total - paid;
+
+    const options = students.slice().sort((a,b) => a.name.localeCompare(b.name)).map(s => {
+      const t = classTotal(s.class);
+      const p = paidFor(s.id);
+      const b = t - p;
+      const bal = b < 0 ? 'CR ' + E.money(-b) : E.money(b);
+      return `<option value="${E.esc(s.id)}" ${s.id === target.id ? 'selected' : ''}>
+        ${E.esc(s.name)} — ${E.esc(s.class)} · balance ${bal}
+      </option>`;
+    }).join('');
+
+    const html = `
+      <div class="full">
+        <label style="font-size:11px;font-weight:800;color:#34415c;text-transform:uppercase;letter-spacing:.7px">Select student</label>
+        <select name="studentId" required style="width:100%;border:1px solid #dfe4ee;border-radius:8px;padding:11px;font-size:12px;outline:none;margin-top:6px">
+          ${options}
+        </select>
+      </div>
+      <div>
+        <label>Amount (USD)</label>
+        <input name="amount" type="number" min="0.01" step="0.01" required
+          placeholder="0.00" value="${balance > 0 ? balance.toFixed(2) : ''}">
+      </div>
+      <div>
+        <label>Payment method</label>
+        <select name="method">
+          <option>Cash</option>
+          <option>Mobile Money</option>
+          <option>Bank transfer</option>
+          <option>Cheque</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div>
+        <label>Payment date</label>
+        <input name="date" type="date" value="${E.todayISO()}">
+      </div>
+      <div>
+        <label>Reference (optional)</label>
+        <input name="reference" placeholder="e.g. txn #">
+      </div>
+      <div class="full">
+        <label>Note (optional)</label>
+        <input name="note" placeholder="e.g. termly installment">
+      </div>
+      <div class="full" style="font-size:11px;color:var(--muted);background:#f8faff;
+        border:1px solid #e8ebf2;border-radius:8px;padding:10px 12px;line-height:1.6">
+        Current balance for <strong>${E.esc(target.name)}</strong>:
+        <strong>${balance < 0 ? 'CR ' + E.money(-balance) : E.money(balance)}</strong>.
+        Overpayment becomes a credit. A receipt is generated automatically.
+      </div>`;
+
+    E.openModal('Record student payment', html, 'Save &amp; generate receipt', d => {
+      const s = students.find(x => x.id === d.studentId);
+      if(!s){ E.toast('Student not found.'); return; }
+      const amount = Number(d.amount);
+      if(!Number.isFinite(amount) || amount <= 0){ E.toast('Enter a valid amount.'); return; }
+
+      const tx = E.recordPayment({
+        studentId: s.id,
+        studentName: s.name,
+        className: s.class,
+        amount,
+        method: d.method,
+        date: d.date,
+        reference: d.reference || '',
+        note: d.note || ''
+      });
+      E.audit('create', `Payment ${s.id}`, '', `${E.money(amount)} · ${tx.receiptNo}`);
+      E.closeModal();
+      paintFeesStats();
+      paintStudents();
+      E.toast(`Payment recorded · receipt ${tx.receiptNo}`);
+      window.open('receipt-print.html?id=' + encodeURIComponent(tx.id), '_blank');
+    }, true);
+  }
+
+  /* ============================================================
+     STUDENT HISTORY MODAL
+     ============================================================ */
+  function openStudentHistory(studentId){
+    const student = (E.readStore(E.STORE_KEYS.students, []) || []).find(s => s.id === studentId);
+    if(!student) return;
+    const total = classTotal(student.class);
+    const paid = paidFor(student.id);
+    const balance = total - paid;
+    const status = deriveStatus(total, paid);
+    const payments = (E.readStore(E.STORE_KEYS.payments, []) || [])
+      .filter(p => p.studentId === studentId)
+      .sort((a,b) => new Date(b.at) - new Date(a.at));
+
+    const rows = payments.length ? payments.map(p => `
+      <tr style="${p.reversed ? 'opacity:.55' : ''}">
+        <td>${E.fmtDate(p.at)}</td>
+        <td style="font-family:monospace;font-size:11px">${E.esc(p.receiptNo)}</td>
+        <td>${E.esc(p.method)}${p.reversed ? ' <span class="pill red">Reversed</span>' : ''}${p.correction ? ' <span class="pill orange">Correction</span>' : ''}</td>
+        <td style="text-align:right"><strong style="color:${Number(p.amount) < 0 ? 'var(--red)' : 'var(--green)'}">${E.money(p.amount)}</strong></td>
+        <td style="text-align:right">
+          <button type="button" class="ecedu-btn outline" data-receipt="${E.esc(p.id)}"
+            style="padding:5px 9px;font-size:10px">View</button>
+          ${(canReversePayment && !p.reversed)
+            ? `<button type="button" class="ecedu-btn" data-reverse="${E.esc(p.id)}"
+                style="padding:5px 9px;font-size:10px;background:#fff0f1;color:#d64545">Reverse</button>` : ''}
+        </td>
+      </tr>`).join('') : '<tr><td colspan="5" class="empty">No payments yet.</td></tr>';
+
+    const html = `
+      <div class="full">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:16px">
+          <div style="padding:12px;background:#f8faff;border-radius:8px">
+            <small style="color:#73849a;font-size:10px;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Total fees</small>
+            <strong>${E.money(total)}</strong>
+          </div>
+          <div style="padding:12px;background:#f8faff;border-radius:8px">
+            <small style="color:#73849a;font-size:10px;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Paid</small>
+            <strong style="color:#14805e">${E.money(paid)}</strong>
+          </div>
+          <div style="padding:12px;background:#f8faff;border-radius:8px">
+            <small style="color:#73849a;font-size:10px;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Balance</small>
+            <strong style="color:${balance < 0 ? '#14805e' : '#d64545'}">${balance < 0 ? 'CR ' + E.money(-balance) : E.money(balance)}</strong>
+          </div>
+          <div style="padding:12px;background:#f8faff;border-radius:8px">
+            <small style="color:#73849a;font-size:10px;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px">Status</small>
+            <strong>${E.esc(status)}</strong>
+          </div>
+        </div>
+
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#73849a;
+          font-weight:800;margin-bottom:8px">Payment history</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead>
+            <tr>
+              <th style="text-align:left;background:#f6f8fd;font-size:10px;padding:9px 11px;color:#7a8498;border-bottom:1px solid #e8ebf2;text-transform:uppercase;letter-spacing:.5px">Date</th>
+              <th style="text-align:left;background:#f6f8fd;font-size:10px;padding:9px 11px;color:#7a8498;border-bottom:1px solid #e8ebf2;text-transform:uppercase;letter-spacing:.5px">Receipt</th>
+              <th style="text-align:left;background:#f6f8fd;font-size:10px;padding:9px 11px;color:#7a8498;border-bottom:1px solid #e8ebf2;text-transform:uppercase;letter-spacing:.5px">Method</th>
+              <th style="text-align:right;background:#f6f8fd;font-size:10px;padding:9px 11px;color:#7a8498;border-bottom:1px solid #e8ebf2;text-transform:uppercase;letter-spacing:.5px">Amount</th>
+              <th style="background:#f6f8fd;border-bottom:1px solid #e8ebf2"></th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+
+    E.openModal(`Fee history · ${student.name}`, html, null, null, true);
+
+    document.querySelectorAll('[data-receipt]').forEach(btn => {
+      btn.addEventListener('click', ev => {
+        ev.stopPropagation();
+        window.open('receipt-print.html?id=' + encodeURIComponent(btn.dataset.receipt), '_blank');
+      });
+    });
+    document.querySelectorAll('[data-reverse]').forEach(btn => {
+      btn.addEventListener('click', ev => {
+        ev.stopPropagation();
+        const id = btn.dataset.reverse;
+        if(!confirm('Reverse this payment?')) return;
+        const reason = prompt('Reason (optional):');
+        if(reason === null) return;
+        E.reversePayment(id, reason);
+        E.closeModal();
+        paintFeesStats();
+        paintStudents();
+        E.toast('Payment reversed.');
+      });
+    });
+  }
+
+  /* ============================================================
+     CLASS FEE EDITOR
+     ============================================================ */
+  function openClassFeeEditor(){
+    if(!canSetClassFees){ E.toast("You don't have permission to set class fees."); return; }
+    const classes = E.getClasses();
+    if(!classes.length){ E.toast('No classes yet. Add classes first.'); return; }
+
+    const cards = classes.slice().sort((a,b) => a.name.localeCompare(b.name)).map(c => {
+      const rec = E.classFeeFor(c.name) || { tuition:0, extra:0 };
+      return `
+        <div class="class-fee-card" data-class="${E.esc(c.name)}">
+          <h4>${E.esc(c.name)}</h4>
+          <div class="cat">${E.esc(c.category || 'No category')}</div>
+          <div class="line">
+            <span>Tuition</span>
+            <input data-tuition type="number" min="0" step="0.01" value="${rec.tuition || ''}"
+              style="width:120px;border:1px solid #dfe4ee;border-radius:7px;padding:6px 8px;text-align:right;font-family:monospace;font-size:12px;outline:none">
+          </div>
+          <div class="line">
+            <span>Extra fees</span>
+            <input data-extra type="number" min="0" step="0.01" value="${rec.extra || ''}"
+              style="width:120px;border:1px solid #dfe4ee;border-radius:7px;padding:6px 8px;text-align:right;font-family:monospace;font-size:12px;outline:none">
+          </div>
+          <div class="line total">
+            <span>Total per student</span>
+            <strong data-total>${E.money((Number(rec.tuition||0) + Number(rec.extra||0)))}</strong>
+          </div>
+        </div>`;
+    }).join('');
+
+    const html = `
+      <div class="full">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.6">
+          Set the tuition and extra fee for each class. Every student in that class inherits this bill automatically.
+          Existing payments remain valid.
+        </div>
+        <div class="class-fee-grid" id="classFeeGrid">${cards}</div>
+      </div>`;
+
+    E.openModal('Class tuition & extra fees', html, 'Save all changes', () => {
+      const list = document.querySelectorAll('.class-fee-card');
+      list.forEach(card => {
+        const className = card.dataset.class;
+        const tuition = Number(card.querySelector('[data-tuition]').value) || 0;
+        const extra = Number(card.querySelector('[data-extra]').value) || 0;
+        E.setClassFee(className, tuition, extra);
+      });
+      E.audit('update', 'Class fees', '', `${list.length} classes updated`);
+      E.closeModal();
+      paintFeesStats();
+      paintStudents();
+      E.toast('Class fees saved.');
+    }, true);
+
+    const grid = document.getElementById('classFeeGrid');
+    grid.addEventListener('input', e => {
+      const card = e.target.closest('.class-fee-card');
+      if(!card) return;
+      const tuition = Number(card.querySelector('[data-tuition]').value) || 0;
+      const extra = Number(card.querySelector('[data-extra]').value) || 0;
+      card.querySelector('[data-total]').textContent = E.money(tuition + extra);
+    });
+  }
+
+  /* ============================================================
+     THRESHOLD BANNER
+     ============================================================ */
+  function paintThresholdBanner(){
+    const wrap = document.getElementById('thresholdBanner');
+    if(!wrap) return;
+    const t = E.getReportThreshold();
+    if(t.enabled){
+      wrap.innerHTML = `
+        <div class="threshold-banner">
+          <div><strong>🔒 Report card threshold active:</strong>
+            students must pay at least
+            ${t.mode === 'percent'
+              ? `<strong>${t.value}%</strong> of their net bill`
+              : `<strong>${E.money(t.value)}</strong>`}
+            before their report card opens.</div>
+          ${canManageThreshold ? `<button class="btn secondary" id="editThresholdBtn">✎ Change</button>` : ''}
+        </div>`;
+    } else {
+      wrap.innerHTML = `
+        <div class="threshold-banner off">
+          <div><strong>Report card threshold is off.</strong>
+            All students can open their report cards regardless of payment.</div>
+          ${canManageThreshold ? `<button class="btn secondary" id="editThresholdBtn">Enable threshold</button>` : ''}
+        </div>`;
+    }
+    document.getElementById('editThresholdBtn')?.addEventListener('click', openThresholdEditor);
+  }
+
+  function openThresholdEditor(){
+    const t = E.getReportThreshold();
+    const html = `
+      <div class="full">
+        <label style="display:flex;gap:8px;align-items:center;font-size:12px;color:#34415c">
+          <input type="checkbox" name="enabled" value="1" ${t.enabled ? 'checked' : ''}>
+          Enable report card payment threshold
+        </label>
+      </div>
+      <div>
+        <label>Mode</label>
+        <select name="mode">
+          <option value="percent" ${t.mode === 'percent' ? 'selected' : ''}>Percent of net bill (%)</option>
+          <option value="amount"  ${t.mode === 'amount'  ? 'selected' : ''}>Fixed amount paid (USD)</option>
+        </select>
+      </div>
+      <div>
+        <label>Value</label>
+        <input name="value" type="number" min="0" step="1" value="${t.value}">
+      </div>
+      <div class="full" style="font-size:11px;color:var(--muted);background:#f8faff;
+        border:1px solid #e8ebf2;border-radius:8px;padding:10px 12px;line-height:1.6">
+        Example: mode = <strong>percent</strong>, value = <strong>60</strong> means a student
+        must have paid at least 60% of their net bill before opening their report card.
+      </div>`;
+
+    E.openModal('Report card payment threshold', html, 'Save threshold', d => {
+      const enabled = !!d.enabled;
+      const mode = d.mode || 'percent';
+      const value = Number(d.value) || 0;
+      if(enabled && value <= 0){ E.toast('Enter a positive value or disable.'); return; }
+      E.setReportThreshold(mode, value, enabled);
+      E.audit('update', 'Report threshold', '', enabled ? `${mode}=${value}` : 'off');
+      E.closeModal();
+      paintThresholdBanner();
+      E.toast('Threshold saved.');
+    });
+  }
+
+  /* ============================================================
+     INIT
+     ============================================================ */
+  paintHeader();
+  if(isStaff){
+    paintStaffMode();
+  } else {
+    paintViewerMode();
+  }
+})();
+</script>
+</body>
+</html>

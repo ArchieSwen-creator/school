@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transfers | EduCore</title>
+<style>
+  :root{
+    --navy:#12315a;--navy2:#14213d;--blue:#3987ee;--pale:#eef5ff;--border:#d8e4f2;
+    --text:#23354d;--muted:#73849a;--green:#14805e;--orange:#d88922;--red:#d64545;
+    --gold:#c99a2e;--gold2:#fff4d6;--bg:#f5f7fb;--line:#e8ebf2;--white:#fff;
+    --shadow:0 8px 24px rgba(24,42,78,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:64px 16px 40px;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+
+  .page{width:100%;max-width:1200px;margin:0 auto}
+
+  .band{
+    background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
+    border-radius:16px;padding:22px 28px;margin-bottom:20px;
+    box-shadow:0 18px 50px #16345417;display:flex;justify-content:space-between;
+    align-items:center;gap:16px;flex-wrap:wrap;border-top:5px solid #58a4ff;
+  }
+  .band-left{display:flex;align-items:center;gap:14px}
+  .band-logo{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;place-items:center;
+    overflow:hidden;color:var(--navy);font-weight:900;font-size:18px;border:3px solid #d8e8ff;flex:0 0 48px}
+  .band-logo img{width:100%;height:100%;object-fit:contain}
+  .band h1{margin:0;font-size:19px;letter-spacing:.3px;text-transform:uppercase}
+  .band p{margin:4px 0 0;font-size:11px;color:#cfdcf5}
+  .band-user{display:flex;align-items:center;gap:10px;font-size:11px;color:#cfdcf5;
+    background:#ffffff14;border:1px solid #ffffff36;padding:7px 12px;border-radius:20px}
+  .band-user strong{color:#fff}
+
+  .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:16px 18px;
+    box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--blue)}
+  .stat.green::before{background:var(--green)}
+  .stat.orange::before{background:var(--orange)}
+  .stat.red::before{background:var(--red)}
+  .stat small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.8px;
+    color:var(--muted);font-weight:800;margin-bottom:8px}
+  .stat strong{font-size:22px;color:var(--navy);font-weight:800}
+
+  .toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;
+    flex-wrap:wrap;margin-bottom:16px}
+  .toolbar-left{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .field,.pick{border:1px solid var(--line);border-radius:9px;padding:10px 12px;
+    background:#fff;color:var(--text);font-size:12px;outline:none}
+  .field{min-width:230px}
+  .field:focus,.pick:focus{border-color:var(--blue)}
+
+  .btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{filter:brightness(.96)}
+  .btn.secondary{background:#eef2fb;color:#34415c}
+  .btn.outline{background:#fff;color:#34415c;border:1px solid var(--line)}
+  .btn.danger{background:#fff0f1;color:var(--red)}
+  .btn.green{background:#e6f7f0;color:#16835f}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);overflow:hidden}
+  .card-head{display:flex;justify-content:space-between;align-items:center;
+    padding:18px 22px;border-bottom:1px solid var(--line);gap:12px;flex-wrap:wrap}
+  .card-head h3{margin:0;font-size:14px}
+  .card-head .count{padding:4px 9px;border-radius:20px;background:#edf2ff;color:#3b5cc1;
+    font-size:10px;font-weight:800}
+
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;white-space:nowrap}
+  th{text-align:left;background:#fafbfe;color:#7a8498;font-size:10px;
+    text-transform:uppercase;letter-spacing:.6px;padding:13px 18px;
+    border-bottom:1px solid var(--line)}
+  td{padding:13px 18px;border-bottom:1px solid #f0f2f7;font-size:12px}
+  tbody tr:last-child td{border-bottom:0}
+
+  .person{display:flex;align-items:center;gap:10px}
+  .mini-avatar{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;
+    background:#edf2ff;color:#3859b7;font-size:10px;font-weight:700}
+  .person strong{display:block;font-size:12px}
+  .person small{display:block;color:var(--muted);font-size:10px;margin-top:4px}
+
+  .pill{display:inline-block;padding:5px 8px;border-radius:20px;font-size:10px;font-weight:700}
+  .pill.green{background:#e6f7f0;color:#16835f}
+  .pill.orange{background:#fff2dd;color:#aa6c14}
+  .pill.red{background:#ffeaec;color:#bd3b48}
+  .pill.blue{background:#edf2ff;color:#3b5cc1}
+  .pill.grey{background:#eef1f6;color:#59647c}
+
+  .row-actions{display:flex;gap:5px;flex-wrap:wrap}
+  .row-actions .btn{padding:7px 10px;font-size:11px}
+
+  .empty{padding:40px 20px;text-align:center;color:var(--muted);font-size:13px}
+
+  @media (max-width:850px){
+    .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:650px){
+    body{padding:64px 8px 24px}
+    .band{padding:18px 20px}
+    .band h1{font-size:15px}
+    .field,.pick{min-width:0;width:100%}
+    .toolbar{flex-direction:column;align-items:stretch}
+    .toolbar-left{width:100%}
+    .stats{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="band">
+    <div class="band-left">
+      <div class="band-logo" id="bandLogo">DS</div>
+      <div>
+        <h1 id="bandSchool">Transfers</h1>
+        <p id="bandSub">Manage student transfers out and between classes</p>
+      </div>
+    </div>
+    <div class="band-user">
+      Signed in as <strong id="bandUser">—</strong>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><small>Total records</small><strong id="kTotal">0</strong></div>
+    <div class="stat orange"><small>Pending</small><strong id="kPending">0</strong></div>
+    <div class="stat green"><small>Issued</small><strong id="kIssued">0</strong></div>
+    <div class="stat red"><small>This month</small><strong id="kMonth">0</strong></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <input class="field" id="search" placeholder="Search student, ID, destination...">
+      <select class="pick" id="statusFilter">
+        <option value="">All statuses</option>
+        <option value="pending">Pending</option>
+        <option value="issued">Issued</option>
+        <option value="rejected">Rejected</option>
+      </select>
+      <select class="pick" id="typeFilter">
+        <option value="">All types</option>
+        <option value="out">Transfer out</option>
+        <option value="class">Class change</option>
+      </select>
+    </div>
+    <div class="toolbar-left">
+      <button class="btn" id="addBtn">＋ New transfer</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h3>Transfer records <span class="count" id="count">0</span></h3>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Type</th>
+            <th>Effective</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script src="educore-shared.js"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  /* ---------- GUARD ---------- */
+  const user = E.requirePerm('transfers', 'Transfers');
+  if(!user) return;
+
+  /* ---------- SUB-FEATURE PERMISSIONS ---------- */
+  const canCreate = E.can('transfers.create');
+  const canIssue  = E.can('transfers.issue');
+  const canReject = E.can('transfers.reject');
+  const canDelete = E.can('transfers.delete');
+  const canPrint  = E.can('transfers.print');
+
+  /* ---------- HEADER ---------- */
+  function paintHeader(){
+    const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const name = settings.name || 'EduCore High School';
+    if(settings.logo){
+      document.getElementById('bandLogo').innerHTML = `<img src="${settings.logo}" alt="">`;
+    } else {
+      document.getElementById('bandLogo').textContent =
+        name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
+    }
+    document.getElementById('bandSchool').textContent = name;
+    document.getElementById('bandSub').textContent = 'Manage student transfers out and between classes';
+    document.getElementById('bandUser').textContent = user.name || user.username;
+  }
+
+  /* ---------- STATUS PILL ---------- */
+  function statusPill(s){
+    const t = (s === 'issued') ? 'green' : (s === 'pending') ? 'orange' : (s === 'rejected') ? 'red' : 'grey';
+    const label = s.charAt(0).toUpperCase() + s.slice(1);
+    return `<span class="pill ${t}">${label}</span>`;
+  }
+
+  /* ---------- RENDER ---------- */
+  function paintTable(){
+    const transfers = (E.readStore(E.STORE_KEYS.transfers, []) || []).slice();
+    const q = document.getElementById('search').value.toLowerCase();
+    const st = document.getElementById('statusFilter').value;
+    const ty = document.getElementById('typeFilter').value;
+
+    /* Scope by role */
+    let scoped = transfers;
+    if(user.role === 'Student'){
+      scoped = transfers.filter(t => t.studentId === user.linkedStudentId);
+    } else if(user.role === 'Parent'){
+      const ids = new Set(E.childrenOf(user).map(k => k.id));
+      scoped = transfers.filter(t => ids.has(t.studentId));
+    } else if(user.role === 'Teacher'){
+      const visible = new Set(E.visibleStudentsFor(user).map(s => s.id));
+      scoped = transfers.filter(t => visible.has(t.studentId));
+    }
+
+    const arr = scoped.filter(t =>
+      (!q  || (`${t.studentName} ${t.studentId} ${t.destination||''}`).toLowerCase().includes(q)) &&
+      (!st || t.status === st) &&
+      (!ty || t.type === ty)
+    ).sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    /* KPIs */
+    const total = scoped.length;
+    const pending = scoped.filter(t => t.status === 'pending').length;
+    const issued  = scoped.filter(t => t.status === 'issued').length;
+    const month = scoped.filter(t => {
+      const d = new Date(t.createdAt || 0);
+      const now = new Date();
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }).length;
+    document.getElementById('kTotal').textContent = total;
+    document.getElementById('kPending').textContent = pending;
+    document.getElementById('kIssued').textContent = issued;
+    document.getElementById('kMonth').textContent = month;
+
+    const tb = document.getElementById('tbody');
+    tb.innerHTML = arr.map(t => {
+      /* Build actions based on permissions */
+      const bits = [];
+      if(canIssue && t.status === 'pending')  bits.push(`<button class="btn green" data-issue="${E.esc(t.id)}">Issue</button>`);
+      if(canReject && t.status === 'pending') bits.push(`<button class="btn danger" data-reject="${E.esc(t.id)}">Reject</button>`);
+      if(canPrint && t.status === 'issued')   bits.push(`<button class="btn secondary" data-print="${E.esc(t.id)}">🖶 Letter</button>`);
+      if(canDelete)                            bits.push(`<button class="btn danger" data-delete="${E.esc(t.id)}">Delete</button>`);
+
+      const actionCell = bits.length
+        ? `<td><div class="row-actions">${bits.join(' ')}</div></td>`
+        : `<td style="color:#c5cee0">—</td>`;
+
+      return `<tr>
+        <td>
+          <div class="person">
+            <div class="mini-avatar">${E.initials(t.studentName)}</div>
+            <div><strong>${E.esc(t.studentName)}</strong><small>${E.esc(t.studentId)}</small></div>
+          </div>
+        </td>
+        <td>${E.esc(t.className || '—')}</td>
+        <td>${E.esc(t.destination || '—')}</td>
+        <td>${t.type === 'out' ? 'Transfer out' : 'Class change'}</td>
+        <td>${t.effectiveDate ? E.fmtDate(t.effectiveDate) : E.fmtDate(t.createdAt)}</td>
+        <td>${statusPill(t.status)}</td>
+        ${actionCell}
+      </tr>`;
+    }).join('') || '<tr><td colspan="7" class="empty">No transfers match your filters.</td></tr>';
+
+    document.getElementById('count').textContent = arr.length;
+  }
+
+  /* ---------- NEW TRANSFER MODAL ---------- */
+  function openNewTransferModal(){
+    if(!canCreate){ E.toast("You don't have permission to create transfers."); return; }
+
+    const students = E.readStore(E.STORE_KEYS.students, []) || [];
+    const classes  = E.readStore(E.STORE_KEYS.classes, []) || [];
+    if(!students.length){ E.toast('Add some students first.'); return; }
+
+    const studentOptions = students.map(s =>
+      `<option value="${E.esc(s.id)}">${E.esc(s.name)} — ${E.esc(s.class)} (${E.esc(s.id)})</option>`).join('');
+    const classOptions = classes.map(c => `<option>${E.esc(c.name)}</option>`).join('');
+
+    const html = `
+      <div class="full"><label>Student</label>
+        <select name="studentId" required>
+          <option value="">— Pick a student —</option>
+          ${studentOptions}
+        </select>
+      </div>
+      <div class="full"><label>Transfer type</label>
+        <select name="type" id="typeSelect">
+          <option value="out">Transfer out — to another school</option>
+          <option value="class">Change class — within this school</option>
+        </select>
+      </div>
+      <div class="full" id="destOutBlock"><label>Destination school</label>
+        <input name="destinationOut" placeholder="e.g. St. Mary's High School — Monrovia">
+      </div>
+      <div class="full" id="destClassBlock" style="display:none"><label>New class</label>
+        <select name="destinationClass">${classOptions}</select>
+      </div>
+      <div><label>Effective date</label>
+        <input name="effectiveDate" type="date" value="${E.todayISO()}">
+      </div>
+      <div><label>Academic term</label>
+        <select name="term">
+          <option>First Term</option>
+          <option>Second Term</option>
+          <option>Third Term</option>
+        </select>
+      </div>
+      <div class="full"><label>Reason / notes</label>
+        <textarea name="reason" rows="3" placeholder="Reason for transfer..."></textarea>
+      </div>`;
+
+    E.openModal('New transfer record', html, 'Create transfer', d => {
+      const s = students.find(x => x.id === d.studentId);
+      if(!s){ E.toast('Pick a student.'); return; }
+      const dest = d.type === 'out' ? (d.destinationOut || '').trim() : (d.destinationClass || '').trim();
+      if(!dest){ E.toast('Enter a destination.'); return; }
+
+      const list = E.readStore(E.STORE_KEYS.transfers, []) || [];
+      list.push({
+        id: 'tx-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6),
+        studentId: s.id,
+        studentName: s.name,
+        className: s.class,
+        gender: s.gender || '',
+        type: d.type,
+        destination: dest,
+        reason: (d.reason || '').trim(),
+        effectiveDate: d.effectiveDate,
+        term: d.term,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        createdBy: user.username,
+        issuedAt: null,
+        issuedBy: null
+      });
+      E.writeStore(E.STORE_KEYS.transfers, list);
+      E.audit('create', `Transfer ${s.id}`, s.class, dest);
+      E.closeModal();
+      paintTable();
+      E.toast('Transfer created. Click Issue when ready.');
+    }, true);
+
+    /* Toggle destination input based on type */
+    const typeSel = document.getElementById('typeSelect');
+    const outBlock = document.getElementById('destOutBlock');
+    const clsBlock = document.getElementById('destClassBlock');
+    typeSel.addEventListener('change', () => {
+      const isOut = typeSel.value === 'out';
+      outBlock.style.display = isOut ? 'block' : 'none';
+      clsBlock.style.display = isOut ? 'none' : 'block';
+    });
+  }
+
+  /* ---------- ISSUE ---------- */
+  function issueTransfer(id){
+    if(!canIssue){ E.toast("You don't have permission to issue transfers."); return; }
+
+    const list = E.readStore(E.STORE_KEYS.transfers, []) || [];
+    const t = list.find(x => x.id === id);
+    if(!t) return;
+
+    const action = t.type === 'out' ? `transfer out to ${t.destination}` : `change class to ${t.destination}`;
+    if(!confirm(`Mark this transfer as issued?\n\nStudent: ${t.studentName}\nAction: ${action}\nEffective: ${t.effectiveDate || E.fmtDate(t.createdAt)}\n\nThe transfer will be applied immediately.`)) return;
+
+    t.status = 'issued';
+    t.issuedAt = new Date().toISOString();
+    t.issuedBy = user.username;
+
+    /* Apply change to the student record */
+    const students = E.readStore(E.STORE_KEYS.students, []) || [];
+    const s = students.find(x => x.id === t.studentId);
+    if(s){
+      const oldClass = s.class;
+      if(t.type === 'class' && t.destination){
+        s.class = t.destination;
+        const enr = E.readStore(E.STORE_KEYS.enrollments, []) || [];
+        enr.forEach(e => {
+          if(e.studentId === s.id && e.status === 'active'){
+            e.status = 'closed'; e.closedAt = new Date().toISOString();
+          }
+        });
+        enr.push({
+          studentId: s.id, className: t.destination,
+          session: '2025/2026', term: t.term || 'First Term',
+          enrolledAt: new Date().toISOString(), status: 'active'
+        });
+        E.writeStore(E.STORE_KEYS.enrollments, enr);
+      } else if(t.type === 'out'){
+        s.status = 'Transferred Out';
+        const enr = E.readStore(E.STORE_KEYS.enrollments, []) || [];
+        enr.forEach(e => {
+          if(e.studentId === s.id && e.status === 'active'){
+            e.status = 'transferred'; e.closedAt = new Date().toISOString();
+          }
+        });
+        E.writeStore(E.STORE_KEYS.enrollments, enr);
+      }
+      E.writeStore(E.STORE_KEYS.students, students);
+      E.audit('update', `Transfer ${t.studentId}`, oldClass, t.destination);
+    }
+
+    E.writeStore(E.STORE_KEYS.transfers, list);
+    paintTable();
+    E.toast('Transfer issued. Use the Letter button to print.');
+  }
+
+  /* ---------- REJECT ---------- */
+  function rejectTransfer(id){
+    if(!canReject){ E.toast("You don't have permission to reject transfers."); return; }
+
+    const list = E.readStore(E.STORE_KEYS.transfers, []) || [];
+    const t = list.find(x => x.id === id);
+    if(!t) return;
+    if(!confirm(`Reject this transfer for ${t.studentName}?`)) return;
+    t.status = 'rejected';
+    t.rejectedAt = new Date().toISOString();
+    t.rejectedBy = user.username;
+    E.writeStore(E.STORE_KEYS.transfers, list);
+    E.audit('update', `Transfer ${t.studentId}`, 'pending', 'rejected');
+    paintTable();
+    E.toast('Transfer rejected.');
+  }
+
+  /* ---------- PRINT ---------- */
+  function printLetter(id){
+    if(!canPrint){ E.toast("You don't have permission to print transfer letters."); return; }
+    window.open('transfer-letter-print.html?id=' + encodeURIComponent(id), '_blank');
+  }
+
+  /* ---------- DELETE ---------- */
+  function deleteTransfer(id){
+    if(!canDelete){ E.toast("You don't have permission to delete transfers."); return; }
+
+    const list = E.readStore(E.STORE_KEYS.transfers, []) || [];
+    const t = list.find(x => x.id === id);
+    if(!t) return;
+    if(!confirm(`Delete this transfer record?\n\n${t.studentName} · ${t.type === 'out' ? 'Transfer out' : 'Class change'} → ${t.destination}\n\nThis cannot be undone.`)) return;
+
+    const remaining = list.filter(x => x.id !== id);
+    E.writeStore(E.STORE_KEYS.transfers, remaining);
+    E.audit('delete', `Transfer ${t.studentId}`, t.destination, '');
+    paintTable();
+    E.toast('Transfer deleted.');
+  }
+
+  /* ---------- EVENTS ---------- */
+  document.getElementById('search').addEventListener('input', paintTable);
+  document.getElementById('statusFilter').addEventListener('change', paintTable);
+  document.getElementById('typeFilter').addEventListener('change', paintTable);
+  document.getElementById('addBtn').addEventListener('click', openNewTransferModal);
+
+  document.getElementById('tbody').addEventListener('click', e => {
+    const issue  = e.target.closest('[data-issue]');
+    const reject = e.target.closest('[data-reject]');
+    const print  = e.target.closest('[data-print]');
+    const del    = e.target.closest('[data-delete]');
+    if(issue)  issueTransfer(issue.dataset.issue);
+    if(reject) rejectTransfer(reject.dataset.reject);
+    if(print)  printLetter(print.dataset.print);
+    if(del)    deleteTransfer(del.dataset.delete);
+  });
+
+  /* ---------- INIT ---------- */
+  paintHeader();
+  paintTable();
+  if(!canCreate) document.getElementById('addBtn').style.display = 'none';
+})();
+</script>
+</body>
+</html>
