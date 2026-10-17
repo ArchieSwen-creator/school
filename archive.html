@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Archive | EduCore</title>
+<style>
+  :root{
+    --navy:#0d1e3a;--navy2:#14213d;--blue:#3987ee;--pale:#eef5ff;--border:#d8e4f2;
+    --text:#23354d;--muted:#73849a;--green:#14805e;--orange:#d88922;--red:#d64545;
+    --gold:#c99a2e;--gold2:#fff4d6;--line:#e8ebf2;
+    --shadow-sm:0 4px 14px rgba(24,42,78,.06);
+    --shadow:0 8px 24px rgba(24,42,78,.08);
+    --shadow-lg:0 20px 60px rgba(24,42,78,.14);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:64px 16px 60px;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7 60%,#d6e5f5);
+    background-attachment:fixed;
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh;
+    -webkit-font-smoothing:antialiased}
+  button,input,select{font:inherit}
+  button{cursor:pointer}
+  .page{width:100%;max-width:1240px;margin:0 auto}
+
+  /* ============ HEADER ============ */
+  .band{
+    background:linear-gradient(120deg,#0d1e3a,#245d9c 70%,#2f6bb5);
+    color:#fff;border-radius:20px;padding:26px 32px;margin-bottom:24px;
+    box-shadow:0 20px 60px rgba(15,35,64,.28);
+    display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;
+    border-top:5px solid #58a4ff;position:relative;overflow:hidden;
+  }
+  .band::before{
+    content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;
+    border-radius:50%;background:radial-gradient(circle,#ffffff18,transparent 70%);
+  }
+  .band-left{display:flex;align-items:center;gap:16px;position:relative;z-index:1}
+  .band-logo{width:56px;height:56px;border-radius:16px;background:#fff;display:grid;place-items:center;
+    overflow:hidden;color:var(--navy);font-weight:900;font-size:20px;
+    border:3px solid #d8e8ff;flex:0 0 56px;
+    box-shadow:0 6px 20px rgba(255,255,255,.2)}
+  .band-logo img{width:100%;height:100%;object-fit:contain}
+  .band h1{margin:0;font-size:20px;letter-spacing:.4px;text-transform:uppercase}
+  .band p{margin:5px 0 0;font-size:12px;color:#cfdcf5}
+  .band-user{display:flex;align-items:center;gap:10px;font-size:11px;color:#cfdcf5;
+    background:#ffffff14;border:1px solid #ffffff36;padding:8px 14px;border-radius:20px;
+    position:relative;z-index:1}
+  .band-user strong{color:#fff}
+
+  /* ============ TIMELINE HERO ============ */
+  .hero{background:#fff;border:1px solid var(--line);border-radius:20px;
+    box-shadow:var(--shadow-lg);padding:28px;margin-bottom:24px;position:relative;overflow:hidden}
+  .hero-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:32px;align-items:start}
+  @media (max-width:900px){.hero-grid{grid-template-columns:1fr}}
+
+  .hero-badge{display:inline-flex;align-items:center;gap:8px;
+    background:linear-gradient(135deg,#e6f7f0,#eafaf1);color:#0e6b4a;
+    padding:6px 12px;border-radius:20px;font-size:10.5px;font-weight:800;
+    letter-spacing:.7px;text-transform:uppercase;margin-bottom:12px;
+    border:1px solid #b8e9d3}
+  .hero-badge::before{content:"";width:7px;height:7px;border-radius:50%;background:#14805e;
+    box-shadow:0 0 0 0 rgba(20,128,94,.6);animation:livePulse 2s infinite}
+  @keyframes livePulse{
+    0%{box-shadow:0 0 0 0 rgba(20,128,94,.6)}
+    70%{box-shadow:0 0 0 10px rgba(20,128,94,0)}
+    100%{box-shadow:0 0 0 0 rgba(20,128,94,0)}
+  }
+
+  .hero h2{margin:0 0 10px;font-size:26px;color:var(--navy);letter-spacing:.2px}
+  .hero .sub{font-size:13px;color:var(--muted);line-height:1.7;max-width:560px;margin:0}
+
+  .hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px}
+  .hero-stat{background:linear-gradient(135deg,#f8faff,#eef5ff);
+    border:1px solid #dde7f7;border-radius:12px;padding:14px 16px;position:relative}
+  .hero-stat small{display:block;font-size:9.5px;color:#566580;font-weight:800;
+    text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+  .hero-stat strong{font-size:22px;color:var(--navy);font-family:monospace;letter-spacing:-.5px}
+  .hero-stat .icon{position:absolute;right:12px;top:12px;font-size:16px;opacity:.4}
+
+  .hero-actions{display:flex;flex-direction:column;gap:10px}
+  .action-btn{border:0;border-radius:12px;padding:16px 20px;font-size:12.5px;
+    font-weight:800;display:flex;align-items:center;gap:12px;cursor:pointer;
+    transition:transform .15s,box-shadow .15s;text-align:left;position:relative;overflow:hidden}
+  .action-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 12px 30px rgba(24,42,78,.15)}
+  .action-btn:disabled{opacity:.55;cursor:not-allowed}
+  .action-btn .icon{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;
+    font-size:17px;flex:0 0 36px}
+  .action-btn .label{display:flex;flex-direction:column;gap:3px;flex:1}
+  .action-btn .label strong{font-size:13px;letter-spacing:.2px}
+  .action-btn .label small{font-size:10.5px;font-weight:600;opacity:.75}
+
+  .action-btn.warn{background:linear-gradient(135deg,#fff9ec,#fef1d5);color:#8a5f22;
+    border:1px solid #f0d9a0}
+  .action-btn.warn .icon{background:#e4cd86;color:#5a3a00}
+  .action-btn.gold{background:linear-gradient(135deg,#f7d97a,#e0b83e);color:#4a3200;
+    box-shadow:0 8px 24px rgba(201,154,46,.35)}
+  .action-btn.gold .icon{background:#fff;color:#8a5f22}
+  .action-btn.secondary{background:#eef2fb;color:#34415c;border:1px solid #d8e4f2}
+  .action-btn.secondary .icon{background:#fff;color:#34415c}
+
+  /* ============ TIMELINE STRIP ============ */
+  .timeline-strip{background:#fff;border:1px solid var(--line);border-radius:16px;
+    box-shadow:var(--shadow);padding:22px 26px;margin-bottom:24px}
+  .timeline-label{font-size:10.5px;font-weight:800;color:var(--muted);
+    text-transform:uppercase;letter-spacing:1px;margin-bottom:16px}
+  .timeline-track{display:flex;align-items:center;gap:0;overflow-x:auto;padding-bottom:6px}
+  .tl-node{display:flex;flex-direction:column;align-items:center;gap:8px;
+    min-width:120px;position:relative;cursor:pointer;transition:transform .15s}
+  .tl-node:hover{transform:translateY(-3px)}
+  .tl-dot{width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#eef2fb,#dce7f7);
+    border:2px solid #c9d7ea;display:grid;place-items:center;position:relative;
+    color:#34415c;font-weight:900;font-size:13px;font-family:monospace;letter-spacing:-.5px}
+  .tl-dot.current{background:linear-gradient(135deg,#e6f7f0,#b8e9d3);border-color:#14805e;
+    color:#0e6b4a;box-shadow:0 6px 20px rgba(20,128,94,.2)}
+  .tl-dot.archived{background:linear-gradient(135deg,#fff9ec,#f7e6b6);border-color:#c99a2e;
+    color:#5a3a00}
+  .tl-dot.semester{background:linear-gradient(135deg,#f3f5f9,#e0e6ee);border-color:#a8b5cb;
+    color:#4f5d7a}
+  .tl-node .tl-year{font-size:10px;color:var(--muted);font-weight:800;letter-spacing:.3px;
+    text-transform:uppercase;white-space:nowrap}
+  .tl-node .tl-sub{font-size:9px;color:#aab6c8;font-weight:600;white-space:nowrap}
+
+  .tl-line{flex:1;height:2px;background:linear-gradient(90deg,#c9d7ea,#e2e9f3);min-width:30px}
+  .tl-line.active{background:linear-gradient(90deg,#14805e,#b8e9d3)}
+
+  /* ============ ARCHIVE CARDS ============ */
+  .archive-list{display:flex;flex-direction:column;gap:18px}
+  .empty-state{background:#fff;border:1px solid var(--line);border-radius:20px;
+    box-shadow:var(--shadow);padding:56px 30px;text-align:center;color:var(--muted);font-size:13px}
+  .empty-state .icon{font-size:56px;margin-bottom:18px;display:block;opacity:.55}
+  .empty-state h3{font-size:18px;color:var(--navy);margin:0 0 10px}
+  .empty-state p{margin:0 0 22px;max-width:520px;margin-left:auto;margin-right:auto;
+    line-height:1.7}
+  .empty-state ol{text-align:left;display:inline-block;margin:0 0 22px;
+    padding-left:22px;line-height:2;font-size:12.5px;color:#566580}
+  .empty-state ol strong{color:var(--navy)}
+
+  /* Card */
+  .acard{background:#fff;border:1px solid var(--line);border-radius:18px;
+    box-shadow:var(--shadow);overflow:hidden;position:relative;
+    transition:box-shadow .2s,transform .2s}
+  .acard:hover{box-shadow:var(--shadow-lg)}
+  .acard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;
+    background:linear-gradient(180deg,#c99a2e,#e0b83e)}
+  .acard.full-year::before{background:linear-gradient(180deg,#c99a2e,#e0b83e)}
+  .acard.semester::before{background:linear-gradient(180deg,#a8b5cb,#c9d7ea)}
+  .acard.editable::before{background:linear-gradient(180deg,#3987ee,#6ba7f0)}
+
+  .acard-head{padding:22px 26px;display:flex;justify-content:space-between;gap:16px;
+    align-items:flex-start;flex-wrap:wrap;cursor:pointer;user-select:none;
+    background:linear-gradient(180deg,#fefefe,#fbfcff)}
+  .acard-head:hover{background:linear-gradient(180deg,#fbfcff,#f4f8ff)}
+
+  .acard-head .left{display:flex;gap:18px;align-items:flex-start;flex:1;min-width:0}
+  .acard-icon{width:56px;height:56px;flex:0 0 56px;border-radius:14px;
+    background:linear-gradient(135deg,#fff9ec,#f7e6b6);display:grid;place-items:center;
+    font-size:22px;border:2px solid #e4cd86}
+  .acard.editable .acard-icon{background:linear-gradient(135deg,#eef5ff,#d9e7fb);
+    border-color:#b9d1f6}
+  .acard.semester .acard-icon{background:linear-gradient(135deg,#f3f5f9,#e0e6ee);
+    border-color:#a8b5cb}
+
+  .acard-title{margin:0;font-size:17px;color:var(--navy);letter-spacing:.2px;
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .acard-sub{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.6}
+  .acard-sub strong{color:var(--text)}
+
+  .acard-badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:12px;
+    font-size:10px;font-weight:800;letter-spacing:.4px;text-transform:uppercase}
+  .badge.green{background:#e6f7f0;color:#0e6b4a;border:1px solid #b8e9d3}
+  .badge.gold{background:#fff4d6;color:#8a6a1a;border:1px solid #e4cd86}
+  .badge.blue{background:#edf2ff;color:#3b5cc1;border:1px solid #b9d1f6}
+  .badge.grey{background:#eef1f6;color:#59647c;border:1px solid #d8e0eb}
+  .badge.orange{background:#fff2dd;color:#a86414;border:1px solid #f0d9a0}
+  .badge.red{background:#ffeaec;color:#bd3b48;border:1px solid #f6c9ce}
+
+  .acard-chev{font-size:18px;color:var(--muted);transition:transform .25s;
+    padding:8px 12px;border-radius:10px;background:#f4f6fa}
+  .acard.open .acard-chev{transform:rotate(90deg);background:#eef5ff;color:var(--blue)}
+
+  .acard-body{max-height:0;overflow:hidden;transition:max-height .35s ease;background:#fbfcff;
+    border-top:1px solid var(--line)}
+  .acard.open .acard-body{max-height:3000px}
+  .acard-body-inner{padding:24px 26px}
+
+  /* Stats grid inside card */
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;
+    margin-bottom:22px}
+  .mini-stat{background:#fff;border:1px solid var(--line);border-radius:10px;
+    padding:12px 14px;position:relative}
+  .mini-stat small{font-size:9.5px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.7px;font-weight:800;display:block;margin-bottom:6px}
+  .mini-stat strong{font-size:18px;color:var(--navy);font-family:monospace;letter-spacing:-.3px}
+
+  /* Tabs */
+  .tabs{display:flex;gap:4px;border-bottom:2px solid var(--line);margin-bottom:18px;
+    overflow-x:auto;padding-bottom:0}
+  .tab{border:0;background:transparent;padding:11px 18px;font-size:12px;font-weight:800;
+    color:var(--muted);border-bottom:2px solid transparent;cursor:pointer;
+    margin-bottom:-2px;white-space:nowrap;transition:.15s;letter-spacing:.2px}
+  .tab:hover{color:var(--text)}
+  .tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+  .tabpanel{display:none;animation:fadeIn .25s}
+  .tabpanel.active{display:block}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+  /* Action bar */
+  .action-bar{display:flex;gap:8px;flex-wrap:wrap;padding-top:20px;
+    border-top:1px solid var(--line);margin-top:20px}
+  .btn{border:0;border-radius:9px;padding:11px 16px;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px;
+    transition:.15s}
+  .btn:hover{filter:brightness(.96);transform:translateY(-1px)}
+  .btn.secondary{background:#eef2fb;color:#34415c}
+  .btn.outline{background:#fff;color:#34415c;border:1px solid var(--line)}
+  .btn.danger{background:#fff0f1;color:var(--red)}
+  .btn.green{background:#e6f7f0;color:#0e6b4a}
+  .btn.warn{background:#fff2dd;color:#a86414}
+  .btn.gold{background:linear-gradient(135deg,#f7d97a,#c99a2e);color:#5a3a00}
+  .btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+  /* Promotion log */
+  .log-table{width:100%;border-collapse:collapse;font-size:12px}
+  .log-table th{text-align:left;background:#f6f8fd;padding:11px 14px;font-size:10px;
+    text-transform:uppercase;letter-spacing:.6px;color:#7a8498;border-bottom:1px solid var(--line);
+    font-weight:800}
+  .log-table td{padding:11px 14px;border-bottom:1px solid #eef2f7;color:var(--text)}
+  .log-table tr:last-child td{border-bottom:0}
+  .log-table tr:hover td{background:#fafbfe}
+  .log-table .pill{display:inline-block;padding:3px 9px;border-radius:20px;
+    font-size:9.5px;font-weight:800;letter-spacing:.3px}
+  .log-table .pill.promoted{background:#e6f7f0;color:#0e6b4a}
+  .log-table .pill.repeated{background:#fff2dd;color:#a86414}
+  .log-table .pill.graduated{background:#edf2ff;color:#3b5cc1}
+  .log-table .pill.nogrades{background:#eef1f6;color:#59647c}
+
+  /* Snapshot grid */
+  .snap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+  .snap-cell{background:#fff;border:1px solid var(--line);border-radius:10px;
+    padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+  .snap-cell small{font-size:9.5px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.7px;font-weight:800}
+  .snap-cell strong{font-size:20px;color:var(--navy);font-family:monospace;letter-spacing:-.4px}
+  .snap-cell .sub{font-size:10.5px;color:var(--muted);margin-top:2px}
+
+  /* Inline callout */
+  .callout{background:#eef5ff;border:1px solid #cfe3ff;color:#1d4d82;
+    border-radius:10px;padding:12px 16px;font-size:11.5px;line-height:1.7;margin-bottom:18px;
+    display:flex;gap:10px;align-items:flex-start}
+  .callout.warn{background:#fff8e6;border-color:#f3d999;color:#8a6a1a}
+  .callout.warn strong{color:#5a3a00}
+  .callout strong{color:#0e3b6b}
+  .callout .icon{font-size:15px;flex:0 0 auto;padding-top:1px}
+
+  /* Pulse for editable cards */
+  @keyframes softPulse{
+    0%,100%{box-shadow:var(--shadow)}
+    50%{box-shadow:0 8px 24px rgba(57,135,238,.12)}
+  }
+
+  @media (max-width:900px){
+    .hero-grid{grid-template-columns:1fr}
+    .band{padding:22px 24px}
+    .band h1{font-size:17px}
+  }
+  @media (max-width:650px){
+    body{padding:64px 8px 40px}
+    .band{padding:18px 20px;border-radius:16px}
+    .band h1{font-size:15px}
+    .band-logo{width:46px;height:46px;font-size:16px;flex:0 0 46px}
+    .hero{padding:20px}
+    .hero h2{font-size:20px}
+    .hero-stats{grid-template-columns:1fr 1fr}
+    .acard-head{padding:16px 18px}
+    .acard-body-inner{padding:18px}
+    .stat-grid{grid-template-columns:repeat(2,1fr)}
+    .acard-icon{width:48px;height:48px;font-size:18px;flex:0 0 48px}
+    .acard-title{font-size:15px}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="band">
+    <div class="band-left">
+      <div class="band-logo" id="bandLogo">EC</div>
+      <div>
+        <h1 id="bandSchool">Archive</h1>
+        <p id="bandSub">Close, browse, edit, and print past academic years</p>
+      </div>
+    </div>
+    <div class="band-user">Signed in as <strong id="bandUser">—</strong></div>
+  </div>
+
+  <div id="pageBody"></div>
+
+</div>
+
+<script src="educore-shared.js"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  const user = E.requirePerm('archive', 'Archive');
+  if(!user) return;
+
+  const canEndSem   = E.can('archive.end_sem');
+  const canEndYear  = E.can('archive.end_year');
+  const canRestore  = E.can('archive.restore');
+  const canDelete   = E.can('archive.delete');
+  const canEdit     = E.canEditArchive();
+
+  /* Per-year open tabs state */
+  const openTabs = {};
+  /* Per-year expanded state */
+  const expanded = {};
+
+  function paintHeader(){
+    const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const name = settings.name || 'EduCore High School';
+    if(settings.logo){
+      document.getElementById('bandLogo').innerHTML = `<img src="${settings.logo}" alt="">`;
+    } else {
+      document.getElementById('bandLogo').textContent =
+        name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
+    }
+    document.getElementById('bandSchool').textContent = name;
+    document.getElementById('bandUser').textContent = user.name || user.username;
+  }
+
+  function paint(){
+    const year = E.currentAcademicYear();
+    const archives = E.archiveList();
+    const fullYears = archives.filter(a => a.kind === 'full-year');
+    const students = E.readStore(E.STORE_KEYS.students, []) || [];
+    const sem1Locked = E.isSemesterLocked(1, year);
+    const sem2Locked = E.isSemesterLocked(2, year);
+
+    document.getElementById('pageBody').innerHTML = `
+      ${buildHero(year, archives, students, sem1Locked, sem2Locked)}
+      ${archives.length ? buildTimeline(year, archives) : ''}
+      <div class="archive-list" id="archiveList"></div>
+    `;
+
+    paintArchiveCards(archives);
+
+    /* Bind hero actions */
+    document.getElementById('endSem1Btn')?.addEventListener('click', () => confirmEndSemester(1));
+    document.getElementById('endSem2Btn')?.addEventListener('click', () => confirmEndSemester(2));
+    document.getElementById('endYearBtn')?.addEventListener('click', confirmEndYear);
+
+    /* Bind timeline nodes (scroll to year card) */
+    document.querySelectorAll('[data-jump-year]').forEach(node => {
+      node.addEventListener('click', () => {
+        const targetYear = node.dataset.jumpYear;
+        const card = document.querySelector(`[data-archive-year="${targetYear}"]`);
+        if(card){
+          if(!card.classList.contains('open')){
+            expanded[targetYear] = true;
+            card.classList.add('open');
+          }
+          card.scrollIntoView({ behavior:'smooth', block:'start' });
+        }
+      });
+    });
+  }
+
+  /* ============================================================
+     HERO
+     ============================================================ */
+  function buildHero(year, archives, students, sem1Locked, sem2Locked){
+    const fullYears = archives.filter(a => a.kind === 'full-year');
+    const totalResults = archives.reduce((sum, a) => sum + (a.snapshot?.results?.length || 0), 0);
+    const totalAttempts = archives.reduce((sum, a) => sum + (a.snapshot?.quizAttempts?.length || 0), 0);
+
+    return `
+      <div class="hero">
+        <div class="hero-grid">
+          <div>
+            <span class="hero-badge">Current academic year</span>
+            <h2>${E.esc(year)}</h2>
+            <p class="sub">
+              End a semester to lock and snapshot it. End the academic year to archive everything,
+              auto-promote students based on their yearly average, reset class fees and teacher
+              assignments, and begin a fresh year.
+            </p>
+
+            <div class="hero-stats">
+              <div class="hero-stat">
+                <span class="icon">👥</span>
+                <small>Students this year</small>
+                <strong>${students.length}</strong>
+              </div>
+              <div class="hero-stat">
+                <span class="icon">📚</span>
+                <small>Archived years</small>
+                <strong>${fullYears.length}</strong>
+              </div>
+              <div class="hero-stat">
+                <span class="icon">📝</span>
+                <small>Archived result rows</small>
+                <strong>${totalResults}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-actions">
+            ${canEndSem ? `
+              <button class="action-btn warn" id="endSem1Btn" ${sem1Locked ? 'disabled' : ''}>
+                <span class="icon">📘</span>
+                <span class="label">
+                  <strong>End Semester One</strong>
+                  <small>${sem1Locked ? 'Already ended' : 'Lock and snapshot Semester One'}</small>
+                </span>
+              </button>
+              <button class="action-btn warn" id="endSem2Btn" ${sem2Locked ? 'disabled' : ''}>
+                <span class="icon">📗</span>
+                <span class="label">
+                  <strong>End Semester Two</strong>
+                  <small>${sem2Locked ? 'Already ended' : 'Lock and snapshot Semester Two'}</small>
+                </span>
+              </button>
+            ` : ''}
+            ${canEndYear ? `
+              <button class="action-btn gold" id="endYearBtn">
+                <span class="icon">🏁</span>
+                <span class="label">
+                  <strong>End Academic Year</strong>
+                  <small>Promote students, reset fees, start a new year</small>
+                </span>
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  /* ============================================================
+     TIMELINE
+     ============================================================ */
+  function buildTimeline(currentYear, archives){
+    const fullYears = archives.filter(a => a.kind === 'full-year')
+      .sort((a,b) => new Date(a.closedAt) - new Date(b.closedAt));
+
+    const nodes = [];
+    /* Oldest archived years first */
+    fullYears.forEach(ar => {
+      const isEditable = canEdit && E.isArchiveEditable(ar.year);
+      nodes.push(`
+        <div class="tl-node" data-jump-year="${E.esc(ar.year)}" title="Jump to ${E.esc(ar.year)}">
+          <div class="tl-dot ${isEditable ? 'archived' : 'archived'}">${E.esc(ar.year.slice(-4))}</div>
+          <div class="tl-year">${E.esc(ar.year)}</div>
+          <div class="tl-sub">Archived</div>
+        </div>`);
+    });
+
+    /* Line then current year */
+    if(nodes.length){
+      nodes.push(`<div class="tl-line active"></div>`);
+    }
+    nodes.push(`
+      <div class="tl-node" data-jump-year="${E.esc(currentYear)}" title="Current year">
+        <div class="tl-dot current">${E.esc(currentYear.slice(-4))}</div>
+        <div class="tl-year">${E.esc(currentYear)}</div>
+        <div class="tl-sub">Current</div>
+      </div>`);
+
+    return `
+      <div class="timeline-strip">
+        <div class="timeline-label">School history</div>
+        <div class="timeline-track">${nodes.join('')}</div>
+      </div>`;
+  }
+
+  /* ============================================================
+     ARCHIVE CARDS
+     ============================================================ */
+  function paintArchiveCards(archives){
+    const wrap = document.getElementById('archiveList');
+    const currentYear = E.currentAcademicYear();
+
+    if(!archives.length){
+      wrap.innerHTML = `
+        <div class="empty-state">
+          <span class="icon">📦</span>
+          <h3>No archives yet</h3>
+          <p>When you close a semester or the academic year, a snapshot will be stored here
+             and you'll be able to browse, edit, and print it at any time.</p>
+          <ol>
+            <li><strong>End Semester One</strong> — locks and snapshots the first semester.</li>
+            <li><strong>End Semester Two</strong> — locks and snapshots the second semester.</li>
+            <li><strong>End Academic Year</strong> — promotes students, resets fees, starts the next year.</li>
+          </ol>
+        </div>`;
+      return;
+    }
+
+    /* Full-year archives first (newest first), then semester markers */
+    const fullYears = archives.filter(a => a.kind === 'full-year');
+    const semesters = archives.filter(a => a.kind === 'semester');
+
+    const sortedList = [
+      ...fullYears.sort((a,b) => new Date(b.closedAt) - new Date(a.closedAt)),
+      ...semesters.sort((a,b) => new Date(b.closedAt) - new Date(a.closedAt))
+    ];
+
+    wrap.innerHTML = sortedList.map(ar => buildArchiveCard(ar)).join('');
+
+    /* Bind card interactions */
+    wrap.querySelectorAll('[data-toggle-card]').forEach(head => {
+      head.addEventListener('click', e => {
+        if(e.target.closest('button')) return;
+        const card = head.closest('.acard');
+        const year = head.dataset.toggleCard;
+        card.classList.toggle('open');
+        expanded[year] = card.classList.contains('open');
+      });
+    });
+
+    wrap.querySelectorAll('[data-tab]').forEach(tab => {
+      tab.addEventListener('click', e => {
+        e.stopPropagation();
+        const card = tab.closest('.acard');
+        const year = card.dataset.archiveYear;
+        const tabName = tab.dataset.tab;
+        openTabs[year] = tabName;
+        card.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === tab));
+        card.querySelectorAll('.tabpanel').forEach(p => {
+          p.classList.toggle('active', p.dataset.panel === tabName);
+        });
+      });
+    });
+
+    wrap.querySelectorAll('[data-edit-records]').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        if(!canEdit){ E.toast('Only Principal or Registrar can edit archives.'); return; }
+        const year = btn.dataset.editRecords;
+        sessionStorage.setItem('educoreLedgerStudent', '');
+        sessionStorage.setItem('educoreArchiveEditYear', year);
+        window.location.href = 'report-card-ledger.html';
+      });
+    });
+
+    wrap.querySelectorAll('[data-print-year]').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const year = btn.dataset.printYear;
+        window.open('report-cards.html?year=' + encodeURIComponent(year), '_blank');
+      });
+    });
+
+    wrap.querySelectorAll('[data-restore]').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        restoreYear(btn.dataset.restore);
+      });
+    });
+
+    wrap.querySelectorAll('[data-delete]').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        deleteYear(btn.dataset.delete);
+      });
+    });
+  }
+
+  function buildArchiveCard(ar){
+    const snapshot = ar.snapshot || {};
+    const counts = {
+      students: (snapshot.students || []).length,
+      results: (snapshot.results || []).length,
+      attendance: Object.keys(snapshot.attendance || {}).length,
+      payments: (snapshot.payments || []).length,
+      quizzes: (snapshot.quizzes || []).length,
+      quizAttempts: (snapshot.quizAttempts || []).length,
+      assignments: (snapshot.assignments || []).length,
+      classFees: Object.keys(snapshot.classFees || {}).length
+    };
+
+    const summary = ar.summary || {};
+    const isSemester = ar.kind === 'semester';
+    const isEditable = !isSemester && E.isArchiveEditable(ar.year) && canEdit;
+
+    const cardClass = [
+      'acard',
+      isSemester ? 'semester' : 'full-year',
+      isEditable ? 'editable' : '',
+      expanded[ar.year] ? 'open' : ''
+    ].filter(Boolean).join(' ');
+
+    const title = isSemester
+      ? `${E.esc(ar.year)} · Semester ${ar.semester}`
+      : `${E.esc(ar.year)} · Full year`;
+
+    const badges = [];
+    if(isSemester) badges.push(`<span class="badge grey">Semester marker</span>`);
+    if(!isSemester && isEditable) badges.push(`<span class="badge blue">✎ Editable</span>`);
+    if(!isSemester && !isEditable) badges.push(`<span class="badge gold">Read-only</span>`);
+    if(!isSemester){
+      if(summary.promoted) badges.push(`<span class="badge green">${summary.promoted} promoted</span>`);
+      if(summary.repeated) badges.push(`<span class="badge orange">${summary.repeated} repeating</span>`);
+      if(summary.graduated) badges.push(`<span class="badge blue">${summary.graduated} graduated</span>`);
+    }
+
+    /* --- Overview tab --- */
+    const overview = isSemester ? `
+      <div class="callout">
+        <span class="icon">📘</span>
+        <div>
+          <strong>Semester snapshot.</strong>
+          This is a locked semester record — a historical marker. It is read-only.
+          Full-year records are where you can edit scores.
+        </div>
+      </div>
+      <div class="snap-grid">
+        <div class="snap-cell"><small>Students</small><strong>${counts.students}</strong></div>
+        <div class="snap-cell"><small>Result rows</small><strong>${counts.results}</strong></div>
+        <div class="snap-cell"><small>Attendance days</small><strong>${counts.attendance}</strong></div>
+        <div class="snap-cell"><small>Payments</small><strong>${counts.payments}</strong></div>
+      </div>` : `
+      ${isEditable ? `
+        <div class="callout">
+          <span class="icon">✎</span>
+          <div>
+            <strong>Editable archive.</strong> You can open the Gradesheet Ledger for this year
+            and fix individual scores. Averages recompute live.
+          </div>
+        </div>` : `
+        <div class="callout warn">
+          <span class="icon">🔒</span>
+          <div>
+            <strong>Read-only archive.</strong> Only Principal and Registrar can edit archive scores.
+            You can still view and print this year's records.
+          </div>
+        </div>`}
+
+      <div class="stat-grid">
+        <div class="mini-stat"><small>Students</small><strong>${counts.students}</strong></div>
+        <div class="mini-stat"><small>Result rows</small><strong>${counts.results}</strong></div>
+        <div class="mini-stat"><small>Attendance days</small><strong>${counts.attendance}</strong></div>
+        <div class="mini-stat"><small>Payments</small><strong>${counts.payments}</strong></div>
+        <div class="mini-stat"><small>Quizzes</small><strong>${counts.quizzes}</strong></div>
+        <div class="mini-stat"><small>Quiz attempts</small><strong>${counts.quizAttempts}</strong></div>
+        <div class="mini-stat"><small>Teaching assignments</small><strong>${counts.assignments}</strong></div>
+        <div class="mini-stat"><small>Classes with fees</small><strong>${counts.classFees}</strong></div>
+      </div>`;
+
+    /* --- Promotion log tab --- */
+    const promotionLog = (ar.promotionLog || []).slice(0, 100);
+    const promotionTab = promotionLog.length ? `
+      <table class="log-table">
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Average</th>
+            <th>Reason</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${promotionLog.map(r => {
+            const pillClass = /promot/i.test(r.reason) && r.to !== 'Graduated' ? 'promoted'
+                            : r.to === 'Graduated' ? 'graduated'
+                            : /repeat/i.test(r.reason) ? 'repeated'
+                            : 'nogrades';
+            return `<tr>
+              <td>${E.esc(r.name)}</td>
+              <td>${E.esc(r.from)}</td>
+              <td><strong>${E.esc(r.to)}</strong></td>
+              <td style="font-family:monospace">${r.avg != null ? r.avg.toFixed(1) + '%' : '—'}</td>
+              <td><span class="pill ${pillClass}">${E.esc(r.reason)}</span></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+      ${ar.promotionLog.length > 100 ? `
+        <div style="text-align:center;color:var(--muted);font-size:11px;padding:14px">
+          … and ${ar.promotionLog.length - 100} more
+        </div>` : ''}
+    ` : `
+      <div style="text-align:center;color:var(--muted);padding:40px 20px;font-size:12.5px">
+        No promotion log for this archive.
+      </div>`;
+
+    /* --- Actions tab --- */
+    const actionBits = [];
+    if(!isSemester){
+      actionBits.push(`<button class="btn ${isEditable ? '' : 'outline'}"
+        data-edit-records="${E.esc(ar.year)}" ${isEditable ? '' : 'title="Sign in as Principal or Registrar to edit" disabled'}>
+        ✎ Edit records
+      </button>`);
+      actionBits.push(`<button class="btn gold" data-print-year="${E.esc(ar.year)}">
+        📄 Print report cards
+      </button>`);
+    }
+    if(canRestore && !isSemester){
+      actionBits.push(`<button class="btn warn" data-restore="${E.esc(ar.year)}">
+        ↺ Restore as live
+      </button>`);
+    }
+    if(canDelete){
+      actionBits.push(`<button class="btn danger" data-delete="${E.esc(ar.year)}">
+        🗑 Delete archive
+      </button>`);
+    }
+
+    const actions = actionBits.length ? `
+      <div class="callout">
+        <span class="icon">💡</span>
+        <div>
+          <strong>Edit records</strong> opens the Gradesheet Ledger for this year so you can
+          fix individual scores. Averages update live as you type.<br>
+          <strong>Print report cards</strong> opens a batch print view for this year's class.
+        </div>
+      </div>
+      <div class="action-bar">${actionBits.join('')}</div>
+    ` : `
+      <div style="text-align:center;color:var(--muted);padding:40px 20px;font-size:12.5px">
+        No actions available for this archive.
+      </div>`;
+
+    const activeTab = openTabs[ar.year] || 'overview';
+    const headCls = head => `tab ${activeTab === head ? 'active' : ''}`;
+    const panelCls = name => `tabpanel ${activeTab === name ? 'active' : ''}`;
+
+    return `
+      <div class="${cardClass}" data-archive-year="${E.esc(ar.year)}">
+        <div class="acard-head" data-toggle-card="${E.esc(ar.year)}">
+          <div class="left">
+            <div class="acard-icon">${isSemester ? '📘' : '🎓'}</div>
+            <div style="min-width:0;flex:1">
+              <h3 class="acard-title">${title}</h3>
+              <div class="acard-sub">
+                Closed <strong>${E.fmtDateTime(ar.closedAt)}</strong> by <strong>${E.esc(ar.closedBy || 'system')}</strong>
+              </div>
+              <div class="acard-badges">${badges.join('')}</div>
+            </div>
+          </div>
+          <div class="acard-chev">▶</div>
+        </div>
+
+        <div class="acard-body">
+          <div class="acard-body-inner">
+            <div class="tabs">
+              <button class="${headCls('overview')}"  data-tab="overview">Overview</button>
+              ${!isSemester ? `<button class="${headCls('promotion')}" data-tab="promotion">Promotion log</button>` : ''}
+              <button class="${headCls('actions')}"   data-tab="actions">Actions</button>
+            </div>
+
+            <div class="${panelCls('overview')}" data-panel="overview">
+              ${overview}
+            </div>
+            ${!isSemester ? `
+              <div class="${panelCls('promotion')}" data-panel="promotion">
+                ${promotionTab}
+              </div>` : ''}
+            <div class="${panelCls('actions')}" data-panel="actions">
+              ${actions}
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  /* ============================================================
+     ACTIONS
+     ============================================================ */
+  function confirmEndSemester(n){
+    const year = E.currentAcademicYear();
+    E.confirmModal({
+      title: `End ${year} · Semester ${n}?`,
+      message: `This will <strong>lock</strong> Semester ${n} and snapshot every store.
+        Students stay in the same class. You can continue teaching the next semester.
+        <br><br>The archive remains editable from the Archive page.`,
+      submitText: `End Semester ${n}`
+    }).then(ok => {
+      if(!ok) return;
+      const res = E.endSemester(n);
+      if(!res.ok){ E.toast(res.error); return; }
+      E.toast(`Semester ${n} archived.`);
+      paint();
+    });
+  }
+
+  async function confirmEndYear(){
+    const year = E.currentAcademicYear();
+    const preview = (() => {
+      const students = E.readStore(E.STORE_KEYS.students, []) || [];
+      let promoted = 0, repeated = 0, graduated = 0, noGrades = 0;
+      students.forEach(s => {
+        const avg = E.studentYearlyAverage(s, year);
+        if(avg == null){ noGrades++; return; }
+        const pass = Number((E.classByName(s.class) || {}).passMark ?? 50);
+        if(avg >= pass){
+          const nextCat = E.nextCategory(E.classCategoryFor(s.class));
+          if(nextCat === 'Graduated') graduated++;
+          else promoted++;
+        } else repeated++;
+      });
+      return { promoted, repeated, graduated, noGrades, total: students.length };
+    })();
+
+    const nextYear = (() => {
+      const [a, b] = year.split('/').map(Number);
+      return Number.isFinite(a) && Number.isFinite(b) ? `${a + 1}/${b + 1}` : year;
+    })();
+
+    const ok = await E.confirmModal({
+      title: `End academic year ${year}?`,
+      message: `
+        <strong>This is a final step for ${E.esc(year)}.</strong> It will:
+        <ul style="margin:10px 0 12px;padding-left:22px;line-height:1.95">
+          <li>Archive every store (students, results, attendance, fees, quizzes, payroll).</li>
+          <li><strong>Promote ${preview.promoted} students</strong> who met the pass mark.</li>
+          <li><strong>Keep ${preview.repeated} students back</strong> to repeat.</li>
+          <li><strong>Graduate ${preview.graduated} students</strong> finishing Grade 12.</li>
+          <li>Leave ${preview.noGrades} students unchanged (no grades recorded).</li>
+          <li>Reset <strong>class fees</strong>, <strong>teacher assignments</strong>, and <strong>sponsors</strong>.</li>
+          <li>Open a new academic year (<strong>${nextYear}</strong>).</li>
+        </ul>
+        Users, parents, and students remain. Payments history is kept.
+        <br><br>The new archive is editable — you can fix scores from the Archive page.
+      `,
+      submitText: 'End academic year',
+      danger: true
+    });
+    if(!ok) return;
+
+    const res = E.endAcademicYear();
+    if(!res.ok){ E.toast(res.error); return; }
+    E.toast(`Year ${year} closed · ${res.summary.promoted} promoted · new year ${res.nextYear}`);
+    paint();
+  }
+
+  async function restoreYear(year){
+    const ok = await E.confirmModal({
+      title: `Restore ${year}?`,
+      message: `This replaces the current live data with the snapshot from
+        <strong>${E.esc(year)}</strong>, and sets the active academic year back to
+        <strong>${E.esc(year)}</strong>.
+        <br><br><strong>Any changes made since the archive will be lost.</strong>`,
+      submitText: 'Restore',
+      danger: true
+    });
+    if(!ok) return;
+    const res = E.restoreArchive(year);
+    if(!res.ok){ E.toast(res.error); return; }
+    E.toast(`${year} restored. Reloading…`);
+    setTimeout(() => location.reload(), 800);
+  }
+
+  async function deleteYear(key){
+    const ok = await E.confirmModal({
+      title: `Delete archive?`,
+      message: `This permanently removes the archive <strong>${E.esc(key)}</strong>.
+        Live data is not affected. This cannot be undone.`,
+      submitText: 'Delete',
+      danger: true
+    });
+    if(!ok) return;
+    E.deleteArchive(key);
+    paint();
+    E.toast('Archive deleted.');
+  }
+
+  /* ---------- INIT ---------- */
+  paintHeader();
+  paint();
+})();
+</script>
+</body>
+</html>

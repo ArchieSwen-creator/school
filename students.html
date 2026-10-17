@@ -165,18 +165,15 @@
   'use strict';
   const E = window.EduCore;
 
-  /* ---------- GUARD ---------- */
   const user = E.requirePerm('students', 'Students');
   if(!user) return;
 
-  /* ---------- SUB-FEATURE PERMISSIONS ---------- */
   const canAdd    = E.can('students.add');
   const canEdit   = E.can('students.edit');
   const canDelete = E.can('students.delete');
   const canReport = E.can('students.report');
   const canExport = E.can('students.export');
 
-  /* ---------- HEADER ---------- */
   function paintHeader(){
     const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
     const name = settings.name || 'EduCore High School';
@@ -191,7 +188,6 @@
     document.getElementById('bandUser').textContent = user.name || user.username;
   }
 
-  /* ---------- FILTERS ---------- */
   function fillClassFilter(){
     const classes = E.readStore(E.STORE_KEYS.classes, []) || [];
     const visible = E.visibleClassNamesFor(user);
@@ -203,7 +199,6 @@
       items.map(c => `<option>${E.esc(c)}</option>`).join('');
   }
 
-  /* ---------- RENDER ---------- */
   function statusPill(s){
     const t = (s === 'Active') ? 'green'
             : (s === 'Pending') ? 'orange'
@@ -263,10 +258,30 @@
     btn.textContent = n > 0 ? `🗑 Delete selected (${n})` : '🗑 Delete selected';
   }
 
-  /* ---------- ADD / EDIT ---------- */
+  /* Build the guardian dropdown.
+     - If the student already has a guardian that is NOT in the registry,
+       we keep it as a fallback option so no data is lost.
+     - Otherwise show every parent from the registry (plus any legacy names). */
+  function guardianSelectHTML(currentGuardian){
+    const names = E.allGuardianNames();
+    const current = String(currentGuardian || '').trim();
+    const opts = ['<option value="">— Pick a parent —</option>'];
+    if(current && !names.includes(current)){
+      opts.push(`<option value="${E.esc(current)}" selected>${E.esc(current)} (unregistered)</option>`);
+    }
+    names.forEach(n => {
+      opts.push(`<option value="${E.esc(n)}" ${n === current ? 'selected' : ''}>${E.esc(n)}</option>`);
+    });
+    if(!names.length && !current){
+      opts.push('<option value="" disabled>No parents in the registry yet — add one first</option>');
+    }
+    return opts.join('');
+  }
+
   function openStudentModal(existing){
     const s = existing || {};
     const classes = E.readStore(E.STORE_KEYS.classes, []) || [];
+
     const html = `
       <div class="full"><label>Full name</label><input name="name" required value="${E.esc(s.name||'')}"></div>
       <div><label>Gender</label>
@@ -280,7 +295,14 @@
           ${classes.map(c => `<option ${s.class === c.name ? 'selected' : ''}>${E.esc(c.name)}</option>`).join('')}
         </select>
       </div>
-      <div><label>Guardian</label><input name="guardian" required value="${E.esc(s.guardian||'')}"></div>
+      <div><label>Guardian</label>
+        <select name="guardian" required>
+          ${guardianSelectHTML(s.guardian || '')}
+        </select>
+        <small style="color:var(--muted);font-size:10px;display:block;margin-top:4px">
+          Parents come from the <strong>Parents</strong> page. Add a parent there first if it's missing.
+        </small>
+      </div>
       <div><label>Contact</label><input name="phone" required value="${E.esc(s.phone||'')}"></div>
       <div class="full"><label>Status</label>
         <select name="status">
@@ -290,6 +312,7 @@
           <option ${s.status === 'Graduated' ? 'selected' : ''}>Graduated</option>
         </select>
       </div>`;
+
     E.openModal(existing ? 'Edit student' : 'Add new student', html, 'Save student', d => {
       const students = E.readStore(E.STORE_KEYS.students, []) || [];
       const fees     = E.readStore(E.STORE_KEYS.fees, []) || [];
@@ -334,7 +357,6 @@
     E.writeStore(E.STORE_KEYS.enrollments, list);
   }
 
-  /* ---------- DELETE ---------- */
   function deleteStudent(studentId){
     const s = (E.readStore(E.STORE_KEYS.students, []) || []).find(x => x.id === studentId);
     if(!s) return;
@@ -425,7 +447,6 @@
     E.toast(`${ids.length} student${ids.length===1?'':'s'} deleted.`);
   }
 
-  /* ---------- REPORT ---------- */
   function openReport(studentId){
     if(user.role === 'Teacher'){
       const visible = new Set(E.visibleClassNamesFor(user));
@@ -439,7 +460,6 @@
     window.open('report-card-print.html?student=' + encodeURIComponent(sid), '_blank');
   }
 
-  /* ---------- EXPORT ---------- */
   function exportCSV(){
     const scope = E.visibleStudentsFor(user);
     if(!scope.length){ E.toast('No students to export.'); return; }
@@ -455,7 +475,6 @@
     E.toast('CSV exported.');
   }
 
-  /* ---------- EVENTS ---------- */
   document.getElementById('search').addEventListener('input', paintTable);
   document.getElementById('classFilter').addEventListener('change', paintTable);
   document.getElementById('statusFilter').addEventListener('change', paintTable);
@@ -482,12 +501,10 @@
     if(rep) openReport(rep.dataset.report);
   });
 
-  /* ---------- INIT ---------- */
   paintHeader();
   fillClassFilter();
   paintTable();
 
-  /* Hide actions the user doesn't have permission for */
   if(!canAdd)    document.getElementById('addBtn').style.display = 'none';
   if(!canExport) document.getElementById('exportBtn').style.display = 'none';
   if(!canDelete){

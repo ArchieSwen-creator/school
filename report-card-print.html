@@ -24,28 +24,19 @@
     color:#fff;font-weight:700;font-size:12px}
   .btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--border)}
 
-  /* Threshold gate */
-  .gate{max-width:560px;margin:60px auto;padding:40px 32px;text-align:center;
-    background:#fff;border:1px solid var(--border);border-radius:18px;
-    box-shadow:0 18px 50px #16345417}
-  .gate .icon{font-size:56px;margin-bottom:16px;display:block}
-  .gate h1{font-size:20px;color:var(--navy);margin:0 0 10px}
-  .gate p{font-size:13px;color:var(--muted);line-height:1.7;margin:0 0 12px}
-  .gate .amount{font-size:30px;font-weight:900;color:var(--red);font-family:monospace;
-    margin:14px 0 6px;display:block}
-  .gate .sub{font-size:11px;color:var(--muted);margin-bottom:24px}
-  .gate .progress-bar{height:12px;background:#eef1f7;border-radius:20px;overflow:hidden;
-    margin:18px 0 10px;max-width:400px;margin-left:auto;margin-right:auto}
-  .gate .progress-bar span{display:block;height:100%;
-    background:linear-gradient(90deg,#3987ee,#14805e);border-radius:20px}
-  .gate .progress-caption{font-size:11px;color:var(--muted);margin-bottom:22px}
-  .gate a{display:inline-block;background:var(--blue);color:#fff;padding:12px 22px;
-    border-radius:9px;text-decoration:none;font-weight:700;font-size:12px}
-  .gate a.secondary{background:#eef2fb;color:var(--navy);margin-left:6px}
+  /* Archive notice banner at the top of each card */
+  .archive-banner{background:linear-gradient(120deg,#fff8e6,#fef4dc);
+    border-bottom:1px solid #f3d999;color:#8a5f22;
+    padding:12px 24px;font-size:11.5px;line-height:1.6;
+    display:flex;align-items:center;gap:10px}
+  .archive-banner strong{color:#5a3a00}
+  .archive-banner .badge{display:inline-flex;align-items:center;gap:5px;
+    background:#c99a2e;color:#fff;padding:3px 9px;border-radius:20px;
+    font-size:9.5px;font-weight:900;letter-spacing:.7px;text-transform:uppercase}
 
   /* Report card */
   .report-card{width:100%;max-width:1200px;margin:0 auto;background:#fff;
-    border-radius:16px;overflow:hidden;box-shadow:0 18px 50px #16345417}
+    border-radius:16px;overflow:hidden;box-shadow:0 18px 50px #16345417;margin-bottom:20px}
   .school-header{padding:24px 32px;color:#fff;
     background:linear-gradient(120deg,#102949,#245d9c);border-top:5px solid #58a4ff}
   .school-brand{display:flex;align-items:center;gap:17px}
@@ -147,12 +138,13 @@
     @page{size:A4 portrait;margin:10mm}
     body{padding:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
     .bar,#educoreBackPill{display:none!important}
-    .report-card{width:100%;max-width:none;border-radius:0;box-shadow:none;margin:0}
+    .report-card{width:100%;max-width:none;border-radius:0;box-shadow:none;margin:0 0 0}
     .school-header{padding:18px 22px}
     .content{padding:18px 22px}
     .table-scroll{overflow:visible}
     table.subject-matrix{min-width:0;font-size:9px}
     table.subject-matrix th,table.subject-matrix td{padding:5px 3px;font-size:9px}
+    .archive-banner{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   }
 
   @media (max-width:650px){
@@ -165,16 +157,17 @@
     .student-grid .info-card:first-child{grid-column:1/-1}
     .summary-grid{grid-template-columns:1fr 1fr}
     .signature-grid{gap:20px}
+    .archive-banner{padding:10px 14px;font-size:10.5px}
   }
 </style>
 </head>
 <body>
 
-<div class="bar no-print" id="topBar">
+<div class="bar no-print">
   <h2 id="titleText">Report Card</h2>
   <div class="bar-actions">
     <button class="btn ghost" onclick="window.close()">Close</button>
-    <button class="btn" id="printBtn" onclick="window.print()">🖶 Print</button>
+    <button class="btn" onclick="window.print()">🖶 Print</button>
   </div>
 </div>
 
@@ -187,10 +180,12 @@
   const E = window.EduCore;
 
   /* ---------- PARAMS ---------- */
-  const params = new URLSearchParams(location.search);
-  const singleId  = params.get('student');
-  const batchIds  = params.get('students');
-  const yearParam = params.get('year') || E.currentAcademicYear();
+  const params   = new URLSearchParams(location.search);
+  const singleId = params.get('student');
+  const batchIds = params.get('students');
+  const classParam = params.get('class');
+  const yearParam = params.get('year') || '';
+  const year = yearParam || E.currentAcademicYear();
 
   /* ---------- USER ---------- */
   const user = E.requireLogin();
@@ -203,7 +198,7 @@
   /* ---------- DATA ---------- */
   const settings       = E.readStore(E.STORE_KEYS.settings, {}) || {};
   const allStudents    = E.readStore(E.STORE_KEYS.students, []) || [];
-  const classes        = E.readStore(E.STORE_KEYS.classes, []) || [];
+  const allClasses     = E.readStore(E.STORE_KEYS.classes, []) || [];
   const classSignatures= E.readStore(E.STORE_KEYS.classSignatures, {}) || {};
 
   /* ---------- RESOLVE TARGETS ---------- */
@@ -214,6 +209,9 @@
   } else if(singleId){
     const s = allStudents.find(x => x.id === singleId);
     if(s) targets = [s];
+  } else if(classParam){
+    /* Batch print by class + year */
+    targets = allStudents.filter(s => s.class === classParam);
   }
 
   if(!targets.length){
@@ -243,89 +241,64 @@
     }
   }
 
-  /* ---------- PAYMENT THRESHOLD GATE ----------
-     Applies only to Student and Parent viewers.
-     Admin / Registrar / Teacher bypass the gate.
-  -------------------------------------------- */
-  const isSelfViewer = user.role === 'Student' || user.role === 'Parent';
-  const threshold = E.getReportThreshold();
-
-  if(isSelfViewer && threshold.enabled){
-    /* Check each target against the threshold. If ANY target fails, block. */
-    const failures = [];
-    targets.forEach(t => {
-      const access = E.reportAccessFor(t.id, t.class);
-      if(!access.allowed) failures.push({ student: t, access });
-    });
-
-    if(failures.length){
-      const top = failures[0];
-      const a = top.access;
-      const pct = a.billed > 0 ? Math.min(100, Math.round((a.paid / a.billed) * 100)) : 0;
-      const reqPct = a.mode === 'percent' ? a.value : null;
-
-      document.getElementById('topBar').style.display = 'none';
-
-      document.getElementById('content').innerHTML = `
-        <div class="gate">
-          <span class="icon">🔒</span>
-          <h1>Report card locked</h1>
-          <p>
-            ${user.role === 'Parent'
-              ? `<strong>${E.esc(top.student.name)}'s</strong> report card is not yet available because the payment threshold has not been met.`
-              : `Your report card is not yet available because the payment threshold has not been met.`}
-          </p>
-
-          <span class="amount">${E.money(a.shortfall)}</span>
-          <div class="sub">still required to unlock</div>
-
-          <div class="progress-bar">
-            <span style="width:${pct}%"></span>
-          </div>
-          <div class="progress-caption">
-            You've paid <strong>${E.money(a.paid)}</strong> of <strong>${E.money(a.billed)}</strong>
-            (${pct}%).
-            ${reqPct !== null
-              ? `The school requires <strong>${reqPct}%</strong>.`
-              : `The school requires <strong>${E.money(a.value)}</strong>.`}
-          </div>
-
-          <p style="font-size:11px;color:var(--muted);line-height:1.6;max-width:400px;margin:0 auto 22px">
-            Please visit the school office or use the Fees &amp; Payments page to clear your balance.
-            Once the threshold is met, your report card will be available immediately.
-          </p>
-
-          <div>
-            <a href="fees.html">＄ Go to Fees &amp; Payments</a>
-            <a class="secondary" href="index.html">← Back to Dashboard</a>
-          </div>
-        </div>`;
-      return;
-    }
-  }
-
   /* ---------- HELPERS ---------- */
-
   function gradeCls(letter){
     return ({ A:'a', B:'b', C:'c', D:'d', F:'f' }[letter] || 'b');
   }
 
-  function subjectsForClass(className){
-    const rec = classes.find(c => c.name === className);
-    if(rec && Array.isArray(rec.subjects) && rec.subjects.length){
-      return rec.subjects.map(code => E.subjectName(code));
-    }
-    const set = new Set();
-    (E.readStore(E.STORE_KEYS.results, []) || [])
-      .filter(r => r.class === className)
-      .forEach(r => set.add(r.subject));
-    return Array.from(set).sort();
+  /* Compute the ledger row from an arbitrary array of results (live or archived). */
+  function ledgerRowFromResults(results, subject, className, category){
+    const cat = category || E.classCategoryFor(className);
+    const rows = results.filter(r => r.subject === subject);
+    const get = (semester, period) => {
+      const r = rows.find(x =>
+        Number(x.semester) === Number(semester) &&
+        String(x.period) === String(period));
+      return r ? r.score : '';
+    };
+    const p1 = get(1,1), p2 = get(1,2), p3 = get(1,3), e1 = get(1,'e1');
+    const p4 = get(2,4), p5 = get(2,5), p6 = get(2,6), e2 = get(2,'e2');
+    const w = E.weightConfig();
+
+    const calcAvg = (periodVals, examVal) => {
+      const nonEmpty = periodVals.filter(v => v !== '' && v !== null && v !== undefined);
+      const periodMean = nonEmpty.length ? E.averageScores(nonEmpty, cat).number : null;
+      const examNum = (() => {
+        if(examVal === '' || examVal === undefined || examVal === null) return null;
+        if(typeof examVal === 'string' && /^[A-Fa-f]$/.test(examVal.trim())){
+          return E.midpointForLetter(examVal, cat);
+        }
+        const n = Number(examVal);
+        return Number.isFinite(n) ? n : null;
+      })();
+      let mean;
+      if(periodMean != null && examNum != null) mean = periodMean * w.periodWeight + examNum * w.examWeight;
+      else if(periodMean != null) mean = periodMean;
+      else mean = examNum;
+      if(mean == null) return null;
+      return { letter: E.gradeFromNumber(mean, cat), number: mean };
+    };
+
+    const s1Avg = calcAvg([p1,p2,p3], e1);
+    const s2Avg = calcAvg([p4,p5,p6], e2);
+    const yearly = (() => {
+      if(s1Avg && s2Avg){
+        const mean = s1Avg.number * w.semesterWeight + s2Avg.number * (1 - w.semesterWeight);
+        return { letter: E.gradeFromNumber(mean, cat), number: mean };
+      }
+      if(s1Avg) return s1Avg;
+      if(s2Avg) return s2Avg;
+      return null;
+    })();
+
+    return { subject, p1, p2, p3, e1, s1Avg, p4, p5, p6, e2, s2Avg, yearly };
   }
 
-  function classPositionFor(student, year){
+  /* Class position from an arbitrary results list */
+  function classPositionFor(student, results){
     const peers = {};
-    (E.readStore(E.STORE_KEYS.results, []) || [])
-      .filter(r => r.class === student.class && (r.year === year || !r.year))
+    results
+      .filter(r => r.class === student.class)
       .forEach(r => {
         if(!peers[r.student]) peers[r.student] = { total: 0, count: 0 };
         let numeric = Number(r.score);
@@ -346,22 +319,23 @@
     return { rank: idx + 1, of: ranked.length, text: `${idx+1}${suffix(idx+1)} of ${ranked.length}` };
   }
 
-  function duxBadge(student){
-    const pos = classPositionFor(student, yearParam);
+  function duxBadgeFor(student, results){
+    const pos = classPositionFor(student, results);
     if(!pos || pos.rank > 3) return '';
     const rank = pos.rank;
     const stars = '★'.repeat(4 - rank);
     const label = rank === 1 ? '1st Dux' : rank === 2 ? '2nd Dux' : '3rd Dux';
-    return `<span class="dux-badge" style="display:inline-flex;align-items:center;gap:6px;margin-left:8px;padding:3px 9px;border-radius:16px;background:#fff4d6;color:#8a6a1a;font-size:11px;font-weight:800;letter-spacing:1px;vertical-align:middle">
+    return `<span style="display:inline-flex;align-items:center;gap:6px;margin-left:8px;
+      padding:3px 9px;border-radius:16px;background:#fff4d6;color:#8a6a1a;
+      font-size:11px;font-weight:800;letter-spacing:1px;vertical-align:middle">
       <span>${stars}</span>
       <span style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#8a6a1a;font-weight:900">${label}</span>
     </span>`;
   }
 
-  function attendanceSummary(student){
-    const attendance = E.readStore(E.STORE_KEYS.attendance, {}) || {};
+  function attendanceSummaryFromRegister(student, attendance){
     let present = 0, late = 0, absent = 0;
-    Object.keys(attendance).forEach(key => {
+    Object.keys(attendance || {}).forEach(key => {
       const [date, cls] = key.split('|');
       if(cls !== student.class) return;
       const rec = attendance[key] || {};
@@ -376,17 +350,43 @@
     return `${present + late} / ${total} days`;
   }
 
+  function subjectsForClass(className, results){
+    const rec = allClasses.find(c => c.name === className);
+    if(rec && Array.isArray(rec.subjects) && rec.subjects.length){
+      return rec.subjects.map(code => E.subjectName(code));
+    }
+    const set = new Set(results.map(r => r.subject));
+    return Array.from(set).sort();
+  }
+
   /* ---------- BUILD ONE REPORT CARD ---------- */
   function buildCard(student){
-    const category = E.classCategoryFor(student.class);
-    const isNursery = E.isNurseryCategory(category);
-    const subjects = subjectsForClass(student.class);
-    const year = yearParam;
+    /* Resolve this student's report card source */
+    const src = E.reportCardSource({ studentId: student.id, year });
 
-    const rows = subjects.map(sub => {
-      const r = E.subjectLedgerRow(student.name, student.class, sub, year);
-      return { subject: sub, ...r };
-    });
+    /* If the archive doesn't contain them, fall back gracefully */
+    if(!src.ok){
+      return `<div class="card-page"><main class="report-card">
+        <div style="padding:60px;text-align:center;color:#7a8498">
+          <div style="font-size:44px;margin-bottom:14px">🔍</div>
+          <strong style="display:block;color:#12315a;font-size:15px;margin-bottom:8px">
+            ${E.esc(student.name)} is not present in the ${E.esc(year)} archive.
+          </strong>
+          They may not have been enrolled that year.
+        </div>
+      </main></div>`;
+    }
+
+    const s = src.student;                  /* student with the class at that time */
+    const results = src.results || [];
+    const attendance = src.attendance || {};
+    const category = E.classCategoryFor(s.class);
+    const isNursery = E.isNurseryCategory(category);
+    const subjects = subjectsForClass(s.class, results);
+
+    const rows = subjects.map(sub =>
+      ledgerRowFromResults(results, sub, s.class, category)
+    );
 
     const s1Nums = rows.map(r => r.s1Avg?.number).filter(n => Number.isFinite(n));
     const s2Nums = rows.map(r => r.s2Avg?.number).filter(n => Number.isFinite(n));
@@ -397,14 +397,14 @@
     const yrGrade = yrAvg != null ? E.gradeFromNumber(yrAvg, category) : '—';
     const yrRemark = yrAvg != null ? E.remarkForGrade(yrGrade, category) : '';
 
-    const badge = duxBadge(student);
-    const pos = classPositionFor(student, year);
+    const badge = duxBadgeFor(s, results);
+    const pos = classPositionFor(s, results);
     const position = pos ? pos.text : '—';
-    const attendance = attendanceSummary(student) || '—';
-    const classRec = classes.find(c => c.name === student.class) || {};
+    const attendanceText = attendanceSummaryFromRegister(s, attendance) || '—';
+    const classRec = allClasses.find(c => c.name === s.class) || {};
     const teacherName = classRec.teacher
-      || (E.classSponsor(student.class) ? E.classSponsor(student.class).name : 'Class Teacher');
-    const teacherSig = classSignatures[student.class] || '';
+      || (E.classSponsor(s.class) ? E.classSponsor(s.class).name : 'Class Teacher');
+    const teacherSig = classSignatures[s.class] || '';
     const principalSig = settings.principalSignature || '';
 
     const comment = yrAvg != null && yrAvg >= 70
@@ -444,9 +444,22 @@
       ? `<span class="grade-${gradeCls(yrGrade)}" style="font-size:15px;font-weight:800">${yrGrade}</span>`
       : '—';
 
+    /* Archive banner only shown when source is an archive */
+    const archiveBanner = src.source === 'archive'
+      ? `<div class="archive-banner">
+           <span class="badge">Archived</span>
+           <div>
+             <strong>This report card is an archived record.</strong>
+             Snapshotted on ${E.esc(E.fmtDateTime(src.archivedAt))}.
+             Scores printed here reflect the ${E.esc(year)} archive.
+           </div>
+         </div>`
+      : '';
+
     return `
       <div class="card-page">
         <main class="report-card">
+          ${archiveBanner}
           <header class="school-header">
             <div class="school-brand">
               <div class="school-logo">${settings.logo
@@ -475,13 +488,13 @@
               <div class="student-grid">
                 <div class="info-card">
                   <label>Student name</label>
-                  <div class="value">${E.esc(student.name)} ${badge}</div>
+                  <div class="value">${E.esc(s.name)} ${badge}</div>
                 </div>
-                <div class="info-card"><label>Student ID</label><div class="value">${E.esc(student.id)}</div></div>
-                <div class="info-card"><label>Grade / Class</label><div class="value">${E.esc(student.class)}</div></div>
+                <div class="info-card"><label>Student ID</label><div class="value">${E.esc(s.id)}</div></div>
+                <div class="info-card"><label>Grade / Class</label><div class="value">${E.esc(s.class)}</div></div>
                 <div class="info-card"><label>Class category</label><div class="value">${E.esc(category || '—')}</div></div>
                 <div class="info-card"><label>Class position</label><div class="value">${E.esc(position)}</div></div>
-                <div class="info-card"><label>Attendance</label><div class="value">${E.esc(attendance)}</div></div>
+                <div class="info-card"><label>Attendance</label><div class="value">${E.esc(attendanceText)}</div></div>
               </div>
             </section>
 
@@ -562,7 +575,7 @@
 
             <div class="footer">
               <span>Generated by <strong>${E.esc(settings.name || 'EduCore')}</strong></span>
-              <span>Report Card · ${E.esc(year)}</span>
+              <span>Report Card · ${E.esc(year)}${src.source === 'archive' ? ' · Archived' : ''}</span>
             </div>
 
           </div>
@@ -574,10 +587,14 @@
   document.getElementById('content').innerHTML = targets.map(buildCard).join('');
 
   /* ---------- PAGE TITLE ---------- */
+  const srcIsArchive = !!(E.readArchives()[year]);
+  const titleSuffix = srcIsArchive ? ' (Archived)' : '';
   if(targets.length === 1){
-    document.title = `Report Card · ${targets[0].name} | ${settings.name || 'EduCore'}`;
+    document.title = `Report Card · ${targets[0].name}${titleSuffix} | ${settings.name || 'EduCore'}`;
+    document.getElementById('titleText').textContent = `Report Card · ${targets[0].name}${titleSuffix}`;
   } else {
-    document.title = `Report Cards · ${targets.length} students`;
+    document.title = `Report Cards · ${targets.length} students${titleSuffix}`;
+    document.getElementById('titleText').textContent = `Report Cards · ${targets.length} students${titleSuffix}`;
   }
 })();
 </script>

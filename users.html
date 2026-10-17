@@ -36,6 +36,20 @@
     background:#ffffff14;border:1px solid #ffffff36;padding:7px 12px;border-radius:20px}
   .band-user strong{color:#fff}
 
+  .health-strip{
+    background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);padding:14px 18px;margin-bottom:16px;
+    display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:12px;
+    color:#34415c;line-height:1.6;
+  }
+  .health-strip .badge{
+    display:inline-flex;align-items:center;gap:6px;
+    background:#fff8e6;color:#8a6a1a;border:1px solid #f3d999;
+    padding:5px 10px;border-radius:20px;font-size:11px;font-weight:800;
+  }
+  .health-strip .badge.danger{background:#fff0f1;color:#bd3b48;border-color:#f6c9ce}
+  .health-strip .badge.ok{background:#e6f7f0;color:#16835f;border-color:#b8e9d3}
+
   .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
   .stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:16px 18px;
     box-shadow:var(--shadow);position:relative;overflow:hidden}
@@ -99,39 +113,37 @@
   .pill.green{background:#e6f7f0;color:#16835f}
   .pill.red{background:#ffeaec;color:#bd3b48}
   .pill.blue{background:#edf2ff;color:#3b5cc1}
+  .pill.orange{background:#fff2dd;color:#a86414}
 
   .row-actions{display:flex;gap:5px;flex-wrap:wrap}
   .row-actions .btn{padding:7px 10px;font-size:11px}
 
   .empty{padding:60px 20px;text-align:center;color:var(--muted);font-size:13px}
 
-  /* ============================================================
-     PERMISSION SECTIONS (main menu + nested sub-features)
-     ============================================================ */
   .perm-section{margin-top:14px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
   .perm-section-head{padding:11px 14px;background:#f8faff;font-size:11px;font-weight:800;
     color:#34415c;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--line)}
 
-  /* one menu block */
-  .perm-item{
-    border-bottom:1px solid #f0f2f7;
-    padding:10px 14px 12px;
-    transition:background .15s;
-  }
+  .perm-item{border-bottom:1px solid #f0f2f7;padding:10px 14px 12px;transition:background .15s}
   .perm-item:last-child{border-bottom:0}
-  .perm-item.disabled{background:#fbfbfd}
-
-  /* the main row: text + big toggle */
-  .perm-row{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:14px;
+  .perm-item.disabled{background:#fbfbfd;opacity:.55}
+  .perm-item.forbidden{background:#fff6f6;border-left:3px solid #f6c9ce}
+  .perm-item.forbidden .perm-text strong::after{
+    content:" ⚠";font-size:11px;margin-left:4px;color:#bd3b48;
   }
+  .perm-item.override{
+    background:#fffbe6;
+    border-left:3px solid #c99a2e;
+  }
+  .perm-item.override .perm-text strong::after{
+    content:" ✎ OVERRIDE";
+    font-size:9px;margin-left:6px;color:#8a6a1a;letter-spacing:.6px;
+  }
+
+  .perm-row{display:flex;justify-content:space-between;align-items:center;gap:14px}
   .perm-text strong{display:block;font-size:12px;color:var(--text)}
   .perm-text small{display:block;font-size:10px;color:var(--muted);margin-top:3px}
 
-  /* big toggle */
   .toggle{position:relative;display:inline-block;width:44px;height:24px;flex:0 0 44px}
   .toggle input{opacity:0;width:0;height:0}
   .toggle .slider{position:absolute;cursor:pointer;inset:0;background:#c9d1e0;border-radius:24px;transition:.2s}
@@ -141,31 +153,15 @@
   .toggle input:checked + .slider:before{transform:translateX(20px)}
   .toggle input:disabled + .slider{opacity:.4;cursor:not-allowed}
 
-  /* sub-features grid, indented, small sliders */
-  .sub-features{
-    margin-top:10px;
-    margin-left:14px;
-    padding-left:12px;
-    border-left:2px solid #eef2fb;
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:6px 18px;
-  }
-  .sub-feature{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:10px;
-    padding:5px 4px;
-    opacity:1;
-    transition:opacity .15s;
-  }
+  .sub-features{margin-top:10px;margin-left:14px;padding-left:12px;
+    border-left:2px solid #eef2fb;display:grid;grid-template-columns:1fr 1fr;gap:6px 18px}
+  .sub-feature{display:flex;justify-content:space-between;align-items:center;gap:10px;
+    padding:5px 4px;opacity:1;transition:opacity .15s}
   .sub-features.disabled .sub-feature{opacity:.35}
 
   .sub-feature .sub-text strong{display:block;font-size:11px;font-weight:700;color:#3b4a63}
   .sub-feature .sub-text small{display:block;font-size:9px;color:var(--muted);margin-top:2px;line-height:1.35}
 
-  /* small toggle */
   .toggle.sm{width:34px;height:20px;flex:0 0 34px}
   .toggle.sm .slider:before{height:14px;width:14px;left:3px;top:3px}
   .toggle.sm input:checked + .slider:before{transform:translateX(14px)}
@@ -175,6 +171,7 @@
     padding:7px 12px;font-size:11px;font-weight:800;color:#2f4d8a;cursor:pointer;letter-spacing:.3px}
   .role-preset-btn:hover{background:#eef2fb}
   .role-preset-btn.active{background:#245d9c;color:#fff;border-style:solid;border-color:#245d9c}
+  .role-preset-btn:disabled{opacity:.4;cursor:not-allowed}
 
   .perm-search{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
   .perm-search input{flex:1 1 200px;border:1px solid #dfe4ee;border-radius:8px;
@@ -182,7 +179,6 @@
 
   .link-btn{border:0;background:transparent;color:var(--blue);font-size:11px;font-weight:700;cursor:pointer}
 
-  /* child picker (unchanged) */
   .child-picker-wrap{border:1px solid var(--line);border-radius:10px;background:#fff;margin-top:6px;overflow:hidden}
   .child-picker-head{display:flex;justify-content:space-between;align-items:center;gap:10px;
     padding:9px 12px;background:#f8faff;border-bottom:1px solid var(--line);font-size:11px;flex-wrap:wrap}
@@ -206,6 +202,37 @@
   .child-pick .who small{font-size:10px;color:var(--muted)}
   .child-pick .mini-avatar{width:28px;height:28px;font-size:9px;border-radius:8px}
 
+  .creds-card{background:#f8faff;border:1px solid #cfe3ff;border-radius:12px;
+    padding:20px;margin-top:10px}
+  .creds-card h4{margin:0 0 12px;font-size:13px;color:var(--navy);letter-spacing:.3px}
+  .creds-row{display:flex;justify-content:space-between;gap:10px;padding:9px 12px;
+    background:#fff;border:1px solid var(--line);border-radius:8px;margin-bottom:8px;
+    font-family:monospace;font-size:13px}
+  .creds-row span{color:var(--muted);font-family:Arial,Helvetica,sans-serif;font-size:11px;
+    text-transform:uppercase;letter-spacing:.6px;font-weight:800}
+  .creds-row strong{color:var(--navy)}
+  .creds-row button{border:0;background:#eef2fb;color:#34415c;border-radius:6px;
+    padding:5px 9px;font-size:10px;font-weight:800;cursor:pointer}
+  .creds-warning{margin-top:10px;padding:10px 12px;background:#fff8e6;border:1px solid #f3d999;
+    border-radius:8px;font-size:11px;color:#8a6a1a;line-height:1.6}
+  .creds-warning strong{color:#5a3a00}
+
+  .validation-banner{grid-column:1/-1;padding:12px 14px;border-radius:10px;
+    font-size:12px;line-height:1.6;margin-top:6px}
+  .validation-banner.error{background:#fff0f1;border:1px solid #f6c9ce;color:#8a1e28}
+  .validation-banner.warn{background:#fff8e6;border:1px solid #f3d999;color:#8a6a1a}
+  .validation-banner ul{margin:6px 0 0;padding-left:20px}
+  .validation-banner li{margin-bottom:3px}
+
+  .username-hint{font-size:10px;color:var(--muted);margin-top:4px;display:block}
+
+  .password-wrap{display:flex;gap:6px;align-items:flex-start}
+  .password-wrap input{flex:1}
+  .password-wrap button{border:0;background:#eef2fb;color:#34415c;border-radius:8px;
+    padding:11px 12px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap}
+  .password-wrap button:hover{background:#e1e9f8}
+  .password-hint{font-size:10px;color:var(--muted);margin-top:4px;display:block;line-height:1.4}
+
   @media (max-width:850px){
     .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
     .sub-features{grid-template-columns:1fr}
@@ -227,7 +254,7 @@
 
   <div class="band">
     <div class="band-left">
-      <div class="band-logo" id="bandLogo">DS</div>
+      <div class="band-logo" id="bandLogo">EC</div>
       <div>
         <h1 id="bandSchool">User Management</h1>
         <p id="bandSub">Create users, assign roles, and control what each account can see</p>
@@ -238,11 +265,13 @@
     </div>
   </div>
 
+  <div class="health-strip" id="healthStrip"></div>
+
   <div class="stats">
     <div class="stat"><small>Total users</small><strong id="kTotal">0</strong></div>
     <div class="stat green"><small>Active</small><strong id="kActive">0</strong></div>
     <div class="stat orange"><small>Disabled</small><strong id="kDisabled">0</strong></div>
-    <div class="stat red"><small>Linked accounts</small><strong id="kLinked">0</strong></div>
+    <div class="stat red"><small>Policy overrides</small><strong id="kViolations">0</strong></div>
   </div>
 
   <div class="toolbar">
@@ -260,6 +289,7 @@
         <option value="">All statuses</option>
         <option value="active">Active only</option>
         <option value="disabled">Disabled only</option>
+        <option value="violations">Overrides only</option>
       </select>
     </div>
     <div class="toolbar-left">
@@ -298,11 +328,16 @@
   'use strict';
   const E = window.EduCore;
 
-  /* ---------- GUARD ---------- */
   const user = E.requirePerm('userManagement', 'User Management');
   if(!user) return;
 
-  /* ---------- HEADER ---------- */
+  if(!E.canAssignRole('Principal')){
+    E.showDenied('User Management');
+    return;
+  }
+
+  const TOTAL_PERM_TOGGLES = E.renderedPermissionToggleCount();
+
   function paintHeader(){
     const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
     const name = settings.name || 'EduCore High School';
@@ -313,21 +348,16 @@
         name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
     }
     document.getElementById('bandSchool').textContent = name;
-    document.getElementById('bandSub').textContent = 'Create users, assign roles, and control what each account can see';
     document.getElementById('bandUser').textContent = user.name || user.username;
   }
 
-  /* ---------- ROLE BADGE ---------- */
   function roleBadge(r){
     return `<span class="role-badge ${(r||'').toLowerCase()}">${E.esc(r||'—')}</span>`;
   }
-
-  /* ---------- STATUS PILL ---------- */
   function statusPill(active){
     return active ? '<span class="pill green">Active</span>' : '<span class="pill red">Disabled</span>';
   }
 
-  /* ---------- LINKED LABEL ---------- */
   function linkedNameFor(u){
     if(u.role === 'Student' && u.linkedStudentId){
       const s = (E.readStore(E.STORE_KEYS.students, []) || []).find(x => x.id === u.linkedStudentId);
@@ -351,7 +381,49 @@
     return '—';
   }
 
-  /* ---------- RENDER TABLE ---------- */
+  function overridesFor(u){
+    const out = [];
+    Object.keys(u.permissions || {}).forEach(k => {
+      if(u.permissions[k] && E.roleForbids(u.role, k)) out.push(k);
+    });
+    return out;
+  }
+
+  function missingLinksFor(u){
+    const issues = [];
+    const c = E.ROLE_CONSTRAINTS[u.role];
+    if(c && c.requiredLink){
+      const v = u[c.requiredLink];
+      const empty = Array.isArray(v) ? !v.length : !v;
+      if(empty) issues.push(`Missing required link (${c.requiredLink})`);
+    }
+    return issues;
+  }
+
+  function paintHealth(users){
+    const strip = document.getElementById('healthStrip');
+    const overrideCount = users.reduce((s,u) => s + overridesFor(u).length, 0);
+    const missingLinkCount = users.filter(u => missingLinksFor(u).length).length;
+    const lastPrincipals = users.filter(u => u.role === 'Principal' && u.active);
+
+    const bits = [];
+    if(lastPrincipals.length === 1){
+      bits.push(`<span class="badge">Only 1 active Principal — guard in place</span>`);
+    } else if(lastPrincipals.length === 0){
+      bits.push(`<span class="badge danger">No active Principal — nobody can manage users!</span>`);
+    }
+    if(missingLinkCount){
+      bits.push(`<span class="badge danger">${missingLinkCount} account${missingLinkCount === 1 ? '' : 's'} missing a required link</span>`);
+    }
+    if(overrideCount){
+      bits.push(`<span class="badge">${overrideCount} permission override${overrideCount === 1 ? '' : 's'} across accounts</span>`);
+    } else {
+      bits.push(`<span class="badge ok">No overrides — all accounts follow their role defaults</span>`);
+    }
+    strip.innerHTML = `<strong>Health:</strong> ` + bits.join(' ');
+    return overrideCount;
+  }
+
   function paintTable(){
     const users = E.readStore(E.STORE_KEYS.users, []) || [];
     const q = document.getElementById('search').value.toLowerCase();
@@ -363,6 +435,7 @@
       if(role && u.role !== role) return false;
       if(status === 'active' && !u.active) return false;
       if(status === 'disabled' && u.active) return false;
+      if(status === 'violations' && !overridesFor(u).length) return false;
       return true;
     }).sort((a,b) => {
       const order = { Principal:0, Registrar:1, Teacher:2, Student:3, Parent:4 };
@@ -373,18 +446,25 @@
 
     const active = users.filter(u => u.active).length;
     const disabled = users.length - active;
-    const linked = users.filter(u => u.role === 'Teacher' || u.role === 'Student' || u.role === 'Parent').length;
+    const overrideCount = paintHealth(users);
+
     document.getElementById('kTotal').textContent = users.length;
     document.getElementById('kActive').textContent = active;
     document.getElementById('kDisabled').textContent = disabled;
-    document.getElementById('kLinked').textContent = linked;
+    document.getElementById('kViolations').textContent = overrideCount;
 
     const tb = document.getElementById('tbody');
     tb.innerHTML = arr.map(u => {
-      /* Counts: main menus ON and sub-features ON separately */
-      const permCount = Object.values(u.permissions || {}).filter(Boolean).length;
-      const totalPerms = E.ALL_KEYS.length;
+      const permKeys = new Set(E.ALL_KEYS);
+      const permCount = Object.keys(u.permissions || {})
+        .filter(k => u.permissions[k] && permKeys.has(k))
+        .length;
       const isSelf = u.id === user.id;
+      const overrides = overridesFor(u);
+      const missing = missingLinksFor(u);
+      const flagBits = [];
+      if(missing.length) flagBits.push(`<span class="pill red" title="${E.esc(missing.join(' · '))}" style="margin-left:6px">⚠</span>`);
+      if(overrides.length) flagBits.push(`<span class="pill orange" title="${E.esc(overrides.join(' · '))}" style="margin-left:6px">✎ ${overrides.length}</span>`);
 
       return `<tr>
         <td>
@@ -394,9 +474,9 @@
           </div>
         </td>
         <td>${E.esc(u.username)}</td>
-        <td>${roleBadge(u.role)}</td>
+        <td>${roleBadge(u.role)}${flagBits.join('')}</td>
         <td>${E.esc(linkedNameFor(u))}</td>
-        <td><span class="pill blue">${permCount} / ${totalPerms}</span></td>
+        <td><span class="pill blue">${permCount} / ${TOTAL_PERM_TOGGLES}</span></td>
         <td>${statusPill(u.active)}</td>
         <td>${u.lastLogin ? E.fmtDateTime(u.lastLogin) : '—'}</td>
         <td>
@@ -413,12 +493,31 @@
     document.getElementById('count').textContent = arr.length;
   }
 
-  /* ---------- PASSWORD HELPERS ---------- */
   function strongPassword(){
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#%*';
-    let out = '';
-    for(let i=0;i<12;i++) out += chars[Math.floor(Math.random() * chars.length)];
-    return out;
+    const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const lower = 'abcdefghijkmnopqrstuvwxyz';
+    const digit = '23456789';
+    const symbol = '!@#%*';
+    const all = upper + lower + digit + symbol;
+    const pick = set => set[Math.floor(Math.random() * set.length)];
+    let out = pick(upper) + pick(lower) + pick(digit) + pick(symbol);
+    for(let i = 0; i < 8; i++) out += pick(all);
+    const arr = out.split('');
+    for(let i = arr.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr.join('');
+  }
+
+  function checkPasswordPolicy(pw){
+    const errors = [];
+    if(pw.length < 8) errors.push('At least 8 characters');
+    if(!/[A-Z]/.test(pw)) errors.push('At least one uppercase letter');
+    if(!/[a-z]/.test(pw)) errors.push('At least one lowercase letter');
+    if(!/[0-9]/.test(pw)) errors.push('At least one digit');
+    if(!/[!@#%*^&()_\-+=.,;:]/.test(pw)) errors.push('At least one symbol');
+    return errors;
   }
 
   async function hashPassword(plain){
@@ -428,38 +527,86 @@
       return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
     }catch(e){
       let h = 0;
-      for(let i=0;i<plain.length;i++){ h = (h*31 + plain.charCodeAt(i)) >>> 0; }
+      for(let i = 0; i < plain.length; i++){ h = (h*31 + plain.charCodeAt(i)) >>> 0; }
       return 'fb' + h.toString(16);
     }
   }
 
-  /* ============================================================
-     PERMISSION SLIDERS RENDERER
-     Main menu row (big toggle) + nested sub-features (small toggles)
-     ============================================================ */
+  function slugifyUsername(name){
+    let s = String(name || '').trim();
+    if(!s) return '';
+    s = s.replace(/\b(mr|mrs|ms|miss|dr|prof|sir|madam)\.?\b/gi, '').trim();
+    s = s.toLowerCase().replace(/[^a-z0-9\s._-]/g, '');
+    s = s.replace(/\s+/g, '.');
+    s = s.replace(/\.+/g, '.');
+    s = s.replace(/^[._-]+|[._-]+$/g, '');
+    return s;
+  }
+
+  function uniqueUsername(base, existingUsers, selfId){
+    if(!base) return '';
+    const taken = new Set((existingUsers || [])
+      .filter(u => u.id !== selfId)
+      .map(u => String(u.username || '').toLowerCase()));
+    if(!taken.has(base)) return base;
+    let n = 2;
+    while(taken.has(base + n)) n++;
+    return base + n;
+  }
+
+  function showCredentialsModal({ name, username, password }){
+    const html = `
+      <div class="full">
+        <div class="creds-card">
+          <h4>Account created</h4>
+          <div class="creds-row">
+            <span>Name</span>
+            <strong>${E.esc(name)}</strong>
+          </div>
+          <div class="creds-row">
+            <span>Username</span>
+            <strong>${E.esc(username)}</strong>
+            <button type="button" data-copy="${E.esc(username)}">Copy</button>
+          </div>
+          <div class="creds-row">
+            <span>Temporary password</span>
+            <strong>${E.esc(password)}</strong>
+            <button type="button" data-copy="${E.esc(password)}">Copy</button>
+          </div>
+          <div class="creds-warning">
+            <strong>Save this now.</strong> The password is shown only once.
+            The user will be required to change it on first sign-in.
+            The demo login card will show this password until it is changed.
+          </div>
+        </div>
+      </div>`;
+
+    E.openModal('Credentials — share securely', html, 'I have saved these credentials',
+      () => { E.closeModal(); paintTable(); });
+  }
+
   function buildPermSections(u){
-    /* Fill missing keys with sensible defaults:
-       - main menus default to their value in the user record (true/false)
-       - sub-features default to the parent menu value (backwards compat) */
     const perms = Object.assign({}, u.permissions || {});
 
     return E.PERMISSION_GROUPS.map(g => {
       const items = g.items.map(it => {
+        const menuForbidden = E.roleForbids(u.role, it.key);
         const menuOn = !!perms[it.key];
+        const menuIsOverride = menuForbidden && menuOn;
 
         const subHTML = (it.subFeatures || []).map(sf => {
           const fullKey = it.key + '.' + sf.key;
-          /* If the user has an explicit value, use it.
-             Otherwise fall back to the parent menu value. */
+          const subForbidden = E.roleForbids(u.role, fullKey);
           const value = Object.prototype.hasOwnProperty.call(perms, fullKey)
-            ? !!perms[fullKey]
-            : menuOn;
+                ? !!perms[fullKey]
+                : menuOn;
+          const subIsOverride = subForbidden && value;
           return `
-            <div class="sub-feature"
+            <div class="sub-feature ${subIsOverride ? 'override' : ''}"
                  data-sub-label="${E.esc((sf.label + ' ' + sf.desc).toLowerCase())}">
               <div class="sub-text">
-                <strong>${E.esc(sf.label)}</strong>
-                <small>${E.esc(sf.desc)}</small>
+                <strong>${E.esc(sf.label)}${subIsOverride ? ' ✎' : ''}</strong>
+                <small>${E.esc(sf.desc)}${subForbidden ? ' · <em style="color:#a86414">normally off for '+E.esc(u.role)+'</em>' : ''}</small>
               </div>
               <label class="toggle sm">
                 <input type="checkbox"
@@ -478,14 +625,21 @@
              </div>`
           : '';
 
+        const itemClass = [
+          'perm-item',
+          menuOn ? '' : 'disabled',
+          menuForbidden ? 'forbidden' : '',
+          menuIsOverride ? 'override' : ''
+        ].filter(Boolean).join(' ');
+
         return `
-          <div class="perm-item ${menuOn ? '' : 'disabled'}"
+          <div class="${itemClass}"
                data-perm-key="${E.esc(it.key)}"
                data-label="${E.esc((it.label + ' ' + it.desc).toLowerCase())}">
             <div class="perm-row">
               <div class="perm-text">
-                <strong>${E.esc(it.label)}</strong>
-                <small>${E.esc(it.desc)}</small>
+                <strong>${E.esc(it.label)}${menuIsOverride ? ' ✎ OVERRIDE' : ''}</strong>
+                <small>${E.esc(it.desc)}${menuForbidden ? ' · <em style="color:#a86414">normally off for '+E.esc(u.role)+'</em>' : ''}</small>
               </div>
               <label class="toggle">
                 <input type="checkbox"
@@ -507,9 +661,6 @@
     }).join('');
   }
 
-  /* ============================================================
-     USER MODAL
-     ============================================================ */
   async function openUserModal(existingId){
     const users    = E.readStore(E.STORE_KEYS.users, []) || [];
     const students = E.readStore(E.STORE_KEYS.students, []) || [];
@@ -517,9 +668,11 @@
 
     const isNew = !existingId;
     const u = isNew
-      ? { name:'', username:'', role:'Teacher', active:true,
+      ? {
+          name:'', username:'', role:'', active:true,
           linkedStudentId:'', linkedStudentIds:[], linkedTeacherId:'',
-          permissions: { ...E.ROLE_PRESETS.Teacher } }
+          permissions: {}
+        }
       : JSON.parse(JSON.stringify(users.find(x => x.id === existingId) || {}));
 
     if(!u.id && !isNew) return;
@@ -528,18 +681,19 @@
       u.linkedStudentIds = u.linkedStudentId ? [u.linkedStudentId] : [];
     }
 
-    const currentRole = { value: u.role };
+    const currentRole = { value: u.role || '' };
+    const autoFillState = { active: isNew };
+    const savedPerms = Object.assign({}, u.permissions || {});
 
-    /* Build the permission sections */
-    const permSections = buildPermSections(u);
+    const permSections = u.role
+      ? buildPermSections(u)
+      : buildPermSections({ ...u, permissions: {} });
 
-    /* Dropdowns for single-link */
     const studentOptions = students.map(s =>
       `<option value="${E.esc(s.id)}" ${u.linkedStudentId === s.id ? 'selected' : ''}>${E.esc(s.name)} — ${E.esc(s.id)} (${E.esc(s.class)})</option>`).join('');
     const teacherOptions = teachers.map(t =>
       `<option value="${E.esc(t.id)}" ${u.linkedTeacherId === t.id ? 'selected' : ''}>${E.esc(t.name)} — ${E.esc(t.department||'')}</option>`).join('');
 
-    /* Multi-child picker */
     const parentStudentList = students.length
       ? students.slice().sort((a,b) => a.name.localeCompare(b.name)).map(s => {
           const ticked = u.linkedStudentIds.includes(s.id);
@@ -555,26 +709,41 @@
         }).join('')
       : '<div class="empty" style="padding:20px">No students in the system yet.</div>';
 
+    const passwordBlock = isNew
+      ? `<div class="full">
+           <label>Password <span style="color:#bd3b48">*</span></label>
+           <div class="password-wrap">
+             <input name="password" id="userPasswordInput" type="text" required
+               autocomplete="new-password" placeholder="Type or generate a password">
+             <button type="button" id="genPassBtn">🎲 Generate</button>
+           </div>
+           <span class="password-hint">
+             Min 8 characters · uppercase · lowercase · digit · symbol.
+             The user must change it on first sign-in.
+             It will appear on the login card until changed.
+           </span>
+         </div>`
+      : `<div class="full">
+           <label>Password</label>
+           <input value="••••••••" readonly style="background:#f4f6fb;color:#7a8498">
+           <span class="password-hint">
+             Use the <strong>Reset password</strong> button below to issue a new temporary password.
+           </span>
+         </div>`;
+
     const html = `
       <input type="hidden" name="role" id="roleHiddenInput" value="${E.esc(u.role)}">
 
-      <div class="full"><label>Full name</label>
-        <input name="name" required value="${E.esc(u.name||'')}">
+      <div class="full"><label>Full name <span style="color:#bd3b48">*</span></label>
+        <input name="name" id="userNameInput" required value="${E.esc(u.name||'')}"
+          placeholder="e.g. Mrs. Rebecca Moore">
       </div>
-      <div><label>Username</label>
-        <input name="username" required value="${E.esc(u.username||'')}" autocomplete="off"
-          ${isNew ? '' : 'readonly style="background:#f4f6fb;color:#7a8498"'}>
+      <div><label>Username <span style="color:#bd3b48">*</span></label>
+        <input name="username" id="userUsernameInput" required value="${E.esc(u.username||'')}"
+          autocomplete="off" ${isNew ? '' : 'readonly style="background:#f4f6fb;color:#7a8498"'}>
+        ${isNew ? `<span class="username-hint" id="usernameHint">Auto-fills from the full name. Edit to override.</span>` : ''}
       </div>
-      <div><label>${isNew ? 'Password' : 'Password (use Reset below)'}</label>
-        ${isNew
-          ? `<input name="password" type="text" required autocomplete="off" placeholder="Type or generate below">
-             <div style="margin-top:6px">
-               <button type="button" class="btn outline" id="genPassBtn" style="padding:7px 11px;font-size:11px">
-                 🎲 Generate strong password
-               </button>
-             </div>`
-          : `<input value="••••••••" readonly style="background:#f4f6fb;color:#7a8498">`}
-      </div>
+      ${passwordBlock}
       <div><label>Email</label>
         <input name="email" type="email" value="${E.esc(u.email||'')}">
       </div>
@@ -583,19 +752,25 @@
       </div>
 
       <div class="full">
-        <label>Role (starting preset)</label>
+        <label>Role <span style="color:#bd3b48">*</span></label>
         <div class="role-preset-row" id="rolePresetRow">
-          ${['Principal','Registrar','Teacher','Student','Parent'].map(r =>
-            `<button type="button" class="role-preset-btn ${u.role === r ? 'active' : ''}" data-role="${r}">${r}</button>`
-          ).join('')}
+          ${['Principal','Registrar','Teacher','Student','Parent'].map(r => {
+            const enabled = isNew || r === u.role || user.role === 'Principal';
+            return `<button type="button"
+              class="role-preset-btn ${u.role === r ? 'active' : ''}"
+              data-role="${r}"
+              ${enabled ? '' : 'disabled title="Only a Principal can change roles"'}
+            >${r}</button>`;
+          }).join('')}
         </div>
         <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5">
-          Picking a role applies its recommended permissions (including sub-features). You can fine-tune the sliders below.
+          Picking a role applies its recommended defaults. Every toggle below can still be
+          overridden — even features that are normally off for that role. The saved record wins.
         </div>
       </div>
 
       <div class="full" id="linkedStudentField" style="${u.role === 'Student' ? '' : 'display:none'}">
-        <label>Linked student record (required for Student role)</label>
+        <label>Linked student record <span style="color:#bd3b48">*</span></label>
         <select name="linkedStudentId">
           <option value="">— Pick a student —</option>
           ${studentOptions}
@@ -603,7 +778,7 @@
       </div>
 
       <div class="full" id="linkedParentField" style="${u.role === 'Parent' ? '' : 'display:none'}">
-        <label>Linked children (select one or more students)</label>
+        <label>Linked children <span style="color:#bd3b48">*</span></label>
         <div class="child-picker-wrap">
           <div class="child-picker-head">
             <span class="selected-count" id="childCountLabel">0 children selected</span>
@@ -620,20 +795,14 @@
             ${parentStudentList}
           </div>
         </div>
-        <small style="color:var(--muted);font-size:11px;margin-top:6px;display:block">
-          Parents see only the students you tick here. You can tick as many as you like.
-        </small>
       </div>
 
       <div class="full" id="linkedTeacherField" style="${u.role === 'Teacher' ? '' : 'display:none'}">
-        <label>Linked teacher record (recommended for Teacher role)</label>
+        <label>Linked teacher record <span style="color:#bd3b48">*</span></label>
         <select name="linkedTeacherId">
           <option value="">— Pick a teacher —</option>
           ${teacherOptions}
         </select>
-        <small style="color:var(--muted);font-size:11px;margin-top:4px;display:block">
-          Links this login to a teacher so their classes and subjects are scoped correctly.
-        </small>
       </div>
 
       <div class="full">
@@ -643,13 +812,13 @@
           <span class="slider"></span>
         </label>
         <div style="font-size:11px;color:var(--muted);margin-top:6px">
-          Disabled accounts cannot sign in but the record is kept.
+          Disabled accounts cannot sign in but the record is kept for audit.
         </div>
       </div>
 
       <div class="full">
         <label style="font-size:12px;color:#34415c;letter-spacing:.5px;text-transform:uppercase">
-          Permissions
+          Permissions ${u.role ? '' : '<span style="color:#a86414;font-weight:700;text-transform:none;letter-spacing:0">— pick a role first</span>'}
         </label>
         <div class="perm-search">
           <input id="permSearch" placeholder="Search menus, sub-features...">
@@ -661,136 +830,117 @@
 
       <div class="full" id="permContainer">${permSections}</div>
 
+      <div class="full" id="validationBanner"></div>
+
       ${!isNew ? `
         <div class="full" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
           <button type="button" class="btn warn" id="resetPassBtn">🔑 Reset password</button>
           <button type="button" class="btn danger" id="deleteUserBtn">🗑 Delete user</button>
         </div>` : ''}`;
 
-    /* ============================================================
-       OPEN MODAL
-       ============================================================ */
     E.openModal(isNew ? 'Create user' : `Edit user · ${u.username}`, html,
       isNew ? 'Create user' : 'Save changes',
-      async d => {
-        const chosenRole = (d.role && String(d.role)) || currentRole.value || 'Teacher';
+      async d => submitUserModal({ d, u, isNew, users, students, teachers }),
+      true);
 
-        /* Collect permission values from every checkbox we rendered */
-        const perms = {};
-        E.ALL_KEYS.forEach(k => {
-          const cb = document.querySelector(`[data-perm-toggle="${k}"]`);
-          perms[k] = !!(cb && cb.checked);
-        });
+    /* ---------- USERNAME AUTO-FILL ---------- */
+    const nameInput     = document.getElementById('userNameInput');
+    const usernameInput = document.getElementById('userUsernameInput');
+    const usernameHint  = document.getElementById('usernameHint');
 
-        /* Parent children */
-        const parentIds = Array.from(document.querySelectorAll('[data-parent-student]:checked'))
-          .map(x => x.dataset.parentStudent);
+    if(nameInput && usernameInput && isNew){
+      if(usernameInput.value.trim()){
+        autoFillState.active = false;
+        if(usernameHint) usernameHint.textContent = 'Editing manually.';
+      }
 
-        if(chosenRole === 'Student' && !d.linkedStudentId){
-          E.toast('Pick a linked student for a Student account.'); return;
+      nameInput.addEventListener('input', () => {
+        if(!autoFillState.active) return;
+        const slug = slugifyUsername(nameInput.value);
+        const unique = uniqueUsername(slug, users, u.id || null);
+        usernameInput.value = unique;
+        if(usernameHint){
+          usernameHint.textContent = unique
+            ? 'Auto-generated from the full name. Edit to override.'
+            : 'Type a full name to generate a username.';
         }
-        if(chosenRole === 'Parent' && !parentIds.length){
-          E.toast('Tick at least one child for a Parent account.'); return;
+      });
+
+      usernameInput.addEventListener('input', () => {
+        const slug = uniqueUsername(slugifyUsername(nameInput.value), users, u.id || null);
+        if(usernameInput.value.trim() !== slug){
+          autoFillState.active = false;
+          if(usernameHint) usernameHint.textContent = 'Editing manually.';
         }
+      });
+    }
 
-        const users = E.readStore(E.STORE_KEYS.users, []) || [];
+    /* ---------- GENERATE PASSWORD ---------- */
+    document.getElementById('genPassBtn')?.addEventListener('click', () => {
+      const pw = strongPassword();
+      const field = document.getElementById('userPasswordInput');
+      if(field){
+        field.value = pw;
+        field.type = 'text';
+        field.focus();
+        field.select();
+      }
+    });
 
-        if(isNew){
-          if(!d.username || !d.username.trim()){ E.toast('Username required.'); return; }
-          if(users.some(x => x.username.toLowerCase() === d.username.toLowerCase())){
-            E.toast('That username already exists.'); return;
-          }
-          if(!d.password || d.password.length < 4){ E.toast('Password must be at least 4 characters.'); return; }
-          const hash = await hashPassword(d.password);
-
-          users.push({
-            id: 'u-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6),
-            username: d.username.trim(),
-            passwordHash: hash,
-            name: d.name.trim(),
-            email: (d.email||'').trim(),
-            phone: (d.phone||'').trim(),
-            role: chosenRole,
-            linkedStudentId:  chosenRole === 'Student' ? d.linkedStudentId : null,
-            linkedStudentIds: chosenRole === 'Parent'  ? parentIds : null,
-            linkedTeacherId:  chosenRole === 'Teacher' ? d.linkedTeacherId : null,
-            permissions: perms,
-            active: !!d.active,
-            createdAt: new Date().toISOString(),
-            createdBy: user.username,
-            lastLogin: null
-          });
-          E.writeStore(E.STORE_KEYS.users, users);
-          E.audit('create', `User ${d.username}`, '', chosenRole);
-          E.toast('User created.');
-        } else {
-          const target = users.find(x => x.id === u.id);
-          if(!target) return;
-          target.name  = d.name.trim();
-          target.email = (d.email||'').trim();
-          target.phone = (d.phone||'').trim();
-          target.role  = chosenRole;
-          target.linkedStudentId  = chosenRole === 'Student' ? d.linkedStudentId : null;
-          target.linkedStudentIds = chosenRole === 'Parent'  ? parentIds : null;
-          target.linkedTeacherId  = chosenRole === 'Teacher' ? d.linkedTeacherId : null;
-          target.permissions = perms;
-          target.active = !!d.active;
-          target.updatedAt = new Date().toISOString();
-          E.writeStore(E.STORE_KEYS.users, users);
-          E.audit('update', `User ${target.username}`, '', 'permissions updated');
-          E.toast('User updated.');
-        }
-
-        E.closeModal();
-        paintTable();
-      }, true);
-
-    /* ============================================================
-       MODAL HELPERS
-       ============================================================ */
-
-    /* -------- Main menu toggles cascade to sub-features -------- */
+    /* ---------- PERMISSION HELPERS ---------- */
     function syncSubBlock(menuKey, menuOn){
       const block = document.querySelector(`[data-sub-block="${menuKey}"]`);
       const item = document.querySelector(`.perm-item[data-perm-key="${menuKey}"]`);
       if(item) item.classList.toggle('disabled', !menuOn);
       if(!block) return;
-
       block.classList.toggle('disabled', !menuOn);
-      block.querySelectorAll('input[data-perm-toggle]').forEach(cb => {
-        cb.disabled = !menuOn;
+    }
+
+    function refreshOverrideStyles(role){
+      document.querySelectorAll('.perm-item').forEach(item => {
+        const key = item.dataset.permKey;
+        const cb = item.querySelector('[data-perm-toggle="' + key + '"]');
+        const isOverride = E.roleForbids(role, key) && cb && cb.checked;
+        item.classList.toggle('forbidden', E.roleForbids(role, key));
+        item.classList.toggle('override', isOverride);
+        const strong = item.querySelector('.perm-text strong');
+        if(strong){
+          const base = strong.dataset.baseText || strong.textContent.replace(/\s*✎.*$/, '').trim();
+          strong.dataset.baseText = base;
+          strong.innerHTML = E.esc(base) + (isOverride ? ' ✎ OVERRIDE' : '');
+        }
       });
     }
 
-    document.querySelectorAll('[data-main-menu]').forEach(cb => {
-      cb.addEventListener('change', () => {
-        syncSubBlock(cb.dataset.mainMenu, cb.checked);
-      });
-      /* Sync on open in case values are already stored */
-      syncSubBlock(cb.dataset.mainMenu, cb.checked);
-    });
-
-    /* -------- Role preset -------- */
-    function applyPreset(role){
+    function applyRole(role, { silent, mode } = {}){
+      mode = mode || (silent ? 'saved' : 'preset');
       currentRole.value = role;
       const hidden = document.getElementById('roleHiddenInput');
       if(hidden) hidden.value = role;
 
       const preset = E.ROLE_PRESETS[role] || {};
 
-      /* Update all checkboxes (main + sub) */
       E.ALL_KEYS.forEach(k => {
         const cb = document.querySelector(`[data-perm-toggle="${k}"]`);
-        if(cb) cb.checked = !!preset[k];
+        if(!cb) return;
+
+        cb.disabled = false;
+
+        if(mode === 'saved' && Object.prototype.hasOwnProperty.call(savedPerms, k)){
+          cb.checked = !!savedPerms[k];
+        } else {
+          cb.checked = !!preset[k];
+        }
       });
 
-      /* Re-sync every menu block so the disabled state matches */
       document.querySelectorAll('[data-main-menu]').forEach(cb => {
         syncSubBlock(cb.dataset.mainMenu, cb.checked);
       });
 
-      document.querySelectorAll('#rolePresetRow .role-preset-btn').forEach(b =>
-        b.classList.toggle('active', b.dataset.role === role));
+      document.querySelectorAll('.perm-item').forEach(item => {
+        const k = item.dataset.permKey;
+        item.classList.toggle('forbidden', E.roleForbids(role, k));
+      });
 
       const ls = document.getElementById('linkedStudentField');
       const lp = document.getElementById('linkedParentField');
@@ -798,44 +948,86 @@
       if(ls) ls.style.display = role === 'Student' ? '' : 'none';
       if(lp) lp.style.display = role === 'Parent'  ? '' : 'none';
       if(lt) lt.style.display = role === 'Teacher' ? '' : 'none';
+
+      document.querySelectorAll('#rolePresetRow .role-preset-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.role === role));
+
+      refreshOverrideStyles(role);
+      renderValidationBanner();
+
+      if(!silent){
+        E.toast(`Applied ${role} preset — forbidden features are now warnings only.`);
+      }
     }
 
     document.querySelectorAll('#rolePresetRow .role-preset-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const r = btn.dataset.role;
         if(r === currentRole.value) return;
-        if(!confirm(`Apply the ${r} preset? All main menu and sub-feature sliders will be reset to that role's defaults.`)) return;
-        applyPreset(r);
+        if(!confirm(`Apply the ${r} preset?\n\nThis resets every permission slider to the recommended defaults. Any overrides you've set will be lost.`)) return;
+        applyRole(r, { mode: 'preset' });
       });
     });
 
-    document.getElementById('permResetRole')?.addEventListener('click', () => {
-      if(!confirm(`Reset all sliders to the ${currentRole.value} preset?`)) return;
-      applyPreset(currentRole.value);
+    if(u.role){
+      applyRole(u.role, { silent:true, mode: 'saved' });
+    } else {
+      document.querySelectorAll('[data-main-menu]').forEach(cb => {
+        syncSubBlock(cb.dataset.mainMenu, cb.checked);
+      });
+    }
+
+    document.querySelectorAll('[data-main-menu]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        syncSubBlock(cb.dataset.mainMenu, cb.checked);
+        refreshOverrideStyles(currentRole.value);
+        renderValidationBanner();
+      });
+    });
+    document.querySelectorAll('[data-perm-toggle]:not([data-main-menu])').forEach(cb => {
+      cb.addEventListener('change', () => {
+        refreshOverrideStyles(currentRole.value);
+        renderValidationBanner();
+      });
+    });
+    ['linkedStudentId','linkedTeacherId'].forEach(name => {
+      const el = document.querySelector(`[name="${name}"]`);
+      if(el) el.addEventListener('change', renderValidationBanner);
+    });
+    document.querySelectorAll('[data-parent-student]').forEach(cb => {
+      cb.addEventListener('change', renderValidationBanner);
     });
 
-    /* -------- Select all / Deselect all -------- */
     document.getElementById('permSelectAll').addEventListener('click', () => {
       E.ALL_KEYS.forEach(k => {
         const cb = document.querySelector(`[data-perm-toggle="${k}"]`);
-        if(cb){ cb.checked = true; cb.disabled = false; }
+        if(!cb) return;
+        cb.checked = true;
       });
-      /* Re-enable and re-sync every sub block */
       document.querySelectorAll('[data-main-menu]').forEach(cb => {
         syncSubBlock(cb.dataset.mainMenu, true);
       });
+      refreshOverrideStyles(currentRole.value);
+      renderValidationBanner();
     });
     document.getElementById('permClearAll').addEventListener('click', () => {
       E.ALL_KEYS.forEach(k => {
         const cb = document.querySelector(`[data-perm-toggle="${k}"]`);
-        if(cb){ cb.checked = false; cb.disabled = false; }
+        if(!cb) return;
+        cb.checked = false;
       });
       document.querySelectorAll('[data-main-menu]').forEach(cb => {
         syncSubBlock(cb.dataset.mainMenu, false);
       });
+      refreshOverrideStyles(currentRole.value);
+      renderValidationBanner();
+    });
+    document.getElementById('permResetRole')?.addEventListener('click', () => {
+      if(!currentRole.value){ E.toast('Pick a role first.'); return; }
+      if(!confirm(`Reset all sliders to the ${currentRole.value} preset?`)) return;
+      applyRole(currentRole.value, { silent:true, mode: 'preset' });
     });
 
-    /* -------- Permission search (matches menu label OR sub label) -------- */
     document.getElementById('permSearch').addEventListener('input', e => {
       const q = e.target.value.toLowerCase().trim();
       document.querySelectorAll('#permContainer .perm-item').forEach(item => {
@@ -847,38 +1039,46 @@
       });
     });
 
-    /* -------- Password helpers -------- */
-    document.getElementById('genPassBtn')?.addEventListener('click', () => {
-      const p = strongPassword();
-      const field = document.querySelector('[name="password"]');
-      if(field){ field.value = p; field.type = 'text'; }
-    });
-
-    document.getElementById('resetPassBtn')?.addEventListener('click', async () => {
-      const np = prompt('Enter a new password for this user:', strongPassword());
-      if(!np) return;
-      const hash = await hashPassword(np);
-      const list = E.readStore(E.STORE_KEYS.users, []) || [];
-      const t = list.find(x => x.id === u.id);
-      if(!t) return;
-      t.passwordHash = hash;
-      E.writeStore(E.STORE_KEYS.users, list);
-      E.audit('update', `User ${t.username}`, '', 'password reset');
-      alert('New password for ' + t.username + ':\n\n' + np + '\n\nShare this with the user securely.');
+    document.getElementById('resetPassBtn')?.addEventListener('click', () => {
+      const np = strongPassword();
+      const ok = confirm(
+        `Generate a new temporary password for ${u.username}?\n\n` +
+        `Password: ${np}\n\n` +
+        `It will be shown once so you can copy it. The user must change it on next sign-in.\n` +
+        `The login card will display this password until the user changes it.`
+      );
+      if(!ok) return;
+      showCredentialsModal({ name: u.name, username: u.username, password: np });
+      (async () => {
+        const list = E.readStore(E.STORE_KEYS.users, []) || [];
+        const t = list.find(x => x.id === u.id);
+        if(!t) return;
+        t.passwordHash = await hashPassword(np);
+        t.mustChangePassword = true;
+        t.demoHint = np;
+        t.demoHintState = 'reset';
+        E.writeStore(E.STORE_KEYS.users, list);
+        E.audit('update', `User ${t.username}`, '', 'password reset by admin');
+      })();
     });
 
     document.getElementById('deleteUserBtn')?.addEventListener('click', () => {
+      const list = E.readStore(E.STORE_KEYS.users, []) || [];
+      const others = list.filter(x => x.id !== u.id && x.role === 'Principal' && x.active);
+      if(u.role === 'Principal' && others.length === 0){
+        alert('Cannot delete this account — it is the only active Principal.');
+        return;
+      }
       const typed = prompt(`Type the username "${u.username}" to permanently delete this user:`);
       if(typed !== u.username){ E.toast('Username did not match.'); return; }
-      const list = (E.readStore(E.STORE_KEYS.users, []) || []).filter(x => x.id !== u.id);
-      E.writeStore(E.STORE_KEYS.users, list);
+      const remaining = list.filter(x => x.id !== u.id);
+      E.writeStore(E.STORE_KEYS.users, remaining);
       E.audit('delete', `User ${u.username}`, '', '');
       E.closeModal();
       paintTable();
       E.toast('User deleted.');
     });
 
-    /* -------- Parent children picker -------- */
     const childCountLabel = document.getElementById('childCountLabel');
     const childPickerList = document.getElementById('childPickerList');
     const childSearch     = document.getElementById('childSearch');
@@ -899,22 +1099,18 @@
     }
 
     childPickerList?.addEventListener('change', e => {
-      if(e.target.matches('[data-parent-student]')) refreshChildCount();
+      if(e.target.matches('[data-parent-student]')){
+        refreshChildCount();
+        renderValidationBanner();
+      }
     });
-    childPickerList?.addEventListener('click', e => {
-      const row = e.target.closest('.child-pick');
-      if(!row) return;
-      if(e.target.tagName === 'INPUT') return;
-      setTimeout(refreshChildCount, 0);
-    });
-
     document.getElementById('childSelectAll')?.addEventListener('click', () => {
       document.querySelectorAll('[data-parent-student]').forEach(cb => { cb.checked = true; });
-      refreshChildCount();
+      refreshChildCount(); renderValidationBanner();
     });
     document.getElementById('childClearAll')?.addEventListener('click', () => {
       document.querySelectorAll('[data-parent-student]').forEach(cb => { cb.checked = false; });
-      refreshChildCount();
+      refreshChildCount(); renderValidationBanner();
     });
 
     childSearch?.addEventListener('input', e => {
@@ -925,14 +1121,222 @@
     });
 
     refreshChildCount();
+
+    function renderValidationBanner(){
+      const banner = document.getElementById('validationBanner');
+      if(!banner) return;
+
+      const role = currentRole.value;
+      if(!role){
+        banner.className = 'validation-banner warn';
+        banner.innerHTML = 'Pick a role to see validation.';
+        return;
+      }
+
+      const nameEl = document.querySelector('[name="name"]');
+      const usernameEl = document.querySelector('[name="username"]');
+      const activeEl = document.querySelector('[name="active"]');
+      const passwordEl = document.querySelector('[name="password"]');
+      const linkedStudentEl = document.querySelector('[name="linkedStudentId"]');
+      const linkedTeacherEl = document.querySelector('[name="linkedTeacherId"]');
+      const parentIds = Array.from(document.querySelectorAll('[data-parent-student]:checked'))
+        .map(x => x.dataset.parentStudent);
+
+      const perms = {};
+      E.ALL_KEYS.forEach(k => {
+        const cb = document.querySelector(`[data-perm-toggle="${k}"]`);
+        perms[k] = !!(cb && cb.checked);
+      });
+
+      const proposed = {
+        id: u.id,
+        name: (nameEl?.value || '').trim(),
+        username: (usernameEl?.value || '').trim(),
+        role,
+        active: !!activeEl?.checked,
+        linkedStudentId: linkedStudentEl?.value || '',
+        linkedStudentIds: parentIds,
+        linkedTeacherId: linkedTeacherEl?.value || '',
+        permissions: perms
+      };
+
+      const allUsers = E.readStore(E.STORE_KEYS.users, []) || [];
+      const result = E.validateUserRecord(proposed, allUsers, u.id || null);
+
+      if(isNew && proposed.username.length < 3){
+        result.errors.push('Username must be at least 3 characters.');
+        result.ok = false;
+      }
+
+      if(isNew){
+        const pw = (passwordEl?.value || '');
+        if(!pw){
+          result.errors.push('Password is required.');
+          result.ok = false;
+        } else {
+          const pwIssues = checkPasswordPolicy(pw);
+          pwIssues.forEach(msg => result.errors.push('Password: ' + msg + '.'));
+          if(pwIssues.length) result.ok = false;
+        }
+      }
+
+      if(result.errors.length){
+        banner.className = 'validation-banner error';
+        banner.innerHTML =
+          `<strong>Fix before saving:</strong><ul>` +
+          result.errors.map(e => `<li>${E.esc(e)}</li>`).join('') +
+          `</ul>`;
+      } else if(result.warnings.length){
+        banner.className = 'validation-banner warn';
+        banner.innerHTML =
+          `<strong>Heads up:</strong><ul>` +
+          result.warnings.map(w => `<li>${E.esc(w)}</li>`).join('') +
+          `</ul>`;
+      } else {
+        banner.className = 'validation-banner';
+        banner.style.background = '#e6f7f0';
+        banner.style.border = '1px solid #b8e9d3';
+        banner.style.color = '#16835f';
+        banner.innerHTML = '✓ Looks good — ready to save.';
+      }
+
+      const submit = document.querySelector('.educore-modal-actions .ecedu-btn:not(.outline)');
+      if(submit) submit.disabled = !result.ok;
+    }
+
+    ['name','username','password','active'].forEach(n => {
+      const el = document.querySelector(`[name="${n}"]`);
+      if(el) el.addEventListener('input', renderValidationBanner);
+    });
+
+    renderValidationBanner();
   }
 
-  /* ---------- TOGGLE ACTIVE ---------- */
+  async function submitUserModal({ d, u, isNew, users, students, teachers }){
+    const role = (d.role && String(d.role)) || '';
+    if(!role){ E.toast('Pick a role first.'); return; }
+
+    const perms = {};
+    E.ALL_KEYS.forEach(k => {
+      const cb = document.querySelector(`[data-perm-toggle="${k}"]`);
+      perms[k] = !!(cb && cb.checked);
+    });
+
+    const parentIds = Array.from(document.querySelectorAll('[data-parent-student]:checked'))
+      .map(x => x.dataset.parentStudent);
+
+    const proposed = {
+      id: u.id,
+      name: (d.name || '').trim(),
+      username: (d.username || '').trim(),
+      email: (d.email || '').trim(),
+      phone: (d.phone || '').trim(),
+      role,
+      active: !!d.active,
+      linkedStudentId: role === 'Student' ? d.linkedStudentId : null,
+      linkedStudentIds: role === 'Parent' ? parentIds : null,
+      linkedTeacherId: role === 'Teacher' ? d.linkedTeacherId : null,
+      permissions: perms
+    };
+
+    if(isNew){
+      if(!d.password){
+        E.toast('Password required.'); return;
+      }
+      const pwErrors = checkPasswordPolicy(d.password);
+      if(pwErrors.length){
+        E.toast('Password does not meet policy: ' + pwErrors.join(', '));
+        return;
+      }
+    }
+
+    const v = E.validateUserRecord(proposed, users, u.id || null);
+    if(!v.ok){
+      E.toast('Cannot save: ' + v.errors[0]);
+      return;
+    }
+
+    if(isNew){
+      const hash = await hashPassword(d.password);
+      const newId = 'u-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6);
+      const record = Object.assign({}, proposed, {
+        id: newId,
+        passwordHash: hash,
+        mustChangePassword: true,
+        demoHint: d.password,
+        demoHintState: 'custom',
+        createdAt: new Date().toISOString(),
+        createdBy: user.username,
+        lastLogin: null
+      });
+      users.push(record);
+      E.writeStore(E.STORE_KEYS.users, users);
+      const enabledCount = Object.values(perms).filter(Boolean).length;
+      E.audit('create', `User ${record.username}`, '',
+        `${record.role} · ${enabledCount} of ${TOTAL_PERM_TOGGLES} permissions`);
+
+      E.closeModal();
+      showCredentialsModal({
+        name: record.name,
+        username: record.username,
+        password: d.password
+      });
+      paintTable();
+    } else {
+      const target = users.find(x => x.id === u.id);
+      if(!target) return;
+
+      const before = {
+        role: target.role,
+        active: target.active,
+        enabled: Object.values(target.permissions || {}).filter(Boolean).length
+      };
+
+      Object.assign(target, {
+        name: proposed.name,
+        email: proposed.email,
+        phone: proposed.phone,
+        role: proposed.role,
+        linkedStudentId: proposed.linkedStudentId,
+        linkedStudentIds: proposed.linkedStudentIds,
+        linkedTeacherId: proposed.linkedTeacherId,
+        permissions: proposed.permissions,
+        active: proposed.active,
+        updatedAt: new Date().toISOString(),
+        updatedBy: user.username
+      });
+
+      E.writeStore(E.STORE_KEYS.users, users);
+
+      const after = {
+        role: target.role,
+        active: target.active,
+        enabled: Object.values(target.permissions || {}).filter(Boolean).length
+      };
+
+      E.audit('update', `User ${target.username}`,
+        JSON.stringify(before),
+        JSON.stringify(after));
+      E.closeModal();
+      paintTable();
+      E.toast('User updated.');
+    }
+  }
+
   function toggleActive(id){
     const list = E.readStore(E.STORE_KEYS.users, []) || [];
     const u = list.find(x => x.id === id);
     if(!u) return;
     if(u.id === user.id){ E.toast('You cannot disable your own account.'); return; }
+
+    if(u.role === 'Principal' && u.active){
+      const others = list.filter(x => x.id !== u.id && x.role === 'Principal' && x.active);
+      if(others.length === 0){
+        alert('This is the only active Principal. Disabling it would lock everyone out of User Management.');
+        return;
+      }
+    }
+
     if(u.active){
       if(!confirm(`Disable ${u.name || u.username}?\n\nThey will not be able to sign in until re-enabled.`)) return;
     }
@@ -943,7 +1347,22 @@
     E.toast(`User ${u.active ? 'enabled' : 'disabled'}.`);
   }
 
-  /* ---------- EVENTS ---------- */
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('[data-copy]');
+    if(!btn) return;
+    const text = btn.dataset.copy;
+    if(!text) return;
+    try{
+      navigator.clipboard.writeText(text).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = 'Copied';
+        setTimeout(() => btn.textContent = orig, 1200);
+      }).catch(() => E.toast('Copy failed — select manually.'));
+    } catch(err){
+      E.toast('Copy not available in this browser.');
+    }
+  });
+
   document.getElementById('search').addEventListener('input', paintTable);
   document.getElementById('roleFilter').addEventListener('change', paintTable);
   document.getElementById('statusFilter').addEventListener('change', paintTable);
@@ -956,7 +1375,6 @@
     if(toggle) toggleActive(toggle.dataset.toggle);
   });
 
-  /* ---------- INIT ---------- */
   paintHeader();
   paintTable();
 })();

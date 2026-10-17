@@ -29,15 +29,63 @@ button{cursor:pointer}
 .field label{display:block;font-size:11px;font-weight:800;color:#657089;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
 .field input{width:100%;border:1px solid #dfe4ee;border-radius:9px;padding:12px 13px;font-size:14px;outline:none;background:#f8faff;transition:.15s}
 .field input:focus{border-color:#5575e5;background:#fff}
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:44px}
+.pw-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);
+  border:0;background:transparent;color:#7a8498;padding:6px 8px;border-radius:6px;
+  font-size:14px;cursor:pointer;line-height:1}
+.pw-toggle:hover{background:#eef2fb;color:#34415c}
 .btn-login{width:100%;border:0;border-radius:10px;padding:13px;background:#245d9c;color:#fff;font-weight:800;font-size:13px;letter-spacing:.3px;margin-top:6px}
 .btn-login:hover{background:#1d4d82}
 .login-error{background:#fff0f1;color:#bd3b48;padding:10px 12px;border-radius:8px;font-size:12px;margin-top:10px;display:none}
 .login-error.show{display:block}
 .demo-accounts{margin-top:20px;padding-top:16px;border-top:1px dashed #dfe4ee}
 .demo-accounts h4{margin:0 0 10px;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
-.demo-chips{display:flex;flex-wrap:wrap;gap:6px}
-.demo-chip{border:1px solid #dfe4ee;background:#f8faff;border-radius:8px;padding:7px 11px;font-size:11px;font-weight:700;color:#34415c;cursor:pointer}
+.demo-chips{display:flex;flex-direction:column;gap:6px}
+.demo-chip{border:1px solid #dfe4ee;background:#f8faff;border-radius:8px;padding:8px 11px;
+  font-size:11px;font-weight:700;color:#34415c;cursor:pointer;text-align:left;
+  display:flex;justify-content:space-between;align-items:center;gap:8px}
 .demo-chip:hover{background:#eef2fb;border-color:#b9c8e8}
+.demo-chip .name{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.demo-chip .name strong{font-size:12px;color:#14213d}
+.demo-chip .name small{font-size:10px;color:var(--muted);font-weight:600}
+.demo-chip .pw{font-family:monospace;font-size:10px;color:#556;
+  background:#eef2fb;padding:3px 7px;border-radius:5px;white-space:nowrap;
+  max-width:140px;overflow:hidden;text-overflow:ellipsis}
+.demo-chip .pw.custom{background:#fff2dd;color:#8a6a1a}
+.demo-chip .pw.reset{background:#ffeaec;color:#bd3b48}
+.demo-empty{font-size:11px;color:var(--muted);font-style:italic;padding:8px 0;text-align:center}
+
+/* FORCED PASSWORD CHANGE MODAL */
+#forcePassScreen{position:fixed;inset:0;z-index:99999;background:rgba(14,24,44,.65);
+  display:none;align-items:center;justify-content:center;padding:20px}
+#forcePassScreen.show{display:flex}
+.fp-card{width:100%;max-width:520px;background:#fff;border-radius:16px;
+  box-shadow:0 30px 80px rgba(0,0,0,.4);overflow:hidden}
+.fp-head{padding:24px 28px 18px;background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
+  border-top:5px solid #d88922}
+.fp-head h2{margin:0;font-size:18px;letter-spacing:.3px}
+.fp-head p{margin:6px 0 0;font-size:12px;color:#cfdcf5;line-height:1.6}
+.fp-body{padding:24px 28px}
+.fp-body .field{margin-bottom:14px}
+.fp-body .field label{display:block;font-size:11px;font-weight:800;color:#657089;
+  text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.fp-body .field input{width:100%;border:1px solid #dfe4ee;border-radius:9px;
+  padding:12px 13px;font-size:14px;outline:none;background:#f8faff;transition:.15s}
+.fp-body .field input:focus{border-color:#5575e5;background:#fff}
+.fp-rules{background:#f8faff;border:1px solid var(--line);border-radius:10px;
+  padding:12px 14px;font-size:11.5px;color:#54637d;line-height:1.7;margin-bottom:14px}
+.fp-rules strong{color:#14213d;display:block;margin-bottom:6px;font-size:12px}
+.fp-rules ul{margin:0;padding-left:18px}
+.fp-rules li{margin-bottom:2px}
+.fp-rules li.ok{color:#14805e;font-weight:700}
+.fp-error{background:#fff0f1;color:#bd3b48;padding:10px 12px;border-radius:8px;
+  font-size:12px;margin-bottom:12px;display:none}
+.fp-error.show{display:block}
+.fp-submit{width:100%;border:0;border-radius:10px;padding:13px;background:#245d9c;
+  color:#fff;font-weight:800;font-size:13px;letter-spacing:.3px}
+.fp-submit:hover{background:#1d4d82}
+.fp-submit:disabled{opacity:.5;cursor:not-allowed}
 
 /* SHELL */
 .app{min-height:100vh;display:flex}
@@ -198,16 +246,80 @@ tbody tr:last-child td{border-bottom:0}
   <div class="login-card">
     <div class="login-head">
       <div class="login-brand"><div class="mark">E</div><div><h1>EduCore</h1><small>School Management System</small></div></div>
-      <p>Sign in to continue. Use one of the demo accounts below to explore each role.</p>
+      <p>Sign in to continue. Click a demo account below to auto-fill its credentials.</p>
     </div>
     <div class="login-body">
       <form id="loginForm" autocomplete="off">
-        <div class="field"><label for="loginUser">Username</label><input id="loginUser" name="username" required autocapitalize="off"></div>
-        <div class="field"><label for="loginPass">Password</label><input id="loginPass" name="password" type="password" required></div>
+        <div class="field">
+          <label for="loginUser">Username</label>
+          <input id="loginUser" name="username" required autocapitalize="off">
+        </div>
+        <div class="field">
+          <label for="loginPass">Password</label>
+          <div class="pw-wrap">
+            <input id="loginPass" name="password" type="password" required>
+            <button type="button" class="pw-toggle" id="loginPassToggle"
+              aria-label="Show password">👁</button>
+          </div>
+        </div>
         <button class="btn-login" type="submit">Sign in →</button>
         <div class="login-error" id="loginError"></div>
       </form>
-      <div class="demo-accounts"><h4>Demo accounts</h4><div class="demo-chips" id="demoChips"></div></div>
+      <div class="demo-accounts">
+        <h4>Demo accounts</h4>
+        <div class="demo-chips" id="demoChips"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FORCED PASSWORD CHANGE -->
+<div id="forcePassScreen">
+  <div class="fp-card">
+    <div class="fp-head">
+      <h2>🔐 Set a new password</h2>
+      <p>Your administrator issued you a temporary password. You must set your own password before continuing.</p>
+    </div>
+    <div class="fp-body">
+      <form id="forcePassForm" autocomplete="off">
+        <div class="field"><label for="fpUser">Username</label>
+          <input id="fpUser" readonly style="background:#f4f6fb;color:#7a8498">
+        </div>
+        <div class="field"><label for="fpCurrent">Current (temporary) password</label>
+          <div class="pw-wrap">
+            <input id="fpCurrent" type="password" required autocomplete="current-password">
+            <button type="button" class="pw-toggle" id="fpCurrentToggle"
+              aria-label="Show password">👁</button>
+          </div>
+        </div>
+        <div class="field"><label for="fpNew">New password</label>
+          <div class="pw-wrap">
+            <input id="fpNew" type="password" required autocomplete="new-password">
+            <button type="button" class="pw-toggle" id="fpNewToggle"
+              aria-label="Show password">👁</button>
+          </div>
+        </div>
+        <div class="field"><label for="fpConfirm">Confirm new password</label>
+          <div class="pw-wrap">
+            <input id="fpConfirm" type="password" required autocomplete="new-password">
+            <button type="button" class="pw-toggle" id="fpConfirmToggle"
+              aria-label="Show password">👁</button>
+          </div>
+        </div>
+        <div class="fp-rules" id="fpRules">
+          <strong>Password must contain:</strong>
+          <ul>
+            <li data-rule="len">At least 8 characters</li>
+            <li data-rule="upper">At least one uppercase letter</li>
+            <li data-rule="lower">At least one lowercase letter</li>
+            <li data-rule="digit">At least one digit</li>
+            <li data-rule="symbol">At least one symbol (!@#%* etc.)</li>
+            <li data-rule="match">Passwords match</li>
+          </ul>
+        </div>
+        <div class="fp-error" id="fpError"></div>
+        <button class="fp-submit" type="submit" id="fpSubmit" disabled>Save new password →</button>
+      </form>
     </div>
   </div>
 </div>
@@ -253,7 +365,9 @@ tbody tr:last-child td{border-bottom:0}
   const E = window.EduCore;
   const $ = E.$, $$ = E.$$, esc = E.esc, initials = E.initials, money = E.money;
 
-  /* ---------------- PASSWORD HASH ---------------- */
+  /* ============================================================
+     PASSWORD HASH
+     ============================================================ */
   async function hashPassword(plain){
     try{
       const enc = new TextEncoder().encode('educore::' + plain);
@@ -266,9 +380,41 @@ tbody tr:last-child td{border-bottom:0}
     }
   }
 
-  /* ---------------- SEED USERS ---------------- */
+  /* ============================================================
+     SEED USERS — NON-DESTRUCTIVE
+     Only runs when `educoreUsers` is EMPTY or missing.
+     Never overwrites existing accounts, so password changes persist.
+     Each seeded user carries a `demoHint` so the login card can
+     show the current known password.
+     ============================================================ */
   async function seedUsersIfNeeded(){
-    if(E.readStore(E.STORE_KEYS.seeded, null)) return;
+    const existing = E.readStore(E.STORE_KEYS.users, null);
+    if(Array.isArray(existing) && existing.length){
+      /* Users exist — do NOT touch. Ensure every user has a demoHint
+         (older records may lack it) so the login card can render. */
+      let touched = false;
+      existing.forEach(u => {
+        if(!u.demoHint){
+          /* Best guess: the seeded password for known usernames */
+          const known = {
+            admin: 'admin123', principal1: 'demo123', registrar1: 'demo123',
+            teacher1: 'demo123', student1: 'demo123', parent1: 'demo123'
+          };
+          if(known[u.username]){
+            u.demoHint = known[u.username];
+            u.demoHintState = 'default';
+            touched = true;
+          } else {
+            u.demoHint = '';
+            u.demoHintState = 'custom';
+            touched = true;
+          }
+        }
+      });
+      if(touched) E.writeStore(E.STORE_KEYS.users, existing);
+      return;
+    }
+
     const seeds = [
       { username:'admin',      password:'admin123', role:'Principal', name:'System Administrator', perms: E.ROLE_PRESETS.Principal },
       { username:'principal1', password:'demo123',  role:'Principal', name:'Mrs. A. Smith',         perms: E.ROLE_PRESETS.Principal },
@@ -290,6 +436,9 @@ tbody tr:last-child td{border-bottom:0}
         linkedTeacherId: s.linkedTeacherId || null,
         permissions: { ...s.perms },
         active: true,
+        mustChangePassword: false,
+        demoHint: s.password,
+        demoHintState: 'default',
         createdAt: new Date().toISOString(),
         createdBy: 'system',
         lastLogin: null
@@ -299,26 +448,175 @@ tbody tr:last-child td{border-bottom:0}
     E.writeStore(E.STORE_KEYS.seeded, true);
   }
 
-  /* ---------------- LOGIN ---------------- */
+  /* ============================================================
+     LOGIN
+     ============================================================ */
   function login(username, passwordHash){
     const users = E.readStore(E.STORE_KEYS.users, []) || [];
     const u = users.find(x => x.username.toLowerCase() === username.toLowerCase());
     if(!u) return { ok:false, error:'No such user.' };
     if(!u.active) return { ok:false, error:'This account has been disabled.' };
     if(u.passwordHash !== passwordHash) return { ok:false, error:'Incorrect password.' };
-    E.writeStore(E.STORE_KEYS.session, { userId:u.id, loggedInAt: new Date().toISOString() });
+    E.writeStore(E.STORE_KEYS.session, {
+      userId:u.id,
+      loggedInAt: new Date().toISOString(),
+      lastSeenAt: new Date().toISOString()
+    });
     u.lastLogin = new Date().toISOString();
     E.writeStore(E.STORE_KEYS.users, users);
     E.audit('login', 'User ' + u.username, '', '');
     return { ok:true, user:u };
   }
 
-  /* ---------------- SIDEBAR ---------------- */
+  /* ============================================================
+     SHOW / HIDE PASSWORD TOGGLES
+     ============================================================ */
+  function bindPasswordToggle(btnId, inputId){
+    const btn = document.getElementById(btnId);
+    const inp = document.getElementById(inputId);
+    if(!btn || !inp) return;
+    btn.addEventListener('click', () => {
+      const showing = inp.type === 'text';
+      inp.type = showing ? 'password' : 'text';
+      btn.textContent = showing ? '👁' : '🙈';
+      btn.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+    });
+  }
+  bindPasswordToggle('loginPassToggle', 'loginPass');
+  bindPasswordToggle('fpCurrentToggle', 'fpCurrent');
+  bindPasswordToggle('fpNewToggle', 'fpNew');
+  bindPasswordToggle('fpConfirmToggle', 'fpConfirm');
+
+  /* ============================================================
+     FORCED PASSWORD CHANGE
+     ============================================================ */
+  function passwordRules(pw, confirm){
+    return {
+      len: pw.length >= 8,
+      upper: /[A-Z]/.test(pw),
+      lower: /[a-z]/.test(pw),
+      digit: /[0-9]/.test(pw),
+      symbol: /[!@#%*^&()_\-+=.,;:]/.test(pw),
+      match: pw && pw === confirm
+    };
+  }
+
+  function paintRuleChecklist(pw, confirm){
+    const rules = passwordRules(pw, confirm);
+    document.querySelectorAll('#fpRules li').forEach(li => {
+      const k = li.dataset.rule;
+      li.classList.toggle('ok', !!rules[k]);
+    });
+    return Object.values(rules).every(Boolean);
+  }
+
+  function showForcePasswordScreen(u){
+    document.getElementById('fpUser').value = u.username;
+    document.getElementById('fpCurrent').value = '';
+    document.getElementById('fpNew').value = '';
+    document.getElementById('fpConfirm').value = '';
+    document.getElementById('fpError').classList.remove('show');
+    document.getElementById('fpSubmit').disabled = true;
+    paintRuleChecklist('', '');
+    document.getElementById('forcePassScreen').classList.add('show');
+  }
+
+  document.getElementById('fpNew').addEventListener('input', () => {
+    const pw = document.getElementById('fpNew').value;
+    const confirm = document.getElementById('fpConfirm').value;
+    document.getElementById('fpSubmit').disabled = !paintRuleChecklist(pw, confirm);
+  });
+  document.getElementById('fpConfirm').addEventListener('input', () => {
+    const pw = document.getElementById('fpNew').value;
+    const confirm = document.getElementById('fpConfirm').value;
+    document.getElementById('fpSubmit').disabled = !paintRuleChecklist(pw, confirm);
+  });
+
+  /* Atomic change handler — ONE read, ONE write, THEN verify. */
+  document.getElementById('forcePassForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const err = document.getElementById('fpError');
+    err.classList.remove('show');
+
+    const session = E.readStore(E.STORE_KEYS.session, null);
+    if(!session){
+      err.textContent = 'Your session has expired. Please sign in again.';
+      err.classList.add('show');
+      return;
+    }
+
+    const current = document.getElementById('fpCurrent').value;
+    const next    = document.getElementById('fpNew').value;
+    const confirm = document.getElementById('fpConfirm').value;
+
+    if(!paintRuleChecklist(next, confirm)){
+      err.textContent = 'Please satisfy all password requirements.';
+      err.classList.add('show');
+      return;
+    }
+
+    const users = E.readStore(E.STORE_KEYS.users, []) || [];
+    const idx = users.findIndex(x => x.id === session.userId);
+    if(idx < 0){
+      err.textContent = 'Your account could not be located. Please sign in again.';
+      err.classList.add('show');
+      return;
+    }
+    const target = users[idx];
+
+    const currentHash = await hashPassword(current);
+    if(currentHash !== target.passwordHash){
+      err.textContent = 'Your current (temporary) password is incorrect.';
+      err.classList.add('show');
+      return;
+    }
+
+    if(current === next){
+      err.textContent = 'Your new password must be different from the temporary password.';
+      err.classList.add('show');
+      return;
+    }
+
+    const newHash = await hashPassword(next);
+    target.passwordHash = newHash;
+    target.mustChangePassword = false;
+    target.passwordChangedAt = new Date().toISOString();
+
+    /* Update the demo hint so the login card reflects the new password */
+    target.demoHint = next;
+    target.demoHintState = 'custom';
+
+    E.writeStore(E.STORE_KEYS.users, users);
+
+    /* Read-back verification — this is the fix for the persistence loop */
+    const verify = (E.readStore(E.STORE_KEYS.users, []) || []).find(x => x.id === target.id);
+    if(!verify || verify.passwordHash !== newHash || verify.mustChangePassword !== false){
+      err.textContent = 'Password change could not be saved. Please try again.';
+      err.classList.add('show');
+      return;
+    }
+
+    E.audit('update', `User ${target.username}`, '', 'password changed by user');
+
+    /* Re-stamp the session so the TTL doesn't fire mid-change */
+    E.writeStore(E.STORE_KEYS.session, {
+      userId: target.id,
+      loggedInAt: session.loggedInAt,
+      lastSeenAt: new Date().toISOString()
+    });
+
+    document.getElementById('forcePassScreen').classList.remove('show');
+    E.toast('Password updated. Welcome!');
+    enterApp();
+  });
+
+  /* ============================================================
+     SIDEBAR
+     ============================================================ */
   function buildSidebar(){
     const u = E.currentUser();
     if(!u) return;
 
-    /* Determine if viewer is fee-blocked from gradesheet + ledger */
     const gsAccess = E.viewerGradesheetAccess();
     const isFeeBlocked = !gsAccess.allowed;
     const feeBlockedKeys = new Set(['gradesheet', 'ledger']);
@@ -341,7 +639,6 @@ tbody tr:last-child td{border-bottom:0}
           ? `Locked — ${E.money(gsAccess.totalShortfall || 0)} in outstanding fees`
           : '';
 
-        /* Unread announcements badge */
         let badgeHTML = '';
         if(p.key === 'announcements' && !locked){
           const unread = E.unreadAnnouncementCount(u);
@@ -391,7 +688,9 @@ tbody tr:last-child td{border-bottom:0}
     });
   }
 
-  /* ---------------- HEADER ---------------- */
+  /* ============================================================
+     HEADER
+     ============================================================ */
   function syncHeaderUser(){
     const u = E.currentUser();
     if(!u) return;
@@ -400,6 +699,59 @@ tbody tr:last-child td{border-bottom:0}
     $('#userRoleSmall').textContent = u.role;
     $('#sidebarRole').textContent = u.role + ' · ' + u.username;
     $('#sidebarFooter').textContent = 'Signed in as ' + u.username;
+  }
+
+  /* ============================================================
+     DEMO CHIPS — always reflects current state
+     ============================================================ */
+  function paintDemoChips(){
+    const users = E.readStore(E.STORE_KEYS.users, []) || [];
+    const chips = $('#demoChips');
+    if(!chips) return;
+
+    /* Show every active user with a known demoHint */
+    const eligible = users
+      .filter(u => u.active && u.demoHint)
+      .sort((a,b) => {
+        const order = { Principal:0, Registrar:1, Teacher:2, Student:3, Parent:4 };
+        const ra = order[a.role] ?? 9, rb = order[b.role] ?? 9;
+        if(ra !== rb) return ra - rb;
+        return (a.username||'').localeCompare(b.username||'');
+      });
+
+    if(!eligible.length){
+      chips.innerHTML = `<div class="demo-empty">No demo credentials on file. Sign in with your own account.</div>`;
+      return;
+    }
+
+    chips.innerHTML = eligible.map(u => {
+      const state = u.demoHintState || 'default';
+      const pwClass = state === 'default' ? '' : state === 'reset' ? 'reset' : 'custom';
+      const displayPw = u.demoHint || '••••••';
+      const roleBit = esc(u.role);
+      const hintLabel = state === 'default' ? 'demo password'
+                      : state === 'reset'   ? 'admin-reset password'
+                      : 'custom password';
+      return `<button type="button" class="demo-chip" data-user="${esc(u.username)}">
+        <span class="name">
+          <strong>${esc(u.username)}</strong>
+          <small>${roleBit} · ${hintLabel}</small>
+        </span>
+        <span class="pw ${pwClass}" title="${esc(displayPw)}">${esc(displayPw)}</span>
+      </button>`;
+    }).join('');
+
+    chips.querySelectorAll('[data-user]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const uname = btn.dataset.user;
+        const users = E.readStore(E.STORE_KEYS.users, []) || [];
+        const target = users.find(u => u.username === uname);
+        $('#loginUser').value = uname;
+        $('#loginPass').value = target?.demoHint || '';
+        /* Clear any previous error when a chip is clicked */
+        $('#loginError').classList.remove('show');
+      });
+    });
   }
 
   /* ============================================================
@@ -948,7 +1300,9 @@ tbody tr:last-child td{border-bottom:0}
     });
   }
 
-  /* ---------------- MOBILE ---------------- */
+  /* ============================================================
+     MOBILE
+     ============================================================ */
   function closeMobile(){
     $('#sidebar')?.classList.remove('open');
     $('#mobileOverlay')?.classList.remove('show');
@@ -959,10 +1313,15 @@ tbody tr:last-child td{border-bottom:0}
   });
   $('#mobileOverlay')?.addEventListener('click', closeMobile);
 
-  /* ---------------- USER MENU ---------------- */
+  /* ============================================================
+     USER MENU
+     ============================================================ */
   $('#userBtn')?.addEventListener('click', e => { e.stopPropagation(); $('#userMenuPop').classList.toggle('show'); });
   document.addEventListener('click', () => $('#userMenuPop')?.classList.remove('show'));
-  $('#logoutBtn')?.addEventListener('click', () => E.logout());
+  $('#logoutBtn')?.addEventListener('click', () => {
+    E.logout();
+    /* On next page load, chips will be repainted from storage */
+  });
   $('#profileBtn')?.addEventListener('click', () => {
     const u = E.currentUser();
     if(!u) return;
@@ -980,12 +1339,15 @@ tbody tr:last-child td{border-bottom:0}
         Object.assign(t, { name: d.name, email: d.email || '', phone: d.phone || '' });
         E.writeStore(E.STORE_KEYS.users, users);
         syncHeaderUser();
+        paintDemoChips();
         E.closeModal();
         E.toast('Profile updated.');
       });
   });
 
-  /* ---------------- DASHBOARD SHORTCUTS ---------------- */
+  /* ============================================================
+     DASHBOARD SHORTCUTS
+     ============================================================ */
   document.addEventListener('click', e => {
     const goto = e.target.closest('[data-goto]');
     if(!goto) return;
@@ -996,36 +1358,41 @@ tbody tr:last-child td{border-bottom:0}
     renderDashboard();
   });
 
-  /* ---------------- BOOTSTRAP ---------------- */
+  /* ============================================================
+     ENTER APP
+     ============================================================ */
+  function enterApp(){
+    $('#loginScreen').classList.add('hidden');
+    $('#appShell').classList.remove('hidden');
+    syncHeaderUser();
+    buildSidebar();
+    renderDashboard();
+    $('#todayText').textContent = new Date().toLocaleDateString(undefined,
+      { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+    if(!window.__educoreHeartbeat){
+      window.__educoreHeartbeat = setInterval(() => { E.currentUser(); }, 60_000);
+    }
+  }
+
+  /* ============================================================
+     BOOTSTRAP
+     ============================================================ */
   async function bootstrap(){
     await seedUsersIfNeeded();
 
     const u = E.currentUser();
     if(u){
-      $('#loginScreen').classList.add('hidden');
-      $('#appShell').classList.remove('hidden');
-      syncHeaderUser();
-      buildSidebar();
-      renderDashboard();
-      $('#todayText').textContent = new Date().toLocaleDateString(undefined,
-        { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+      if(u.mustChangePassword){
+        $('#loginScreen').classList.add('hidden');
+        $('#appShell').classList.add('hidden');
+        showForcePasswordScreen(u);
+        return;
+      }
+      enterApp();
       return;
     }
 
-    const users = E.readStore(E.STORE_KEYS.users, []) || [];
-    const picks = ['admin','principal1','registrar1','teacher1','student1','parent1'];
-    const passwords = { admin:'admin123', principal1:'demo123', registrar1:'demo123', teacher1:'demo123', student1:'demo123', parent1:'demo123' };
-    const chips = $('#demoChips');
-    chips.innerHTML = users.filter(x => picks.includes(x.username))
-      .map(x => `<button type="button" class="demo-chip" data-user="${esc(x.username)}">${esc(x.username)} <span style="color:var(--muted);font-weight:600">· ${esc(x.role)}</span></button>`)
-      .join('');
-    chips.querySelectorAll('[data-user]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const uname = btn.dataset.user;
-        $('#loginUser').value = uname;
-        $('#loginPass').value = passwords[uname] || 'demo123';
-      });
-    });
+    paintDemoChips();
 
     const authErr = sessionStorage.getItem('educoreAuthError');
     if(authErr){
@@ -1036,7 +1403,9 @@ tbody tr:last-child td{border-bottom:0}
     }
   }
 
-  /* ---------------- LOGIN SUBMIT ---------------- */
+  /* ============================================================
+     LOGIN SUBMIT
+     ============================================================ */
   $('#loginForm').addEventListener('submit', async e => {
     e.preventDefault();
     const err = $('#loginError');
@@ -1050,13 +1419,15 @@ tbody tr:last-child td{border-bottom:0}
       err.classList.add('show');
       return;
     }
-    $('#loginScreen').classList.add('hidden');
-    $('#appShell').classList.remove('hidden');
-    syncHeaderUser();
-    buildSidebar();
-    renderDashboard();
-    $('#todayText').textContent = new Date().toLocaleDateString(undefined,
-      { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+    if(res.user.mustChangePassword){
+      $('#loginScreen').classList.add('hidden');
+      $('#appShell').classList.add('hidden');
+      showForcePasswordScreen(res.user);
+      return;
+    }
+
+    enterApp();
     E.toast('Welcome, ' + res.user.name);
   });
 

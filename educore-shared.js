@@ -27,6 +27,7 @@
     recommendations: 'educoreRecommendations',
     photos: 'educorePhotos',
     teachers: 'educoreTeachers',
+    parents: 'educoreParents',
     announcements: 'educoreAnnouncements',
     announcementReads: 'educoreAnnouncementReads',
     announcementAcks: 'educoreAnnouncementAcks',
@@ -69,20 +70,44 @@
     }catch(e){ return 'Device ????'; }
   })();
 
+  /* ============================================================
+     SESSION + IDENTITY
+     ============================================================ */
+  const SESSION_TTL_MIN = 60;
+
   function currentUser(){
     const session = readStore(STORE_KEYS.session, null);
     if(!session) return null;
+
+    const lastSeen = session.lastSeenAt || session.loggedInAt;
+    if(lastSeen){
+      const idleMin = (Date.now() - new Date(lastSeen).getTime()) / 60000;
+      if(idleMin > SESSION_TTL_MIN){
+        writeStore(STORE_KEYS.session, null);
+        return null;
+      }
+    }
+
     const users = readStore(STORE_KEYS.users, []) || [];
     const u = users.find(x => x.id === session.userId);
-    return (u && u.active) ? u : null;
+    if(!u || !u.active) return null;
+
+    session.lastSeenAt = new Date().toISOString();
+    writeStore(STORE_KEYS.session, session);
+    return u;
   }
+
   function hasPerm(perm){
     const u = currentUser();
     return !!(u && u.permissions && u.permissions[perm]);
   }
+
+  /* Explicit value (true OR false) always wins.
+     Parent-menu fallback only when the sub-key was NEVER written. */
   function can(key){
     const u = currentUser();
     if(!u || !u.permissions) return false;
+
     if(Object.prototype.hasOwnProperty.call(u.permissions, key)){
       return !!u.permissions[key];
     }
@@ -90,6 +115,7 @@
     const parentMenu = key.split('.')[0];
     return !!u.permissions[parentMenu];
   }
+
   function requireLogin(){
     const u = currentUser();
     if(!u){
@@ -115,6 +141,9 @@
     window.location.href = 'index.html';
   }
 
+  /* ============================================================
+     AUDIT
+     ============================================================ */
   function readAudit(){ return readStore(STORE_KEYS.audit, []) || []; }
   function writeAudit(list){ writeStore(STORE_KEYS.audit, list); }
   function audit(action, target, from, to, meta){
@@ -134,6 +163,9 @@
     writeAudit(list);
   }
 
+  /* ============================================================
+     FORMATTING
+     ============================================================ */
   const $ = s => document.querySelector(s);
   const $$ = s => Array.from(document.querySelectorAll(s));
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -263,7 +295,7 @@
   }
 
   /* ============================================================
-     RESULTS + AVERAGES (unchanged)
+     RESULTS + AVERAGES
      ============================================================ */
   function readResults(){ return readStore(STORE_KEYS.results, []) || []; }
   function periodResultsFor(studentName, className, subject, year){
@@ -456,6 +488,108 @@
   }
 
   /* ============================================================
+     PARENTS REGISTRY
+     ============================================================ */
+  function getParents(){ return readStore(STORE_KEYS.parents, []) || []; }
+
+  function parentById(id){
+    return getParents().find(p => p.id === id) || null;
+  }
+
+  function parentByName(name){
+    const n = String(name || '').trim().toLowerCase();
+    if(!n) return null;
+    return getParents().find(p => String(p.name || '').trim().toLowerCase() === n) || null;
+  }
+
+  function addParent(data){
+    const list = getParents();
+    const name = String(data.name || '').trim();
+    if(!name) return { ok:false, error:'Parent name is required.' };
+    if(list.some(p => String(p.name||'').trim().toLowerCase() === name.toLowerCase())){
+      return { ok:false, error:'A parent with that name already exists.' };
+    }
+    const u = currentUser();
+    const row = {
+      id: 'PAR-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2,5).toUpperCase(),
+      name,
+      phone:  String(data.phone  || '').trim(),
+      email:  String(data.email  || '').trim(),
+      address:String(data.address|| '').trim(),
+      occupation: String(data.occupation || '').trim(),
+      relationship: String(data.relationship || '').trim(),
+      notes:  String(data.notes  || '').trim(),
+      createdAt: new Date().toISOString(),
+      createdBy: u ? u.username : '',
+      updatedAt: new Date().toISOString()
+    };
+    list.push(row);
+    writeStore(STORE_KEYS.parents, list);
+    return { ok:true, parent: row };
+  }
+
+  function updateParent(id, data){
+    const list = getParents();
+    const target = list.find(p => p.id === id);
+    if(!target) return { ok:false, error:'Parent not found.' };
+    const name = String(data.name || '').trim();
+    if(!name) return { ok:false, error:'Parent name is required.' };
+    if(list.some(p => p.id !== id && String(p.name||'').trim().toLowerCase() === name.toLowerCase())){
+      return { ok:false, error:'Another parent already uses that name.' };
+    }
+    const oldName = target.name;
+    target.name = name;
+    target.phone  = String(data.phone  || '').trim();
+    target.email  = String(data.email  || '').trim();
+    target.address= String(data.address|| '').trim();
+    target.occupation = String(data.occupation || '').trim();
+    target.relationship = String(data.relationship || '').trim();
+    target.notes  = String(data.notes  || '').trim();
+    target.updatedAt = new Date().toISOString();
+    writeStore(STORE_KEYS.parents, list);
+
+    if(oldName !== name){
+      const students = readStore(STORE_KEYS.students, []) || [];
+      let touched = 0;
+      students.forEach(s => {
+        if(String(s.guardian || '').trim().toLowerCase() === oldName.toLowerCase()){
+          s.guardian = name;
+          touched++;
+        }
+      });
+      if(touched) writeStore(STORE_KEYS.students, students);
+    }
+    return { ok:true, parent: target };
+  }
+
+  function deleteParent(id){
+    const list = getParents();
+    const target = list.find(p => p.id === id);
+    if(!target) return { ok:false };
+    const students = readStore(STORE_KEYS.students, []) || [];
+    const linked = students.filter(s =>
+      String(s.guardian || '').trim().toLowerCase() === String(target.name || '').trim().toLowerCase());
+    if(linked.length){
+      return {
+        ok:false,
+        error:`${linked.length} student${linked.length === 1 ? ' is' : 's are'} still linked to this parent. Reassign them first.`,
+        linkedStudents: linked.map(s => ({ id: s.id, name: s.name, class: s.class }))
+      };
+    }
+    writeStore(STORE_KEYS.parents, list.filter(p => p.id !== id));
+    return { ok:true };
+  }
+
+  function allGuardianNames(){
+    const set = new Set();
+    getParents().forEach(p => { if(p.name) set.add(p.name); });
+    (readStore(STORE_KEYS.students, []) || []).forEach(s => {
+      if(s.guardian && String(s.guardian).trim()) set.add(String(s.guardian).trim());
+    });
+    return Array.from(set).sort((a,b) => a.localeCompare(b));
+  }
+
+  /* ============================================================
      PARENT CHILDREN + VISIBILITY
      ============================================================ */
   function childrenOf(user){
@@ -537,7 +671,7 @@
   }
 
   /* ============================================================
-     SEMESTER LOCKS + ARCHIVE
+     SEMESTER LOCKS
      ============================================================ */
   function readSemesters(){ return readStore(STORE_KEYS.semesters, {}) || {}; }
   function isSemesterLocked(semester, year){
@@ -553,10 +687,6 @@
       : { locked:false, unlockedAt:new Date().toISOString(), unlockedBy:(currentUser()||{}).username || '' };
     writeStore(STORE_KEYS.semesters, all);
   }
-  function readArchives(){ return readStore(STORE_KEYS.archives, {}) || {}; }
-  function writeArchives(obj){ writeStore(STORE_KEYS.archives, obj); }
-  function archivedTermKeys(){ return Object.keys(readArchives()); }
-  function isTermArchived(termKey){ return !!readArchives()[termKey]; }
 
   /* ============================================================
      FEES ENGINE
@@ -941,7 +1071,6 @@
   /* ============================================================
      QUIZZES
      ============================================================ */
-
   const QUESTION_TYPES = [
     { key:'multiple-choice', label:'Multiple choice',  auto:true,  hint:'One correct option' },
     { key:'true-false',      label:'True / False',     auto:true,  hint:'Two options' },
@@ -952,8 +1081,6 @@
   function questionTypeMeta(key){
     return QUESTION_TYPES.find(t => t.key === key) || QUESTION_TYPES[0];
   }
-
-  /* ---------- Quizzes ---------- */
   function getQuizzes(){ return readStore(STORE_KEYS.quizzes, []) || []; }
   function saveQuiz(q){
     const list = getQuizzes();
@@ -967,15 +1094,13 @@
         createdAt: new Date().toISOString(),
         createdBy: u ? u.username : '',
         published: false,
-        assignedTo: []        // NEW: empty array = everyone in the class
+        assignedTo: []
       }, q));
     }
     writeStore(STORE_KEYS.quizzes, list);
     return idx >= 0 ? list[idx] : list[list.length - 1];
   }
-  function getQuiz(id){
-    return getQuizzes().find(q => q.id === id) || null;
-  }
+  function getQuiz(id){ return getQuizzes().find(q => q.id === id) || null; }
   function deleteQuiz(id){
     writeStore(STORE_KEYS.quizzes, getQuizzes().filter(q => q.id !== id));
     writeStore(STORE_KEYS.quizQuestions, getQuizQuestions().filter(q => q.quizId !== id));
@@ -985,8 +1110,6 @@
       return at && at.quizId !== id;
     }));
   }
-
-  /* ---------- Questions ---------- */
   function getQuizQuestions(){ return readStore(STORE_KEYS.quizQuestions, []) || []; }
   function questionsForQuiz(quizId){
     return getQuizQuestions()
@@ -1036,8 +1159,6 @@
     }
     return { ok:true };
   }
-
-  /* ---------- Attempts ---------- */
   function getQuizAttempts(){ return readStore(STORE_KEYS.quizAttempts, []) || []; }
   function saveAttempt(a){
     const list = getQuizAttempts();
@@ -1085,8 +1206,6 @@
     writeStore(STORE_KEYS.quizResponses, getQuizResponses().filter(r => r.attemptId !== attemptId));
     return at;
   }
-
-  /* ---------- Responses ---------- */
   function getQuizResponses(){ return readStore(STORE_KEYS.quizResponses, []) || []; }
   function responsesForAttempt(attemptId){
     return getQuizResponses().filter(r => r.attemptId === attemptId);
@@ -1103,8 +1222,6 @@
     writeStore(STORE_KEYS.quizResponses, list);
     return payload;
   }
-
-  /* ---------- Grading ---------- */
   function gradeResponse(question, resp){
     const q = question;
     const max = Number(q.points || 0);
@@ -1128,17 +1245,14 @@
     }
     return { isCorrect: null, awardedPoints: null };
   }
-
   function computeAttemptScore(attemptId){
     const at = getQuizAttempts().find(a => a.id === attemptId);
     if(!at) return null;
     const qs = questionsForQuiz(at.quizId);
     const responses = responsesForAttempt(attemptId);
-
     let autoScore = 0, autoMax = 0;
     let manualScore = 0, manualMax = 0;
     let pendingManual = 0;
-
     qs.forEach(q => {
       const resp = responses.find(r => r.questionId === q.id) || {};
       const max = Number(q.points || 0);
@@ -1156,7 +1270,6 @@
         }
       }
     });
-
     const total = round2(autoScore + manualScore);
     const max = round2(autoMax + manualMax);
     return {
@@ -1166,7 +1279,6 @@
       percentage: max > 0 ? round2(total / max * 100) : 0
     };
   }
-
   function submitAttempt(attemptId, auto){
     const at = getQuizAttempts().find(a => a.id === attemptId);
     if(!at) return null;
@@ -1181,7 +1293,6 @@
     saveAttempt(at);
     return at;
   }
-
   function setManualPoints(attemptId, questionId, points){
     const list = getQuizResponses();
     const idx = list.findIndex(r => r.attemptId === attemptId && r.questionId === questionId);
@@ -1203,7 +1314,6 @@
       });
     }
     writeStore(STORE_KEYS.quizResponses, list);
-
     const at = getQuizAttempts().find(a => a.id === attemptId);
     if(at){
       const score = computeAttemptScore(attemptId);
@@ -1218,16 +1328,11 @@
     }
     return true;
   }
-
-  /* ---------- Per-student assignment ----------
-     A quiz's assignedTo array, when non-empty, restricts who can take it.
-     Empty or missing = class-wide. */
   function quizAssignedToStudent(quiz, student){
     if(!quiz || !student) return false;
-    if(!Array.isArray(quiz.assignedTo) || !quiz.assignedTo.length) return true; /* class-wide */
+    if(!Array.isArray(quiz.assignedTo) || !quiz.assignedTo.length) return true;
     return quiz.assignedTo.includes(student.id);
   }
-
   function canTakeQuiz(quiz, student){
     if(!quiz || !student) return { ok:false, reason:'Missing quiz or student.' };
     if(!quiz.published) return { ok:false, reason:'This quiz has not been published yet.' };
@@ -1250,25 +1355,16 @@
     }
     return { ok:true };
   }
-
-  /* ---------- CSV helper for quiz results ----------
-     Returns a CSV string for the given quiz's attempts.
-     Optional filter: { classId } restricts to one class. */
   function quizResultsCSV(quizId, opts){
     opts = opts || {};
     const quiz = getQuiz(quizId);
     if(!quiz) return { ok:false, error:'Quiz not found.' };
-
     const questions = questionsForQuiz(quizId);
     const attempts = getQuizAttempts()
       .filter(a => a.quizId === quizId && a.status !== 'reset')
       .filter(a => !opts.classId || a.className === opts.classId)
       .sort((a,b) => a.studentName.localeCompare(b.studentName));
-
-    if(!attempts.length){
-      return { ok:false, error:'No attempts to export for this filter.' };
-    }
-
+    if(!attempts.length) return { ok:false, error:'No attempts to export for this filter.' };
     const headers = [
       'Student Name','Student ID','Class',
       'Started','Submitted','Auto-submitted',
@@ -1278,9 +1374,7 @@
       ...questions.map((q, i) => `Q${i+1} awarded`),
       'Correct','Incorrect','Pending manual'
     ];
-
     const passMark = Number(quiz.passMark || 50);
-
     const rows = attempts.map(a => {
       const responses = responsesForAttempt(a.id);
       const questionCells = questions.map(q => {
@@ -1295,7 +1389,6 @@
         }
         return '';
       });
-
       const awardedCells = questions.map(q => {
         const r = responses.find(x => x.questionId === q.id) || {};
         const meta = questionTypeMeta(q.type);
@@ -1305,32 +1398,26 @@
         }
         return r.manualPoints ?? '';
       });
-
       const correctCount = questions.filter(q => {
         const r = responses.find(x => x.questionId === q.id) || {};
         const meta = questionTypeMeta(q.type);
         if(!meta.auto) return false;
         return gradeResponse(q, r).isCorrect === true;
       }).length;
-
       const incorrectCount = questions.filter(q => {
         const r = responses.find(x => x.questionId === q.id) || {};
         const meta = questionTypeMeta(q.type);
         if(!meta.auto) return false;
         return gradeResponse(q, r).isCorrect === false;
       }).length;
-
       const pending = questions.filter(q => {
         const r = responses.find(x => x.questionId === q.id) || {};
         const meta = questionTypeMeta(q.type);
         if(meta.auto) return false;
         return r.manualPoints === undefined || r.manualPoints === null;
       }).length;
-
       return [
-        a.studentName,
-        a.studentId,
-        a.className,
+        a.studentName, a.studentId, a.className,
         a.startedAt ? new Date(a.startedAt).toISOString() : '',
         a.submittedAt ? new Date(a.submittedAt).toISOString() : '',
         a.autoSubmitted ? 'Yes' : 'No',
@@ -1342,17 +1429,427 @@
         a.suspicionEvents || 0,
         ...questionCells,
         ...awardedCells,
-        correctCount,
-        incorrectCount,
-        pending
+        correctCount, incorrectCount, pending
       ];
     });
-
     const csv = [headers, ...rows]
       .map(r => r.map(v => '"' + String(v ?? '').replace(/"/g, '""') + '"').join(','))
       .join('\r\n');
-
     return { ok:true, csv, count: attempts.length };
+  }
+
+  /* ============================================================
+     ARCHIVE ENGINE
+     ============================================================ */
+  function readArchives(){ return readStore(STORE_KEYS.archives, {}) || {}; }
+  function writeArchives(obj){ writeStore(STORE_KEYS.archives, obj); }
+
+  function archiveList(){
+    const all = readArchives();
+    return Object.values(all).sort((a,b) => new Date(b.closedAt) - new Date(a.closedAt));
+  }
+  function isArchiveEditable(year){
+    const ar = readArchives()[year];
+    if(!ar) return false;
+    return ar.kind === 'full-year';
+  }
+  function canEditArchive(){
+    const u = currentUser();
+    if(!u) return false;
+    if(u.role !== 'Principal' && u.role !== 'Registrar') return false;
+    return hasPerm('archive.edit');
+  }
+  function takeSnapshot(){
+    return {
+      students:       readStore(STORE_KEYS.students, []) || [],
+      results:        readStore(STORE_KEYS.results, []) || [],
+      attendance:     readStore(STORE_KEYS.attendance, {}) || {},
+      classes:        readStore(STORE_KEYS.classes, []) || [],
+      classFees:      readStore(STORE_KEYS.classFees, {}) || {},
+      adjustments:    readStore(STORE_KEYS.adjustments, []) || [],
+      assignments:    readStore(STORE_KEYS.assignments, []) || [],
+      sponsors:       readStore(STORE_KEYS.sponsors, {}) || {},
+      payments:       readStore(STORE_KEYS.payments, []) || [],
+      salaryPayments: readStore(STORE_KEYS.salaryPayments, []) || [],
+      quizzes:        readStore(STORE_KEYS.quizzes, []) || [],
+      quizQuestions:  readStore(STORE_KEYS.quizQuestions, []) || [],
+      quizAttempts:   readStore(STORE_KEYS.quizAttempts, []) || [],
+      quizResponses:  readStore(STORE_KEYS.quizResponses, []) || [],
+      enrollments:    readStore(STORE_KEYS.enrollments, []) || [],
+      semesters:      readStore(STORE_KEYS.semesters, {}) || {},
+      terms:          readStore(STORE_KEYS.terms, {}) || {}
+    };
+  }
+  function studentYearlyAverage(student, year){
+    const y = year || currentAcademicYear();
+    const recs = (readStore(STORE_KEYS.results, []) || [])
+      .filter(r => r.student === student.name && r.class === student.class &&
+        (r.year === y || !r.year));
+    const subjects = Array.from(new Set(recs.map(r => r.subject)));
+    if(!subjects.length) return null;
+    const category = classCategoryFor(student.class);
+    const avgs = subjects.map(sub => yearlyAverageFor(student.name, student.class, sub, category, y))
+      .filter(Boolean).map(x => x.number);
+    if(!avgs.length) return null;
+    return round2(avgs.reduce((a,b) => a+b, 0) / avgs.length);
+  }
+  function nextCategory(category){
+    const idx = CATEGORY_LIST.indexOf(category);
+    if(idx < 0) return null;
+    if(idx === CATEGORY_LIST.length - 1) return 'Graduated';
+    return CATEGORY_LIST[idx + 1];
+  }
+  function findClassForCategory(category, currentClassName){
+    const classes = getClasses();
+    if(category === 'Graduated') return null;
+    const sectionMatch = String(currentClassName || '').match(/([A-Za-z])\s*$/);
+    const section = sectionMatch ? sectionMatch[1].toUpperCase() : '';
+    if(section){
+      const match = classes.find(c =>
+        c.category === category &&
+        new RegExp(section + '\\s*$', 'i').test(c.name));
+      if(match) return match.name;
+    }
+    const fallback = classes.find(c => c.category === category);
+    return fallback ? fallback.name : null;
+  }
+  function endAcademicYear(){
+    const u = currentUser();
+    const year = currentAcademicYear();
+    const archives = readArchives();
+    if(archives[year]){
+      return { ok:false, error:`${year} is already archived.` };
+    }
+    const students = readStore(STORE_KEYS.students, []) || [];
+    const summary = { students: students.length, promoted: 0, repeated: 0, graduated: 0, noGrades: 0 };
+    const promotionLog = [];
+    const snapshot = takeSnapshot();
+
+    const updatedStudents = students.map(s => {
+      const avg = studentYearlyAverage(s, year);
+      const category = classCategoryFor(s.class);
+      const passThreshold = Number((classByName(s.class) || {}).passMark ?? 50);
+      if(avg == null){
+        summary.noGrades += 1;
+        promotionLog.push({ studentId: s.id, name: s.name, from: s.class, to: s.class, avg: null, reason: 'No grades recorded' });
+        return s;
+      }
+      if(avg >= passThreshold){
+        const nextCat = nextCategory(category);
+        if(nextCat === 'Graduated'){
+          summary.graduated += 1;
+          promotionLog.push({ studentId: s.id, name: s.name, from: s.class, to: 'Graduated', avg, reason: 'Promoted' });
+          return Object.assign({}, s, { class: 'Graduated', status: 'Graduated' });
+        }
+        const newClass = findClassForCategory(nextCat, s.class);
+        if(newClass){
+          summary.promoted += 1;
+          promotionLog.push({ studentId: s.id, name: s.name, from: s.class, to: newClass, avg, reason: 'Promoted' });
+          return Object.assign({}, s, { class: newClass });
+        }
+        summary.noGrades += 1;
+        promotionLog.push({ studentId: s.id, name: s.name, from: s.class, to: s.class, avg, reason: 'No next class found for ' + nextCat });
+        return s;
+      } else {
+        summary.repeated += 1;
+        promotionLog.push({ studentId: s.id, name: s.name, from: s.class, to: s.class, avg, reason: 'Below pass mark — repeating' });
+        return s;
+      }
+    });
+
+    writeStore(STORE_KEYS.students, updatedStudents);
+
+    archives[year] = {
+      id: 'ar-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6),
+      year,
+      closedAt: new Date().toISOString(),
+      closedBy: u ? u.username : 'system',
+      kind: 'full-year',
+      summary,
+      promotionLog,
+      snapshot
+    };
+    writeArchives(archives);
+
+    writeStore(STORE_KEYS.results, []);
+    writeStore(STORE_KEYS.attendance, {});
+    writeStore(STORE_KEYS.quizAttempts, []);
+    writeStore(STORE_KEYS.quizResponses, []);
+    writeStore(STORE_KEYS.quizzes, []);
+    writeStore(STORE_KEYS.quizQuestions, []);
+    writeStore(STORE_KEYS.classFees, {});
+    writeStore(STORE_KEYS.assignments, []);
+    writeStore(STORE_KEYS.sponsors, {});
+    writeStore(STORE_KEYS.semesters, {});
+    writeStore(STORE_KEYS.terms, {});
+
+    const settings = readStore(STORE_KEYS.settings, {}) || {};
+    const [startYear, endYear] = year.split('/').map(Number);
+    const nextYear = Number.isFinite(startYear) && Number.isFinite(endYear)
+      ? `${startYear + 1}/${endYear + 1}`
+      : year;
+    settings.academicYear = nextYear;
+    writeStore(STORE_KEYS.settings, settings);
+
+    audit('update', `Archive ${year}`, '', `closed · ${summary.promoted} promoted · ${summary.repeated} repeated · ${summary.graduated} graduated`);
+    return { ok:true, year, nextYear, summary, promotionLog };
+  }
+  function endSemester(semesterNumber){
+    const u = currentUser();
+    const year = currentAcademicYear();
+    const key = `${year}|S${Number(semesterNumber)}`;
+    const archives = readArchives();
+    if(archives[key]){
+      return { ok:false, error:`${year} · Semester ${semesterNumber} is already archived.` };
+    }
+    setSemesterLock(semesterNumber, true, year);
+    const snapshot = takeSnapshot();
+    archives[key] = {
+      id: 'ar-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6),
+      year,
+      semester: Number(semesterNumber),
+      closedAt: new Date().toISOString(),
+      closedBy: u ? u.username : 'system',
+      kind: 'semester',
+      summary: {
+        students: (readStore(STORE_KEYS.students, []) || []).length,
+        results: (snapshot.results || []).length
+      },
+      snapshot
+    };
+    writeArchives(archives);
+    audit('update', `Archive ${year} Sem ${semesterNumber}`, '', 'semester closed');
+    return { ok:true, year, semester: semesterNumber };
+  }
+  function restoreArchive(year){
+    const all = readArchives();
+    const ar = all[year];
+    if(!ar) return { ok:false, error:'Archive not found.' };
+    if(ar.kind !== 'full-year') return { ok:false, error:'Only full-year archives can be restored to live.' };
+    const snap = ar.snapshot || {};
+    if(snap.students)       writeStore(STORE_KEYS.students, snap.students);
+    if(snap.results)        writeStore(STORE_KEYS.results, snap.results);
+    if(snap.attendance)     writeStore(STORE_KEYS.attendance, snap.attendance);
+    if(snap.classes)        writeStore(STORE_KEYS.classes, snap.classes);
+    if(snap.classFees)      writeStore(STORE_KEYS.classFees, snap.classFees);
+    if(snap.adjustments)    writeStore(STORE_KEYS.adjustments, snap.adjustments);
+    if(snap.assignments)    writeStore(STORE_KEYS.assignments, snap.assignments);
+    if(snap.sponsors)       writeStore(STORE_KEYS.sponsors, snap.sponsors);
+    if(snap.payments)       writeStore(STORE_KEYS.payments, snap.payments);
+    if(snap.salaryPayments) writeStore(STORE_KEYS.salaryPayments, snap.salaryPayments);
+    if(snap.quizzes)        writeStore(STORE_KEYS.quizzes, snap.quizzes);
+    if(snap.quizQuestions)  writeStore(STORE_KEYS.quizQuestions, snap.quizQuestions);
+    if(snap.quizAttempts)   writeStore(STORE_KEYS.quizAttempts, snap.quizAttempts);
+    if(snap.quizResponses)  writeStore(STORE_KEYS.quizResponses, snap.quizResponses);
+    if(snap.enrollments)    writeStore(STORE_KEYS.enrollments, snap.enrollments);
+    if(snap.semesters)      writeStore(STORE_KEYS.semesters, snap.semesters);
+    if(snap.terms)          writeStore(STORE_KEYS.terms, snap.terms);
+
+    const settings = readStore(STORE_KEYS.settings, {}) || {};
+    settings.academicYear = year;
+    writeStore(STORE_KEYS.settings, settings);
+
+    audit('update', `Restore archive ${year}`, '', 'restored');
+    return { ok:true, year };
+  }
+  function deleteArchive(key){
+    const all = readArchives();
+    if(!all[key]) return { ok:false };
+    delete all[key];
+    writeArchives(all);
+    audit('delete', `Archive ${key}`, '', '');
+    return { ok:true };
+  }
+  function getArchive(year){ return readArchives()[year] || null; }
+
+  function updateArchivedResult(archiveYear, payload){
+    const { student, className, subject, semester, period, score } = payload || {};
+    const all = readArchives();
+    const ar = all[archiveYear];
+    if(!ar) return { ok:false, error:'Archive not found.' };
+    if(ar.kind !== 'full-year') return { ok:false, error:'Only full-year archives can be edited.' };
+    if(!ar.snapshot) ar.snapshot = {};
+
+    const clsCategory = classCategoryFor(className);
+    const v = validateScore(score, clsCategory);
+    if(!v.ok) return { ok:false, error: v.error };
+
+    const list = ar.snapshot.results || [];
+    const idx = list.findIndex(r =>
+      r.student === student && r.class === className && r.subject === subject &&
+      String(r.period) === String(period) && Number(r.semester) === Number(semester) &&
+      (r.year === archiveYear || !r.year));
+
+    const u = currentUser();
+    const row = {
+      student, class: className, subject, year: archiveYear,
+      semester: Number(semester), period: period,
+      score: v.normalized,
+      updatedAt: new Date().toISOString(),
+      updatedBy: u ? u.username : ''
+    };
+    if(idx >= 0){
+      list[idx] = Object.assign({}, list[idx], row);
+    } else {
+      if(v.normalized === '') return { ok:true, skipped:true };
+      list.push(Object.assign({
+        id: 'r-arch-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6)
+      }, row));
+    }
+    ar.snapshot.results = list;
+    all[archiveYear] = ar;
+    writeArchives(all);
+    audit('update', `Archive ${archiveYear} result`, '', `${student} · ${subject} · ${period}`);
+    return { ok:true };
+  }
+  function deleteArchivedResult(archiveYear, { student, className, subject, semester, period }){
+    const all = readArchives();
+    const ar = all[archiveYear];
+    if(!ar) return { ok:false };
+    if(ar.kind !== 'full-year') return { ok:false, error:'Only full-year archives can be edited.' };
+    const list = ar.snapshot.results || [];
+    ar.snapshot.results = list.filter(r =>
+      !(r.student === student && r.class === className && r.subject === subject &&
+        String(r.period) === String(period) && Number(r.semester) === Number(semester)));
+    all[archiveYear] = ar;
+    writeArchives(all);
+    audit('delete', `Archive ${archiveYear} result`, `${student} · ${subject}`, '');
+    return { ok:true };
+  }
+  function archivedLedgerRow(archiveYear, student, subject){
+    const ar = getArchive(archiveYear);
+    if(!ar) return null;
+    const cat = classCategoryFor(student.class);
+    const rows = (ar.snapshot.results || []).filter(r =>
+      r.student === student.name && r.class === student.class && r.subject === subject);
+
+    const getScore = (semester, period) => {
+      const r = rows.find(x =>
+        Number(x.semester) === Number(semester) &&
+        String(x.period) === String(period));
+      return r ? r.score : '';
+    };
+
+    const p1 = getScore(1,1), p2 = getScore(1,2), p3 = getScore(1,3), e1 = getScore(1,'e1');
+    const p4 = getScore(2,4), p5 = getScore(2,5), p6 = getScore(2,6), e2 = getScore(2,'e2');
+
+    const w = weightConfig();
+
+    const calcAvg = (periodVals, examVal) => {
+      const nonEmpty = periodVals.filter(v => v !== '' && v !== null && v !== undefined);
+      const periodMean = nonEmpty.length ? averageScores(nonEmpty, cat).number : null;
+      const examNum = (() => {
+        if(examVal === '' || examVal === undefined || examVal === null) return null;
+        if(typeof examVal === 'string' && /^[A-Fa-f]$/.test(examVal.trim())){
+          return midpointForLetter(examVal, cat);
+        }
+        const n = Number(examVal);
+        return Number.isFinite(n) ? n : null;
+      })();
+      let mean;
+      if(periodMean != null && examNum != null) mean = periodMean * w.periodWeight + examNum * w.examWeight;
+      else if(periodMean != null) mean = periodMean;
+      else mean = examNum;
+      if(mean == null) return null;
+      return { letter: gradeFromNumber(mean, cat), number: mean };
+    };
+
+    const s1Avg = calcAvg([p1,p2,p3], e1);
+    const s2Avg = calcAvg([p4,p5,p6], e2);
+    const yearly = (() => {
+      if(s1Avg && s2Avg){
+        const mean = s1Avg.number * w.semesterWeight + s2Avg.number * (1 - w.semesterWeight);
+        return { letter: gradeFromNumber(mean, cat), number: mean };
+      }
+      if(s1Avg) return s1Avg;
+      if(s2Avg) return s2Avg;
+      return null;
+    })();
+
+    return { subject, p1, p2, p3, e1, s1Avg, p4, p5, p6, e2, s2Avg, yearly };
+  }
+  function archivedResultsForStudent(studentName){
+    const all = readArchives();
+    const out = [];
+    Object.values(all)
+      .filter(ar => ar.kind === 'full-year')
+      .sort((a,b) => new Date(b.closedAt) - new Date(a.closedAt))
+      .forEach(ar => {
+        const rows = (ar.snapshot?.results || []).filter(r => r.student === studentName);
+        if(rows.length){
+          out.push({
+            year: ar.year,
+            closedAt: ar.closedAt,
+            editable: isArchiveEditable(ar.year),
+            results: rows,
+            attendance: (ar.snapshot?.attendance || {})
+          });
+        }
+      });
+    return out;
+  }
+  function reportCardSource({ studentId, year }){
+    const y = year || currentAcademicYear();
+    const all = readStore(STORE_KEYS.students, []) || [];
+    const liveStudent = all.find(s => s.id === studentId);
+    const archives = readArchives();
+    const ar = archives[y];
+
+    if(!ar){
+      if(!liveStudent) return { ok:false, error:'Student not found.' };
+      const results = (readStore(STORE_KEYS.results, []) || [])
+        .filter(r => r.student === liveStudent.name && r.class === liveStudent.class &&
+          (r.year === y || !r.year));
+      return {
+        ok:true,
+        source:'live',
+        year: y,
+        student: liveStudent,
+        classAtTime: liveStudent.class,
+        results,
+        attendance: readStore(STORE_KEYS.attendance, {}) || {}
+      };
+    }
+
+    const snap = ar.snapshot || {};
+
+    let classAtTime = null;
+    if(liveStudent && Array.isArray(ar.promotionLog)){
+      const entry = ar.promotionLog.find(p => p.studentId === studentId);
+      if(entry) classAtTime = entry.from;
+    }
+    if(!classAtTime){
+      const recs = (snap.results || []).filter(r => r.student === (liveStudent?.name || ''));
+      if(recs.length) classAtTime = recs[0].class;
+    }
+
+    const snapStudent = (snap.students || []).find(s => s.id === studentId);
+    const student = snapStudent
+      ? Object.assign({}, snapStudent, { class: classAtTime || snapStudent.class })
+      : (liveStudent ? Object.assign({}, liveStudent, { class: classAtTime || liveStudent.class }) : null);
+    if(!student) return { ok:false, error:'Student not found in archive.' };
+
+    const results = (snap.results || []).filter(r =>
+      r.student === student.name && r.class === student.class);
+
+    const attendance = {};
+    Object.keys(snap.attendance || {}).forEach(key => {
+      const rec = snap.attendance[key] || {};
+      if(rec[student.id] !== undefined){
+        attendance[key] = { [student.id]: rec[student.id] };
+      }
+    });
+
+    return {
+      ok:true,
+      source:'archive',
+      year: y,
+      archivedAt: ar.closedAt,
+      student,
+      classAtTime: student.class,
+      results,
+      attendance
+    };
   }
 
   /* ============================================================
@@ -1430,6 +1927,7 @@
             font-weight:700;font-size:12px;cursor:pointer;font-family:inherit}
           .ecedu-btn.outline{background:#fff;color:#34415c;border:1px solid #e8ebf2}
           .ecedu-btn.danger{background:#d64545}
+          .ecedu-btn:disabled{opacity:.5;cursor:not-allowed}
           @media(max-width:650px){.educore-modal-form{grid-template-columns:1fr}.educore-modal-actions{grid-column:1}}
         `;
         document.head.appendChild(s);
@@ -1543,6 +2041,12 @@
         { key:'report', label:'Open report card', desc:'Launch a report card for a student' },
         { key:'export', label:'Export CSV', desc:'Download the student list' }
       ]},
+      { key:'parents', label:'Parents', desc:'Parent/guardian registry', subFeatures:[
+        { key:'add', label:'Add parent', desc:'Create new parent records' },
+        { key:'edit', label:'Edit parent', desc:'Modify parent details' },
+        { key:'delete', label:'Delete parent', desc:'Remove parents (blocked if linked to students)' },
+        { key:'export', label:'Export CSV', desc:'Download the parent list' }
+      ]},
       { key:'teachers', label:'Teachers', desc:'Manage teaching staff', subFeatures:[
         { key:'add', label:'Add teacher', desc:'Create new teacher records' },
         { key:'edit', label:'Edit teacher', desc:'Modify teacher details' },
@@ -1634,7 +2138,7 @@
         { key:'upload_photo', label:'Upload photo', desc:'Attach a photo to a student' },
         { key:'remove_photo', label:'Remove photo', desc:'Delete a student photo' },
         { key:'print_single', label:'Print single card', desc:'Print one student\'s ID card' },
-        { key:'print_batch', label:'Print batch', desc:'Print ID cards for multiple students' }
+        { key:'print_batch',  label:'Print batch', desc:'Print ID cards for multiple students' }
       ]}
     ]},
     { title:'Family', items:[
@@ -1650,6 +2154,14 @@
         { key:'clear', label:'Clear', desc:'Wipe the entire log' },
         { key:'export', label:'Export', desc:'Download the log as CSV' }
       ]},
+      { key:'archive', label:'Archive', desc:'Close and browse past academic years', subFeatures:[
+        { key:'view',     label:'View archives',        desc:'Browse past years and preview their data' },
+        { key:'edit',     label:'Edit archive records', desc:'Fix scores inside any archived year' },
+        { key:'end_sem',  label:'End semester',         desc:'Lock and snapshot the current semester' },
+        { key:'end_year', label:'End academic year',    desc:'Promote students, reset fees, start a new year' },
+        { key:'restore',  label:'Restore as live',      desc:'Restore an archive back into the live system' },
+        { key:'delete',   label:'Delete archive',       desc:'Permanently remove an archive' }
+      ]},
       { key:'userManagement', label:'User Management', desc:'Create, edit, disable users', subFeatures:[
         { key:'create', label:'Create user', desc:'Add a new user account' },
         { key:'edit', label:'Edit user', desc:'Change user details and permissions' },
@@ -1660,10 +2172,28 @@
     ]}
   ];
 
-  const ALL_PERMISSION_KEYS = PERMISSION_GROUPS.flatMap(g => g.items.map(i => i.key));
-  const ALL_SUB_FEATURE_KEYS = PERMISSION_GROUPS.flatMap(g =>
-    g.items.flatMap(i => (i.subFeatures || []).map(sf => i.key + '.' + sf.key)));
-  const ALL_KEYS = [...ALL_PERMISSION_KEYS, ...ALL_SUB_FEATURE_KEYS];
+  /* Deduplicated — because everything is derived from PERMISSION_GROUPS,
+     these arrays are now guaranteed to match what the modal renders. */
+  const ALL_PERMISSION_KEYS = Array.from(new Set(
+    PERMISSION_GROUPS.flatMap(g => g.items.map(i => i.key))
+  ));
+  const ALL_SUB_FEATURE_KEYS = Array.from(new Set(
+    PERMISSION_GROUPS.flatMap(g =>
+      g.items.flatMap(i => (i.subFeatures || []).map(sf => i.key + '.' + sf.key)))
+  ));
+  const ALL_KEYS = Array.from(new Set([...ALL_PERMISSION_KEYS, ...ALL_SUB_FEATURE_KEYS]));
+
+  /* Number of toggle switches the users.html modal actually renders */
+  function renderedPermissionToggleCount(){
+    let count = 0;
+    PERMISSION_GROUPS.forEach(g => {
+      g.items.forEach(it => {
+        count += 1;                             // main menu toggle
+        count += (it.subFeatures || []).length; // sub-feature toggles
+      });
+    });
+    return count;
+  }
 
   function subFeaturesFor(menuKey){
     for(const g of PERMISSION_GROUPS){
@@ -1685,6 +2215,7 @@
         on([
           'dashboard',
           'students','students.add','students.edit','students.delete','students.report','students.export',
+          'parents','parents.add','parents.edit','parents.delete','parents.export',
           'teachers','teachers.add','teachers.edit','teachers.delete','teachers.assignments','teachers.sponsorship',
           'classes','classes.add','classes.delete','classes.archive','classes.manage_subjects','classes.promote',
           'attendance','attendance.save','attendance.clear_day','attendance.mark_all',
@@ -1697,7 +2228,8 @@
           'transcripts','transcripts.request','transcripts.issue','transcripts.print','transcripts.delete',
           'recommendations','recommendations.request','recommendations.issue','recommendations.print','recommendations.delete',
           'idcards','idcards.upload_photo','idcards.remove_photo','idcards.print_single','idcards.print_batch',
-          'audit','audit.view','audit.export'
+          'audit','audit.view','audit.export',
+          'archive','archive.view','archive.edit','archive.end_sem','archive.end_year'
         ]);
         break;
       case 'Teacher':
@@ -1752,10 +2284,117 @@
     Parent:    buildPreset('Parent')
   };
 
+  /* ============================================================
+     ROLE CONSTRAINTS
+     ============================================================ */
+  const ROLE_CONSTRAINTS = {
+    Principal: {
+      requiredLink: null,
+      forbidden: [],
+      label: 'Principal / Head Teacher'
+    },
+    Registrar: {
+      requiredLink: null,
+      forbidden: ['userManagement'],
+      label: 'Registrar'
+    },
+    Teacher: {
+      requiredLink: 'linkedTeacherId',
+      forbidden: ['userManagement', 'settings', 'parents'],
+      label: 'Teacher'
+    },
+    Student: {
+      requiredLink: 'linkedStudentId',
+      forbidden: [
+        'userManagement','settings','fees','teachers','classes',
+        'students','parents','audit','archive','attendance','exams',
+        'reportcard','announcements','transfers','transcripts',
+        'recommendations','idcards','promotions','termLock'
+      ],
+      label: 'Student'
+    },
+    Parent: {
+      requiredLink: 'linkedStudentIds',
+      forbidden: [
+        'userManagement','settings','parents',
+        'fees.class_fees','fees.record_payment','fees.reverse_payment',
+        'fees.salary','fees.reverse_salary','teachers','classes','students',
+        'audit','archive','attendance',
+        'exams.add','exams.edit','exams.delete','reportcard.batch_print',
+        'reportcard.lock_term','reportcard.unlock_term','reportcard.copy_prev_term',
+        'quizzes.create','quizzes.edit','quizzes.delete','quizzes.publish',
+        'quizzes.grade','quizzes.view_all','quizzes.reset','quizzes.assign',
+        'announcements.publish','announcements.edit','announcements.delete',
+        'announcements.pin'
+      ],
+      label: 'Parent / Guardian'
+    }
+  };
+
+  function roleForbids(role, key){
+    const c = ROLE_CONSTRAINTS[role];
+    if(!c) return false;
+    return c.forbidden.some(f => key === f || key.startsWith(f + '.'));
+  }
+
+  function validateUserRecord(record, allUsers, selfId){
+    const errors = [], warnings = [];
+    const c = ROLE_CONSTRAINTS[record.role];
+    if(!c) errors.push('Unknown role: ' + record.role);
+
+    if(c && c.requiredLink){
+      const val = record[c.requiredLink];
+      const empty = Array.isArray(val) ? !val.length : !val;
+      if(empty){
+        const noun = c.requiredLink === 'linkedStudentIds' ? 'child'
+                  : c.requiredLink === 'linkedStudentId' ? 'student'
+                  : 'teacher';
+        errors.push(`${c.label} accounts must be linked to a ${noun} record.`);
+      }
+    }
+
+    Object.keys(record.permissions || {}).forEach(k => {
+      if(record.permissions[k] && roleForbids(record.role, k)){
+        warnings.push(`Override: the ${c ? c.label : record.role} role normally cannot have "${k}".`);
+      }
+    });
+
+    if(allUsers){
+      const clash = allUsers.find(u =>
+        u.id !== selfId &&
+        String(u.username||'').toLowerCase() === String(record.username||'').toLowerCase());
+      if(clash) errors.push('Username already in use.');
+    }
+
+    if(allUsers && selfId){
+      const others = allUsers.filter(u =>
+        u.id !== selfId && u.role === 'Principal' && u.active);
+      if(others.length === 0 && record.role !== 'Principal'){
+        errors.push('This is the only active Principal. You cannot change its role.');
+      }
+      if(others.length === 0 && record.active === false){
+        errors.push('This is the only active Principal. It cannot be disabled.');
+      }
+    }
+
+    if(record.role === 'Teacher' && !record.linkedTeacherId){
+      warnings.push('No linked teacher record — class scope will be empty.');
+    }
+
+    return { ok: errors.length === 0, errors, warnings };
+  }
+
+  function canAssignRole(role){
+    const u = currentUser();
+    if(!u) return false;
+    return u.role === 'Principal';
+  }
+
   const PAGE_REGISTRY = [
     { key:'dashboard',       label:'Dashboard',         icon:'▦', group:'Main menu',      perm:'dashboard',  file:null },
     { key:'children',        label:'My Children',       icon:'👨‍👩‍👧', group:'Family',      perm:'children',   file:'children.html' },
     { key:'students',        label:'Students',          icon:'♙', group:'Main menu',      perm:'students',   file:'students.html' },
+    { key:'parents',         label:'Parents',           icon:'👪', group:'Main menu',      perm:'parents',    file:'parents.html' },
     { key:'teachers',        label:'Teachers',          icon:'♧', group:'Main menu',      perm:'teachers',   file:'teachers.html' },
     { key:'subjects',        label:'Subjects',          icon:'📚', group:'Academic',      perm:'classes',    file:'subjects.html' },
     { key:'classes',         label:'Classes',           icon:'▤', group:'Academic',      perm:'classes',    file:'classes.html' },
@@ -1770,6 +2409,7 @@
     { key:'recommendations', label:'Recommendations',   icon:'✉', group:'Requests',      perm:'recommendations', file:'recommendations.html' },
     { key:'idcards',         label:'ID Cards',          icon:'🪪', group:'Requests',     perm:'idcards',    file:'id-cards.html' },
     { key:'audit',           label:'Audit Log',         icon:'🗒', group:'System',       perm:'audit',      file:'audit.html' },
+    { key:'archive',         label:'Archive',           icon:'📦', group:'System',       perm:'archive',    file:'archive.html' },
     { key:'users',           label:'User Management',   icon:'👥', group:'System',       perm:'userManagement', file:'users.html' }
   ];
 
@@ -1849,12 +2489,45 @@
     writeStore(STORE_KEYS.migratedFees, true);
   })();
 
+  (function seedParentsFromGuardians(){
+    const KEY = 'educoreParentsSeededFromGuardians';
+    if(readStore(KEY, false)) return;
+    const existing = getParents();
+    if(existing.length){ writeStore(KEY, true); return; }
+    const students = readStore(STORE_KEYS.students, []) || [];
+    const seen = new Set();
+    const seeded = [];
+    students.forEach(s => {
+      const g = String(s.guardian || '').trim();
+      if(!g) return;
+      const key = g.toLowerCase();
+      if(seen.has(key)) return;
+      seen.add(key);
+      seeded.push({
+        id: 'PAR-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2,5).toUpperCase(),
+        name: g,
+        phone: String(s.phone || '').trim(),
+        email: '',
+        address: String(s.address || '').trim(),
+        occupation: '',
+        relationship: '',
+        notes: 'Imported from existing student guardian records.',
+        createdAt: new Date().toISOString(),
+        createdBy: 'system',
+        updatedAt: new Date().toISOString()
+      });
+    });
+    if(seeded.length) writeStore(STORE_KEYS.parents, seeded);
+    writeStore(KEY, true);
+  })();
+
   /* ============================================================
      PUBLIC API
      ============================================================ */
   global.EduCore = {
     STORE_KEYS, readStore, writeStore, removeStore,
-    DEVICE_ID, currentUser, hasPerm, can, requireLogin, requirePerm, logout,
+    DEVICE_ID, SESSION_TTL_MIN,
+    currentUser, hasPerm, can, requireLogin, requirePerm, logout,
     readAudit, writeAudit, audit,
 
     $, $$, esc, initials, money, todayISO, fmtDate, fmtDateTime, round2,
@@ -1881,8 +2554,10 @@
     taughtSubjectsInClass, isSponsorOfClass, canEditSubject,
     visibleClassNamesFor, visibleStudentsFor, visibleResultsFor,
 
+    getParents, parentById, parentByName, addParent, updateParent, deleteParent,
+    allGuardianNames,
+
     readSemesters, isSemesterLocked, setSemesterLock,
-    readArchives, writeArchives, archivedTermKeys, isTermArchived,
 
     /* FEES */
     getClassFees, setClassFee, clearClassFee, classFeeFor, classBilledTotal,
@@ -1913,7 +2588,17 @@
     setManualPoints, canTakeQuiz, quizAssignedToStudent,
     quizResultsCSV,
 
+    /* ARCHIVE */
+    readArchives, writeArchives, archiveList, isArchiveEditable, canEditArchive,
+    takeSnapshot, studentYearlyAverage, nextCategory, findClassForCategory,
+    endAcademicYear, endSemester, restoreArchive, deleteArchive,
+    archivedResultsForStudent,
+    getArchive, updateArchivedResult, deleteArchivedResult, archivedLedgerRow,
+    reportCardSource,
+
     PERMISSION_GROUPS, ALL_PERMISSION_KEYS, ALL_SUB_FEATURE_KEYS, ALL_KEYS,
-    ROLE_PRESETS, PAGE_REGISTRY, subFeaturesFor
+    renderedPermissionToggleCount,
+    ROLE_PRESETS, ROLE_CONSTRAINTS, roleForbids, validateUserRecord, canAssignRole,
+    PAGE_REGISTRY, subFeaturesFor
   };
 })(window);
