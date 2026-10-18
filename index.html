@@ -13,7 +13,7 @@ button{cursor:pointer}
 .hidden{display:none!important}
 
 /* LOGIN */
-#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+#loginScreen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;
   background:radial-gradient(1200px 600px at 10% 0%, #1d3158 0%, transparent 60%),
              radial-gradient(1000px 600px at 90% 100%, #14213d 0%, transparent 60%),
              linear-gradient(135deg,#14213d,#1d3158)}
@@ -37,6 +37,7 @@ button{cursor:pointer}
 .pw-toggle:hover{background:#eef2fb;color:#34415c}
 .btn-login{width:100%;border:0;border-radius:10px;padding:13px;background:#245d9c;color:#fff;font-weight:800;font-size:13px;letter-spacing:.3px;margin-top:6px}
 .btn-login:hover{background:#1d4d82}
+.btn-login:disabled{opacity:.6;cursor:not-allowed}
 .login-error{background:#fff0f1;color:#bd3b48;padding:10px 12px;border-radius:8px;font-size:12px;margin-top:10px;display:none}
 .login-error.show{display:block}
 .demo-accounts{margin-top:20px;padding-top:16px;border-top:1px dashed #dfe4ee}
@@ -67,7 +68,8 @@ button{cursor:pointer}
 #bootDiag ul{margin:6px 0 0;padding-left:20px}
 #bootDiag code{background:rgba(0,0,0,.06);padding:1px 5px;border-radius:3px;font-size:11px}
 #bootDiag button{margin-top:10px;border:0;border-radius:8px;padding:8px 12px;
-  background:#245d9c;color:#fff;font-weight:700;font-size:11px;cursor:pointer}
+  background:#245d9c;color:#fff;font-weight:700;font-size:11px;cursor:pointer;
+  margin-right:6px}
 #bootDiag button.ghost{background:#fff;color:#245d9c;border:1px solid #cfe3ff}
 
 /* FORCED PASSWORD CHANGE MODAL */
@@ -276,7 +278,7 @@ tbody tr:last-child td{border-bottom:0}
               aria-label="Show password">👁</button>
           </div>
         </div>
-        <button class="btn-login" type="submit">Sign in →</button>
+        <button class="btn-login" type="submit" id="loginSubmitBtn">Sign in →</button>
         <div class="login-error" id="loginError"></div>
       </form>
       <div class="demo-accounts">
@@ -376,21 +378,43 @@ tbody tr:last-child td{border-bottom:0}
 </div>
 
 <!-- ============================================================
-     SCRIPT LOADING — with cache-bust + readiness checks
+     INLINE BOOT DIAGNOSTIC HELPER (runs before shared JS)
      ============================================================ -->
 <script>
-  /* This inline script runs BEFORE educore-shared.js loads.
-     It sets up a small "boot diagnostics" helper that the
-     bootstrap below uses to surface any failure to the user. */
-  window.__bootDiag = function(kind, title, lines){
+  window.__bootDiag = function(kind, title, lines, buttons){
     const el = document.getElementById('bootDiag');
     if(!el) return;
     el.className = 'show ' + (kind || 'info');
-    el.innerHTML = `<strong>${title}</strong>` +
-      (lines && lines.length ? `<ul>${lines.map(l => `<li>${l}</li>`).join('')}</ul>` : '') +
-      `<div style="margin-top:10px">
-        <button class="ghost" onclick="location.reload(true)">Reload with cache bypass</button>
-       </div>`;
+    const list = (lines && lines.length)
+      ? `<ul>${lines.map(l => `<li>${l}</li>`).join('')}</ul>`
+      : '';
+    const btns = (buttons && buttons.length)
+      ? `<div style="margin-top:10px">${buttons.map(b =>
+          `<button class="${b.ghost ? 'ghost' : ''}" data-diag-action="${b.action}">${b.label}</button>`
+        ).join('')}</div>`
+      : '';
+    el.innerHTML = `<strong>${title}</strong>${list}${btns}`;
+
+    el.querySelectorAll('[data-diag-action]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const a = btn.dataset.diagAction;
+        if(a === 'reload-hard') location.reload(true);
+        if(a === 'reset-storage'){
+          try{
+            Object.keys(localStorage)
+              .filter(k => k.indexOf('educore') === 0)
+              .forEach(k => localStorage.removeItem(k));
+            location.reload();
+          }catch(e){
+            alert('Could not clear storage: ' + e.message);
+          }
+        }
+        if(a === 'clear-login'){
+          try{ sessionStorage.clear(); }catch(e){}
+          location.reload();
+        }
+      });
+    });
   };
   window.__clearBootDiag = function(){
     const el = document.getElementById('bootDiag');
@@ -398,23 +422,27 @@ tbody tr:last-child td{border-bottom:0}
   };
 </script>
 
-<!-- Cache-busted script tag: forces fresh fetch on deployed sites -->
-<script src="educore-shared.js?v=3"></script>
+<!-- Cache-busted shared script -->
+<script src="educore-shared.js?v=4"></script>
 
 <script>
 (function(){
   'use strict';
   const E = window.EduCore;
 
-  /* ---------- EARLY GUARD ----------
-     If the shared file failed to load or is missing an expected
-     symbol, stop immediately with a visible diagnostic — never
-     leave the user with a blank screen. */
+  /* ============================================================
+     HARD GUARD — this runs before anything else.
+     If the shared file failed to load, or a critical symbol is
+     missing, we stop with a visible banner. Never a blank screen.
+     ============================================================ */
   if(!E){
-    window.__bootDiag('error', 'Could not load educore-shared.js',
-      ['The shared JavaScript file did not load.',
-       'Check the browser console (F12) for a 404 or syntax error.',
-       'Verify that <code>educore-shared.js</code> is in the same folder as <code>index.html</code>.']);
+    window.__bootDiag('error', 'Could not load educore-shared.js', [
+      'The shared JavaScript file did not load.',
+      'Check the browser console (F12) → Network tab for a 404.',
+      'Verify <code>educore-shared.js</code> exists in the same folder as <code>index.html</code>.'
+    ], [
+      { label: 'Reload with cache bypass', action: 'reload-hard' }
+    ]);
     return;
   }
   const REQUIRED_SYMBOLS = [
@@ -424,11 +452,34 @@ tbody tr:last-child td{border-bottom:0}
   ];
   const missing = REQUIRED_SYMBOLS.filter(k => typeof E[k] === 'undefined');
   if(missing.length){
-    window.__bootDiag('error', 'educore-shared.js is incomplete or outdated',
-      ['Missing symbols: <code>' + missing.join('</code>, <code>') + '</code>',
-       'Your browser may be running a cached older copy of the file.',
-       'Click <strong>Reload with cache bypass</strong> below, or hard-refresh with Ctrl+Shift+R (Cmd+Shift+R on Mac).']);
+    window.__bootDiag('error', 'educore-shared.js is incomplete or outdated', [
+      'Missing symbols: <code>' + missing.join('</code>, <code>') + '</code>',
+      'Your browser may be serving a cached older copy of the file.',
+      'Hard-refresh with <strong>Ctrl+Shift+R</strong> (Cmd+Shift+R on Mac), or use the button below.'
+    ], [
+      { label: 'Reload with cache bypass', action: 'reload-hard' }
+    ]);
     return;
+  }
+
+  /* ============================================================
+     STORAGE PROBE — fail loudly if localStorage is blocked
+     ============================================================ */
+  if(typeof E.storageAvailable === 'function'){
+    const probe = E.storageAvailable();
+    if(!probe.ok){
+      window.__bootDiag('error', 'Browser storage is blocked', [
+        'EduCore needs <code>localStorage</code> to save your session and data.',
+        'Reason: <code>' + (probe.reason || 'unknown') + '</code>',
+        'This usually means you are in <strong>private / incognito mode</strong>, or your browser is blocking site data.',
+        'Open this page in a normal window, or allow cookies / site data for this domain.',
+        'If you already tried and it still fails, click <strong>Reset site data</strong> below.'
+      ], [
+        { label: 'Reload with cache bypass', action: 'reload-hard' },
+        { label: 'Reset site data', action: 'reset-storage', ghost: true }
+      ]);
+      return;
+    }
   }
 
   const $ = E.$, $$ = E.$$, esc = E.esc, initials = E.initials, money = E.money;
@@ -449,12 +500,7 @@ tbody tr:last-child td{border-bottom:0}
   }
 
   /* ============================================================
-     SEED USERS — SELF-HEALING
-     - Only writes if `educoreUsers` is missing or empty.
-     - Writes each user ONE AT A TIME so a single failure does not
-       leave the array empty.
-     - Never touches existing users.
-     - Backfills `demoHint` on any user record that lacks it.
+     SEED USERS — self-healing, verified
      ============================================================ */
   const KNOWN_SEEDS = [
     { username:'admin',      password:'admin123', role:'Principal', name:'System Administrator', linkedTeacherId:null, linkedStudentId:null, linkedStudentIds:null },
@@ -468,7 +514,6 @@ tbody tr:last-child td{border-bottom:0}
   async function seedUsersIfNeeded(){
     let existing = E.readStore(E.STORE_KEYS.users, null);
 
-    /* Case 1: existing users present — backfill demoHint only */
     if(Array.isArray(existing) && existing.length){
       let touched = false;
       const knownMap = Object.fromEntries(KNOWN_SEEDS.map(s => [s.username, s.password]));
@@ -488,10 +533,7 @@ tbody tr:last-child td{border-bottom:0}
       return { ok:true, seeded:false, count:existing.length };
     }
 
-    /* Case 2: empty — build seeds ONE AT A TIME */
     const users = [];
-    const knownMap = Object.fromEntries(KNOWN_SEEDS.map(s => [s.username, s.password]));
-
     for(const s of KNOWN_SEEDS){
       try{
         const perms = (E.ROLE_PRESETS && E.ROLE_PRESETS[s.role])
@@ -517,15 +559,12 @@ tbody tr:last-child td{border-bottom:0}
           createdBy: 'system',
           lastLogin: null
         });
-        /* Persist after each success — so a partial failure
-           still leaves a working system */
         E.writeStore(E.STORE_KEYS.users, users);
       }catch(err){
         console.error('Seed failed for', s.username, err);
       }
     }
 
-    /* Post-check */
     const verify = E.readStore(E.STORE_KEYS.users, []) || [];
     if(!verify.length){
       return { ok:false, error:'All seed writes failed. localStorage may be disabled or full.' };
@@ -535,7 +574,7 @@ tbody tr:last-child td{border-bottom:0}
   }
 
   /* ============================================================
-     LOGIN
+     LOGIN — writes session and VERIFIES it landed
      ============================================================ */
   function login(username, passwordHash){
     const users = E.readStore(E.STORE_KEYS.users, []) || [];
@@ -543,11 +582,23 @@ tbody tr:last-child td{border-bottom:0}
     if(!u) return { ok:false, error:'No such user.' };
     if(!u.active) return { ok:false, error:'This account has been disabled.' };
     if(u.passwordHash !== passwordHash) return { ok:false, error:'Incorrect password.' };
-    E.writeStore(E.STORE_KEYS.session, {
-      userId:u.id,
+
+    const sessionRow = {
+      userId: u.id,
       loggedInAt: new Date().toISOString(),
       lastSeenAt: new Date().toISOString()
-    });
+    };
+    const wrote = E.writeStore(E.STORE_KEYS.session, sessionRow);
+
+    /* Read back immediately — this is the fix for the hosted-site bug */
+    const readBack = E.readStore(E.STORE_KEYS.session, null);
+    if(!readBack || readBack.userId !== u.id){
+      return {
+        ok:false,
+        error:'Your browser is blocking session storage. Enable cookies/site data and reload.'
+      };
+    }
+
     u.lastLogin = new Date().toISOString();
     E.writeStore(E.STORE_KEYS.users, users);
     E.audit('login', 'User ' + u.username, '', '');
@@ -586,7 +637,6 @@ tbody tr:last-child td{border-bottom:0}
       match: pw && pw === confirm
     };
   }
-
   function paintRuleChecklist(pw, confirm){
     const rules = passwordRules(pw, confirm);
     document.querySelectorAll('#fpRules li').forEach(li => {
@@ -595,7 +645,6 @@ tbody tr:last-child td{border-bottom:0}
     });
     return Object.values(rules).every(Boolean);
   }
-
   function showForcePasswordScreen(u){
     document.getElementById('fpUser').value = u.username;
     document.getElementById('fpCurrent').value = '';
@@ -606,7 +655,6 @@ tbody tr:last-child td{border-bottom:0}
     paintRuleChecklist('', '');
     document.getElementById('forcePassScreen').classList.add('show');
   }
-
   document.getElementById('fpNew').addEventListener('input', () => {
     const pw = document.getElementById('fpNew').value;
     const confirm = document.getElementById('fpConfirm').value;
@@ -617,29 +665,24 @@ tbody tr:last-child td{border-bottom:0}
     const confirm = document.getElementById('fpConfirm').value;
     document.getElementById('fpSubmit').disabled = !paintRuleChecklist(pw, confirm);
   });
-
   document.getElementById('forcePassForm').addEventListener('submit', async e => {
     e.preventDefault();
     const err = document.getElementById('fpError');
     err.classList.remove('show');
-
     const session = E.readStore(E.STORE_KEYS.session, null);
     if(!session){
       err.textContent = 'Your session has expired. Please sign in again.';
       err.classList.add('show');
       return;
     }
-
     const current = document.getElementById('fpCurrent').value;
     const next    = document.getElementById('fpNew').value;
     const confirm = document.getElementById('fpConfirm').value;
-
     if(!paintRuleChecklist(next, confirm)){
       err.textContent = 'Please satisfy all password requirements.';
       err.classList.add('show');
       return;
     }
-
     const users = E.readStore(E.STORE_KEYS.users, []) || [];
     const idx = users.findIndex(x => x.id === session.userId);
     if(idx < 0){
@@ -648,72 +691,58 @@ tbody tr:last-child td{border-bottom:0}
       return;
     }
     const target = users[idx];
-
     const currentHash = await hashPassword(current);
     if(currentHash !== target.passwordHash){
       err.textContent = 'Your current (temporary) password is incorrect.';
       err.classList.add('show');
       return;
     }
-
     if(current === next){
       err.textContent = 'Your new password must be different from the temporary password.';
       err.classList.add('show');
       return;
     }
-
     const newHash = await hashPassword(next);
     target.passwordHash = newHash;
     target.mustChangePassword = false;
     target.passwordChangedAt = new Date().toISOString();
     target.demoHint = next;
     target.demoHintState = 'custom';
-
     E.writeStore(E.STORE_KEYS.users, users);
-
     const verify = (E.readStore(E.STORE_KEYS.users, []) || []).find(x => x.id === target.id);
     if(!verify || verify.passwordHash !== newHash || verify.mustChangePassword !== false){
       err.textContent = 'Password change could not be saved. Please try again.';
       err.classList.add('show');
       return;
     }
-
     E.audit('update', `User ${target.username}`, '', 'password changed by user');
-
     E.writeStore(E.STORE_KEYS.session, {
       userId: target.id,
       loggedInAt: session.loggedInAt,
       lastSeenAt: new Date().toISOString()
     });
-
     document.getElementById('forcePassScreen').classList.remove('show');
     E.toast('Password updated. Welcome!');
     enterApp();
   });
 
   /* ============================================================
-     SIDEBAR — guarded against null user
+     SIDEBAR
      ============================================================ */
   function buildSidebar(){
     const u = E.currentUser();
     if(!u){
-      /* Should never happen once enterApp() has been called,
-         but guard anyway — redirect to login rather than leaving
-         an empty sidebar shell. */
       $('#appShell').classList.add('hidden');
       $('#loginScreen').classList.remove('hidden');
       return;
     }
-
     const gsAccess = E.viewerGradesheetAccess();
     const isFeeBlocked = !gsAccess.allowed;
     const feeBlockedKeys = new Set(['gradesheet', 'ledger']);
 
     const nav = $('#navigation');
     const groups = {};
-    E.PAGE_REGISTRY.forEach(p => {
-      (groups[p.group] = groups[p.group] || []).push(p);
-    });
+    E.PAGE_REGISTRY.forEach(p => { (groups[p.group] = groups[p.group] || []).push(p); });
     const order = ['Main menu','Family','Academic','Administration','Requests','System'];
 
     nav.innerHTML = order.filter(g => groups[g]).map(g => `
@@ -726,7 +755,6 @@ tbody tr:last-child td{border-bottom:0}
         const title = feeLocked
           ? `Locked — ${E.money(gsAccess.totalShortfall || 0)} in outstanding fees`
           : '';
-
         let badgeHTML = '';
         if(p.key === 'announcements' && !locked){
           const unread = E.unreadAnnouncementCount(u);
@@ -736,7 +764,6 @@ tbody tr:last-child td{border-bottom:0}
               min-width:18px;text-align:center;line-height:1.4">${unread > 99 ? '99+' : unread}</span>`;
           }
         }
-
         return `<button data-page="${p.key}" class="${current} ${locked?'locked':''}"
           ${locked?'data-locked="1"':''} ${feeLocked?'data-fee-locked="1"':''}
           ${title?`title="${E.esc(title)}"`:''}>
@@ -753,7 +780,6 @@ tbody tr:last-child td{border-bottom:0}
       const key = btn.dataset.page;
       const entry = E.PAGE_REGISTRY.find(p => p.key === key);
       if(!entry) return;
-
       if(btn.dataset.locked){
         if(btn.dataset.feeLocked){
           const access = E.viewerGradesheetAccess();
@@ -763,7 +789,6 @@ tbody tr:last-child td{border-bottom:0}
         }
         return;
       }
-
       if(entry.key === 'dashboard'){
         renderDashboard();
         $$('#navigation button').forEach(b => b.classList.toggle('active', b === btn));
@@ -771,7 +796,6 @@ tbody tr:last-child td{border-bottom:0}
         closeMobile();
         return;
       }
-
       if(entry.file) window.location.href = entry.file;
     });
   }
@@ -796,7 +820,6 @@ tbody tr:last-child td{border-bottom:0}
     const users = E.readStore(E.STORE_KEYS.users, []) || [];
     const chips = $('#demoChips');
     if(!chips) return;
-
     const eligible = users
       .filter(u => u.active && u.demoHint)
       .sort((a,b) => {
@@ -805,12 +828,10 @@ tbody tr:last-child td{border-bottom:0}
         if(ra !== rb) return ra - rb;
         return (a.username||'').localeCompare(b.username||'');
       });
-
     if(!eligible.length){
       chips.innerHTML = `<div class="demo-empty">No demo credentials on file yet.</div>`;
       return;
     }
-
     chips.innerHTML = eligible.map(u => {
       const state = u.demoHintState || 'default';
       const pwClass = state === 'default' ? '' : state === 'reset' ? 'reset' : 'custom';
@@ -826,7 +847,6 @@ tbody tr:last-child td{border-bottom:0}
         <span class="pw ${pwClass}" title="${esc(displayPw)}">${esc(displayPw)}</span>
       </button>`;
     }).join('');
-
     chips.querySelectorAll('[data-user]').forEach(btn => {
       btn.addEventListener('click', () => {
         const uname = btn.dataset.user;
@@ -840,14 +860,13 @@ tbody tr:last-child td{border-bottom:0}
   }
 
   /* ============================================================
-     DUX + attendance helpers
+     DUX + ATTENDANCE
      ============================================================ */
   function computeDux(scope){
     const u = E.currentUser();
     if(!u) return { school:[], classTop:{} };
     const scoped = E.visibleResultsFor(u);
     const students = E.readStore(E.STORE_KEYS.students, []) || [];
-
     const studentAvg = {};
     scoped.forEach(r => {
       const s = students.find(x => x.name === r.student && x.class === r.class);
@@ -868,7 +887,6 @@ tbody tr:last-child td{border-bottom:0}
       studentAvg[key].total += numeric;
       studentAvg[key].count += 1;
     });
-
     if(scope === 'YEAR'){
       const perStudent = {};
       Object.values(studentAvg).forEach(x => {
@@ -879,7 +897,6 @@ tbody tr:last-child td{border-bottom:0}
       });
       Object.keys(perStudent).forEach(k => { studentAvg[k] = { ...perStudent[k] }; });
     }
-
     const list = Object.values(studentAvg).filter(x => x.count > 0)
       .map(x => ({ student:x.student, class:x.class, avg:x.total/x.count, category:x.category }));
     const school = [...list].sort((a,b) => b.avg - a.avg).slice(0,3);
@@ -891,7 +908,6 @@ tbody tr:last-child td{border-bottom:0}
     });
     return { school, classTop };
   }
-
   function attendanceToday(){
     const attendance = E.readStore(E.STORE_KEYS.attendance, {}) || {};
     const date = E.todayISO();
@@ -902,14 +918,13 @@ tbody tr:last-child td{border-bottom:0}
   }
 
   /* ============================================================
-     REPORT-CARD BANNER + ANNOUNCEMENTS
+     BANNER + ANNOUNCEMENT HELPERS
      ============================================================ */
   function reportStatusBanner(studentId, className){
     const t = E.getReportThreshold();
     if(!t.enabled) return '';
     const access = E.canOpenReportCard(studentId, className);
     const pct = access.billed > 0 ? Math.min(100, Math.round(access.paid / access.billed * 100)) : 100;
-
     if(access.allowed){
       return `<div class="rpt-status unlocked">
         <span class="icon">✅</span>
@@ -930,7 +945,6 @@ tbody tr:last-child td{border-bottom:0}
       <div class="actions"><a href="fees.html">＄ Go to Fees</a></div>
     </div>`;
   }
-
   function visibleAnnouncementsFor(u){
     const list = E.readStore(E.STORE_KEYS.announcements, []) || [];
     const rank = p => {
@@ -948,7 +962,6 @@ tbody tr:last-child td{border-bottom:0}
         return new Date(b.at || 0) - new Date(a.at || 0);
       });
   }
-
   function announcementCardHTML(a){
     const priority = String(a.priority || 'Normal');
     const priorityPill = priority !== 'Normal'
@@ -972,43 +985,35 @@ tbody tr:last-child td{border-bottom:0}
   }
 
   /* ============================================================
-     DASHBOARD — guarded against null user
+     DASHBOARD
      ============================================================ */
   function renderDashboard(){
     const user = E.currentUser();
     if(!user){
-      /* Fall back to login — never leave the content area blank */
       $('#appShell').classList.add('hidden');
       $('#loginScreen').classList.remove('hidden');
       paintDemoChips();
       return;
     }
-
     const students = E.readStore(E.STORE_KEYS.students, []) || [];
     const teachers = E.readStore(E.STORE_KEYS.teachers, []) || [];
 
-    /* ---------- STUDENT ---------- */
+    /* STUDENT */
     if(user.role === 'Student'){
       const s = students.find(x => x.id === user.linkedStudentId);
       const category = s ? E.classCategoryFor(s.class) : '';
       const year = E.currentAcademicYear();
-      const mySubjects = s
-        ? Array.from(new Set((E.readResults() || [])
+      const mySubjects = s ? Array.from(new Set((E.readResults() || [])
             .filter(r => r.student === s.name && r.class === s.class)
-            .map(r => r.subject)))
-        : [];
+            .map(r => r.subject))) : [];
       const s1Avg = s && mySubjects.length
-        ? (() => { const a = mySubjects.map(sub => E.semesterAverageFor(s.name, s.class, sub, 1, category, year)).filter(Boolean).map(x => x.number); return a.length ? a.reduce((x,y)=>x+y,0)/a.length : null; })()
-        : null;
+        ? (() => { const a = mySubjects.map(sub => E.semesterAverageFor(s.name, s.class, sub, 1, category, year)).filter(Boolean).map(x => x.number); return a.length ? a.reduce((x,y)=>x+y,0)/a.length : null; })() : null;
       const s2Avg = s && mySubjects.length
-        ? (() => { const a = mySubjects.map(sub => E.semesterAverageFor(s.name, s.class, sub, 2, category, year)).filter(Boolean).map(x => x.number); return a.length ? a.reduce((x,y)=>x+y,0)/a.length : null; })()
-        : null;
+        ? (() => { const a = mySubjects.map(sub => E.semesterAverageFor(s.name, s.class, sub, 2, category, year)).filter(Boolean).map(x => x.number); return a.length ? a.reduce((x,y)=>x+y,0)/a.length : null; })() : null;
       const currentAvg = s1Avg != null ? s1Avg : s2Avg;
       const currentAvgText = currentAvg != null
-        ? currentAvg.toFixed(1) + '%' + (E.isNurseryCategory(category) ? ' · ' + E.gradeFromNumber(currentAvg, category) : '')
-        : '—';
-      const currentSemester = (s2Avg != null && s1Avg != null) ? 'Semester Two'
-                            : s1Avg != null ? 'Semester One' : 'Semester One';
+        ? currentAvg.toFixed(1) + '%' + (E.isNurseryCategory(category) ? ' · ' + E.gradeFromNumber(currentAvg, category) : '') : '—';
+      const currentSemester = (s2Avg != null && s1Avg != null) ? 'Semester Two' : s1Avg != null ? 'Semester One' : 'Semester One';
 
       const attendanceRegisters = E.readStore(E.STORE_KEYS.attendance, {}) || {};
       let attPresent = 0, attLate = 0, attAbsent = 0;
@@ -1024,10 +1029,8 @@ tbody tr:last-child td{border-bottom:0}
       });
       const attTotal = attPresent + attLate + attAbsent;
       const attRate = attTotal ? Math.round((attPresent + attLate) / attTotal * 100) : null;
-
       const myRows = s ? mySubjects.map(sub => ({ subject: sub, ...E.subjectLedgerRow(s.name, s.class, sub, year) })) : [];
       const summary = s ? E.studentFeeSummary(s.id, s.class) : null;
-
       const reportBtnHTML = (() => {
         if(!user.permissions || !user.permissions.reportcard) return '';
         if(!s) return `<button class="btn" data-goto="reportcards">📄 My report card</button>`;
@@ -1035,7 +1038,6 @@ tbody tr:last-child td{border-bottom:0}
         if(access.allowed) return `<button class="btn" data-goto="reportcards">📄 My report card</button>`;
         return `<button class="btn outline" disabled style="color:#a86414">🔒 Report card locked (${E.money(access.shortfall || 0)} owed)</button>`;
       })();
-
       const anns = visibleAnnouncementsFor(user).slice(0, 5);
 
       $('#contentRoot').innerHTML = `
@@ -1056,8 +1058,7 @@ tbody tr:last-child td{border-bottom:0}
             <div class="panel"><div class="panel-head"><h3>My academic record</h3><p>Subject · S1 Avg · S2 Avg · Yearly</p></div>
               <div class="table-wrap"><table>
                 <thead><tr><th>Subject</th><th>S1 Avg</th><th>S2 Avg</th><th>Yearly</th></tr></thead>
-                <tbody>${
-                  myRows.length
+                <tbody>${myRows.length
                     ? myRows.map(r => `<tr>
                         <td>${esc(r.subject)}</td>
                         <td>${r.s1Avg ? r.s1Avg.number.toFixed(1) + '%' : '—'}</td>
@@ -1089,12 +1090,11 @@ tbody tr:last-child td{border-bottom:0}
             </div>
           </div>
         </div>
-        <div class="footer">EduCore · Front-end demonstration only.</div>
-      `;
+        <div class="footer">EduCore · Front-end demonstration only.</div>`;
       return;
     }
 
-    /* ---------- PARENT ---------- */
+    /* PARENT */
     if(user.role === 'Parent'){
       const kids = E.childrenOf(user);
       if(!kids.length){
@@ -1106,7 +1106,6 @@ tbody tr:last-child td{border-bottom:0}
           </div></div>`;
         return;
       }
-
       let totalBilled = 0, totalPaid = 0;
       kids.forEach(k => { const sum = E.studentFeeSummary(k.id, k.class); totalBilled += sum.netBill; totalPaid += sum.paid; });
       const outstanding = Math.max(0, totalBilled - totalPaid);
@@ -1125,7 +1124,6 @@ tbody tr:last-child td{border-bottom:0}
         return vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) + '%' : '—';
       })();
       const anns = visibleAnnouncementsFor(user).slice(0, 5);
-
       $('#contentRoot').innerHTML = `
         <div class="welcome">
           <div><h2>Welcome, ${esc(user.name)} 👋</h2><p>Here's a quick overview of your ${kids.length === 1 ? 'child' : 'children'}.</p></div>
@@ -1170,7 +1168,6 @@ tbody tr:last-child td{border-bottom:0}
           <div class="panel-body">${anns.length ? anns.map(a => announcementCardHTML(a)).join('') : '<div class="empty">No announcements.</div>'}</div>
         </div>
         <div class="footer">EduCore · Front-end demonstration only.</div>`;
-
       document.querySelectorAll('[data-open-kid-report]').forEach(btn => {
         btn.addEventListener('click', () => {
           const sid = btn.dataset.openKidReport;
@@ -1187,7 +1184,7 @@ tbody tr:last-child td{border-bottom:0}
       return;
     }
 
-    /* ---------- STAFF ---------- */
+    /* STAFF */
     const { school, classTop } = computeDux('S1');
     const visibleStudents = E.visibleStudentsFor(user);
     const allStudents = E.readStore(E.STORE_KEYS.students, []) || [];
@@ -1267,8 +1264,7 @@ tbody tr:last-child td{border-bottom:0}
           </div>
         </div>
       </div>
-      <div class="footer">EduCore · Front-end demonstration only.</div>
-    `;
+      <div class="footer">EduCore · Front-end demonstration only.</div>`;
 
     $('#duxScope')?.addEventListener('change', e => {
       const scope = e.target.value;
@@ -1285,7 +1281,6 @@ tbody tr:last-child td{border-bottom:0}
           <div style="font-size:20px;font-weight:800;color:#14213d;margin-top:8px">${x.avg.toFixed(1)}% <span style="font-size:12px;color:#8a6a1a">· ${gradeLetter}</span></div>
         </div>`;
       }).join('') : '<div class="empty" style="grid-column:1/-1">No results yet.</div>';
-
       $('#duxClassList').innerHTML = Object.keys(classTop).sort().length ? Object.keys(classTop).sort().map(cls => {
         const top = classTop[cls];
         return `<div class="leader-row" style="margin-bottom:8px">
@@ -1315,7 +1310,6 @@ tbody tr:last-child td{border-bottom:0}
   $('#userBtn')?.addEventListener('click', e => { e.stopPropagation(); $('#userMenuPop').classList.toggle('show'); });
   document.addEventListener('click', () => $('#userMenuPop')?.classList.remove('show'));
   $('#logoutBtn')?.addEventListener('click', () => E.logout());
-
   $('#profileBtn')?.addEventListener('click', () => {
     const u = E.currentUser();
     if(!u) return;
@@ -1350,14 +1344,23 @@ tbody tr:last-child td{border-bottom:0}
   });
 
   /* ============================================================
-     ENTER APP
+     ENTER APP — with session verification
      ============================================================ */
   function enterApp(){
+    /* Verify the session landed BEFORE doing anything else */
     const u = E.currentUser();
     if(!u){
       $('#appShell').classList.add('hidden');
       $('#loginScreen').classList.remove('hidden');
       paintDemoChips();
+      window.__bootDiag('warn', 'Session did not persist',
+        ['Your sign-in succeeded, but the browser could not save the session.',
+         'This usually means <code>localStorage</code> is being blocked or cleared immediately.',
+         'Try in a normal (non-incognito) window, and make sure cookies/site data are allowed for this domain.'],
+        [
+          { label: 'Reset site data and reload', action: 'reset-storage' },
+          { label: 'Reload with cache bypass', action: 'reload-hard', ghost: true }
+        ]);
       return;
     }
     $('#loginScreen').classList.add('hidden');
@@ -1376,7 +1379,6 @@ tbody tr:last-child td{border-bottom:0}
      BOOTSTRAP
      ============================================================ */
   async function bootstrap(){
-    /* Step 1: seed */
     let seedResult = { ok:true };
     try{
       seedResult = await seedUsersIfNeeded();
@@ -1384,17 +1386,19 @@ tbody tr:last-child td{border-bottom:0}
       console.error('Seed threw', err);
       seedResult = { ok:false, error: err.message || String(err) };
     }
-
     if(!seedResult.ok){
-      window.__bootDiag('error', 'Could not initialise user accounts',
-        [esc(seedResult.error || 'Unknown error'),
-         'Your browser may be blocking <code>localStorage</code>.',
-         'Try in a normal (non-incognito) window, then reload.']);
+      window.__bootDiag('error', 'Could not initialise user accounts', [
+        esc(seedResult.error || 'Unknown error'),
+        'Your browser may be blocking <code>localStorage</code>.',
+        'Try in a normal (non-incognito) window, then reload.'
+      ], [
+        { label: 'Reset site data and reload', action: 'reset-storage' },
+        { label: 'Reload with cache bypass', action: 'reload-hard', ghost: true }
+      ]);
       paintDemoChips();
       return;
     }
 
-    /* Step 2: is someone already logged in? */
     const u = E.currentUser();
     if(u){
       if(u.mustChangePassword){
@@ -1407,9 +1411,7 @@ tbody tr:last-child td{border-bottom:0}
       return;
     }
 
-    /* Step 3: show login */
     paintDemoChips();
-
     const authErr = sessionStorage.getItem('educoreAuthError');
     if(authErr){
       const el = $('#loginError');
@@ -1426,38 +1428,50 @@ tbody tr:last-child td{border-bottom:0}
     e.preventDefault();
     const err = $('#loginError');
     err.classList.remove('show');
+    const btn = document.getElementById('loginSubmitBtn');
+    if(btn){ btn.disabled = true; btn.textContent = 'Signing in…'; }
 
-    /* Guard: are there any users? If not, show a diagnostic. */
-    const users = E.readStore(E.STORE_KEYS.users, []) || [];
-    if(!users.length){
-      window.__bootDiag('error', 'No user accounts found',
-        ['The system could not find any user records in <code>localStorage</code>.',
-         'This usually means the seed step was blocked by the browser.',
-         'Open DevTools (F12) → Application → Local Storage, and check for <code>educoreUsers</code>.']);
-      return;
-    }
+    try{
+      const users = E.readStore(E.STORE_KEYS.users, []) || [];
+      if(!users.length){
+        window.__bootDiag('error', 'No user accounts found', [
+          'The system could not find any user records in <code>localStorage</code>.',
+          'This usually means the seed step was blocked by the browser.',
+          'Open DevTools (F12) → Application → Local Storage, and check for <code>educoreUsers</code>.'
+        ], [
+          { label: 'Reset site data and reload', action: 'reset-storage' }
+        ]);
+        return;
+      }
 
-    const user = $('#loginUser').value.trim();
-    const pass = $('#loginPass').value;
-    const hash = await hashPassword(pass);
-    const res = login(user, hash);
-    if(!res.ok){
-      err.textContent = res.error;
+      const user = $('#loginUser').value.trim();
+      const pass = $('#loginPass').value;
+      const hash = await hashPassword(pass);
+      const res = login(user, hash);
+      if(!res.ok){
+        err.textContent = res.error;
+        err.classList.add('show');
+        return;
+      }
+
+      window.__clearBootDiag();
+
+      if(res.user.mustChangePassword){
+        $('#loginScreen').classList.add('hidden');
+        $('#appShell').classList.add('hidden');
+        showForcePasswordScreen(res.user);
+        return;
+      }
+
+      enterApp();
+      E.toast('Welcome, ' + res.user.name);
+    }catch(ex){
+      console.error('Login error', ex);
+      err.textContent = 'Unexpected error: ' + (ex.message || ex);
       err.classList.add('show');
-      return;
+    }finally{
+      if(btn){ btn.disabled = false; btn.textContent = 'Sign in →'; }
     }
-
-    window.__clearBootDiag();
-
-    if(res.user.mustChangePassword){
-      $('#loginScreen').classList.add('hidden');
-      $('#appShell').classList.add('hidden');
-      showForcePasswordScreen(res.user);
-      return;
-    }
-
-    enterApp();
-    E.toast('Welcome, ' + res.user.name);
   });
 
   bootstrap();
