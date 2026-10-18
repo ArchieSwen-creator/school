@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Print Timetable | EduCore</title>
+<style>
+  :root{
+    --navy:#12315a;--navy2:#14213d;--blue:#3987ee;--border:#d8e4f2;
+    --text:#23354d;--muted:#73849a;--gold:#c99a2e;--gold2:#fff4d6;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:20px 16px 60px;background:#eef2f9;
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+
+  /* Action bar */
+  .bar{width:100%;max-width:1200px;margin:0 auto 16px;
+    display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
+  .bar h2{margin:0;font-size:17px;color:var(--navy)}
+  .bar-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{border:0;border-radius:8px;padding:10px 16px;background:var(--blue);color:#fff;
+    font-weight:700;font-size:12px;cursor:pointer}
+  .btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--border)}
+
+  /* Options */
+  .options{width:100%;max-width:1200px;margin:0 auto 16px;background:#fff;
+    border:1px solid var(--border);border-radius:12px;padding:16px 20px;
+    display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .options label{font-size:11px;font-weight:800;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.6px}
+  .options select{border:1px solid var(--border);border-radius:8px;padding:8px 12px;
+    font-size:12px;outline:none;background:#fff;min-width:180px}
+
+  /* Sheet */
+  .sheet{width:100%;max-width:1200px;margin:0 auto 24px;background:#fff;
+    border-radius:14px;box-shadow:0 8px 30px rgba(24,42,78,.08);overflow:hidden}
+  .sheet-head{background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
+    padding:20px 28px;border-top:5px solid #d88922}
+  .sheet-head .row{display:flex;justify-content:space-between;align-items:flex-start;
+    gap:16px;flex-wrap:wrap}
+  .sheet-head h1{margin:0;font-size:20px;letter-spacing:.3px;text-transform:uppercase}
+  .sheet-head p{margin:6px 0 0;font-size:12px;color:#cfdcf5}
+  .sheet-head .meta{text-align:right;font-size:11px;color:#cfdcf5}
+  .sheet-head .meta strong{color:#fff;display:block;margin-bottom:3px}
+  .sheet-body{padding:22px 24px}
+
+  /* Grid */
+  .tt-grid{width:100%;border-collapse:collapse;white-space:nowrap;font-size:11px}
+  .tt-grid th{background:#eaf0fb;color:#263b61;font-size:10px;letter-spacing:.4px;
+    text-transform:uppercase;padding:10px 8px;border:1px solid #dbe4f2;font-weight:800;
+    text-align:center}
+  .tt-grid th.row-label{width:110px;text-align:left;padding-left:12px;background:#f4f6fb}
+  .tt-grid td{border:1px solid #eef1f7;padding:9px 8px;vertical-align:top;
+    text-align:center;height:52px;min-width:100px}
+  .tt-grid td.period-label{background:#f8faff;font-weight:800;color:#263b61;
+    text-align:left;padding-left:12px;width:110px;font-size:10.5px;white-space:nowrap}
+  .tt-grid td.period-label small{display:block;color:var(--muted);font-weight:600;
+    font-size:9px;margin-top:2px}
+  .tt-grid tr.break-row td{background:#fff8e6}
+  .tt-grid tr.break-row td.period-label{background:#fff3d0;color:#8a6a1a}
+  .lesson{font-size:10.5px;line-height:1.3;text-align:left}
+  .lesson strong{display:block;color:#14213d;font-size:11px}
+  .lesson small{display:block;color:#54637d;font-size:9.5px;margin-top:2px}
+  .empty-slot{color:#c5cee0;font-size:10px;text-align:center}
+
+  /* Print */
+  @media print{
+    @page{size:A4 landscape;margin:10mm}
+    body{padding:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .bar,.options,#educoreBackPill{display:none!important}
+    .sheet{box-shadow:none;border-radius:0;margin:0;max-width:none;page-break-after:always}
+    .sheet:last-child{page-break-after:auto}
+    .sheet-head{padding:14px 20px}
+    .sheet-head h1{font-size:15px}
+    .sheet-body{padding:14px 18px}
+    .tt-grid{font-size:9.5px}
+    .tt-grid td{height:42px;padding:6px 4px}
+    .tt-grid th{padding:7px 4px}
+    .lesson strong{font-size:9.5px}
+    .lesson small{font-size:8.5px}
+  }
+
+  @media (max-width:700px){
+    body{padding:64px 8px 24px}
+    .options select{width:100%}
+  }
+</style>
+</head>
+<body>
+
+<div class="bar no-print">
+  <h2>Print Timetable</h2>
+  <div class="bar-actions">
+    <button class="btn ghost" onclick="window.close()">Close</button>
+    <button class="btn" onclick="window.print()">🖶 Print</button>
+  </div>
+</div>
+
+<div class="options no-print">
+  <label for="modeFilter">View</label>
+  <select id="modeFilter">
+    <option value="all-classes">All classes</option>
+    <option value="single-class">A single class</option>
+    <option value="all-teachers">All teachers</option>
+    <option value="single-teacher">A single teacher</option>
+  </select>
+  <select id="targetFilter" style="display:none"></select>
+</div>
+
+<div id="content"></div>
+
+<script src="educore-shared.js"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+  const user = E.requireLogin();
+  if(!user) return;
+
+  /* Only staff can print all timetables; teachers can print their own; students/parents print their class */
+  const isAdmin = user.role === 'Principal' || user.role === 'Registrar';
+  const isTeacher = user.role === 'Teacher';
+  const isStudent = user.role === 'Student';
+  const isParent = user.role === 'Parent';
+
+  const settings = E.getTimetableSettings();
+  const tt = E.getTimetable();
+
+  if(!tt.lessons || !tt.lessons.length){
+    document.getElementById('content').innerHTML = `
+      <div class="sheet">
+        <div class="sheet-head">
+          <h1>No timetable to print</h1>
+          <p>The school timetable has not been generated yet.</p>
+        </div>
+        <div class="sheet-body">
+          <p style="text-align:center;color:#73849a;padding:40px 20px">
+            Ask the school administrator to generate and publish the timetable first.
+          </p>
+        </div>
+      </div>`;
+    return;
+  }
+
+  /* Restrict options for non-staff */
+  const modeFilter = document.getElementById('modeFilter');
+  const targetFilter = document.getElementById('targetFilter');
+
+  if(isTeacher || isStudent || isParent){
+    /* Non-staff can only print a single view */
+    modeFilter.innerHTML = isTeacher
+      ? '<option value="single-teacher">My timetable</option>'
+      : '<option value="single-class">My class timetable</option>';
+    modeFilter.disabled = true;
+  }
+
+  /* Populate the target select */
+  function refreshTargetSelect(){
+    const mode = modeFilter.value;
+    if(mode === 'all-classes' || mode === 'all-teachers'){
+      targetFilter.style.display = 'none';
+      return;
+    }
+    targetFilter.style.display = '';
+    if(mode === 'single-class'){
+      const classes = E.getClasses().map(c => c.name);
+      targetFilter.innerHTML = classes.map(c =>
+        `<option ${isStudent && user.linkedStudentId ? '' : ''}>${E.esc(c)}</option>`
+      ).join('');
+      /* Preselect student's own class */
+      if(isStudent){
+        const s = (E.readStore(E.STORE_KEYS.students, []) || []).find(x => x.id === user.linkedStudentId);
+        if(s) targetFilter.value = s.class;
+      }
+      if(isParent){
+        const kids = E.childrenOf(user);
+        if(kids.length) targetFilter.value = kids[0].class;
+      }
+    } else if(mode === 'single-teacher'){
+      const teachers = E.getTeachers();
+      targetFilter.innerHTML = teachers.map(t =>
+        `<option value="${E.esc(t.id)}">${E.esc(t.name)}</option>`
+      ).join('');
+      if(isTeacher){
+        const tid = E.currentTeacherId();
+        if(tid) targetFilter.value = tid;
+      }
+    }
+  }
+
+  modeFilter.addEventListener('change', () => {
+    refreshTargetSelect();
+    paint();
+  });
+  targetFilter.addEventListener('change', paint);
+
+  /* ============================================================
+     BUILD
+     ============================================================ */
+  function buildSheet(headTitle, headSub, lessons, emptyContext){
+    const { days, perDay, grid } = E.buildTimetableGrid(lessons);
+    const periodsGrid = E.buildPeriodGrid(settings);
+
+    const breaksByAfter = {};
+    (settings.breaks || []).forEach(b => {
+      const k = Number(b.afterPeriod);
+      if(k > 0) breaksByAfter[k] = b;
+    });
+
+    const trs = [];
+    for(let p = 1; p <= perDay; p++){
+      const label = periodsGrid.find(x => x.index === p && !x.isBreak) || {};
+      const cells = [`<td class="period-label">P${p}<small>${label.start || ''} – ${label.end || ''}</small></td>`];
+      days.forEach(d => {
+        const lesson = grid[`${d}|${p}`];
+        if(lesson){
+          cells.push(`<td>
+            <div class="lesson">
+              <strong>${E.esc(E.subjectName(lesson.subject))}</strong>
+              <small>${E.esc(emptyContext === 'class' ? lesson.teacherName : lesson.className)}</small>
+            </div>
+          </td>`);
+        } else {
+          cells.push(`<td><div class="empty-slot">—</div></td>`);
+        }
+      });
+      trs.push(`<tr>${cells.join('')}</tr>`);
+
+      if(breaksByAfter[p]){
+        const b = breaksByAfter[p];
+        const brk = periodsGrid.find(x => x.isBreak && String(x.start) === String(label.end));
+        const breakCells = [`<td class="period-label">${E.esc(b.label || 'Break')}<small>${brk ? brk.start + ' – ' + brk.end : b.minutes + ' min'}</small></td>`];
+        days.forEach(() => breakCells.push(`<td style="color:#8a6a1a;font-weight:800;font-size:10px">${E.esc(b.label || 'Break')}</td>`));
+        trs.push(`<tr class="break-row">${breakCells.join('')}</tr>`);
+      }
+    }
+
+    return `
+      <div class="sheet">
+        <div class="sheet-head">
+          <div class="row">
+            <div>
+              <h1>${E.esc(headTitle)}</h1>
+              <p>${E.esc(headSub)}</p>
+            </div>
+            <div class="meta">
+              <strong>${E.esc(E.currentAcademicYear())}</strong>
+              ${new Date().toLocaleDateString(undefined, { year:'numeric', month:'long', day:'numeric' })}
+            </div>
+          </div>
+        </div>
+        <div class="sheet-body">
+          <table class="tt-grid">
+            <thead>
+              <tr>
+                <th class="row-label">Period</th>
+                ${days.map(d => `<th>${d}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>${trs.join('')}</tbody>
+          </table>
+        </div>
+      </div>`;
+  }
+
+  function paint(){
+    const mode = modeFilter.value;
+    const target = targetFilter.value;
+    const content = document.getElementById('content');
+
+    if(mode === 'single-class'){
+      const lessons = E.lessonsForClass(target);
+      content.innerHTML = buildSheet(
+        `Class: ${target}`,
+        'Weekly timetable',
+        lessons,
+        'class'
+      );
+      return;
+    }
+
+    if(mode === 'single-teacher'){
+      const lessons = E.lessonsForTeacher(target);
+      const t = E.getTeachers().find(x => x.id === target);
+      content.innerHTML = buildSheet(
+        `Teacher: ${t ? t.name : target}`,
+        'Weekly timetable',
+        lessons,
+        'teacher'
+      );
+      return;
+    }
+
+    if(mode === 'all-classes'){
+      const classes = E.getClasses();
+      content.innerHTML = classes.map(c => buildSheet(
+        `Class: ${c.name}`,
+        'Weekly timetable',
+        E.lessonsForClass(c.name),
+        'class'
+      )).join('') || '<div class="sheet"><div class="sheet-body"><div class="empty">No classes to print.</div></div></div>';
+      return;
+    }
+
+    if(mode === 'all-teachers'){
+      const teachers = E.getTeachers();
+      content.innerHTML = teachers.map(t => buildSheet(
+        `Teacher: ${t.name}`,
+        'Weekly timetable',
+        E.lessonsForTeacher(t.id),
+        'teacher'
+      )).join('') || '<div class="sheet"><div class="sheet-body"><div class="empty">No teachers to print.</div></div></div>';
+      return;
+    }
+  }
+
+  /* For non-staff, auto-pick a sensible target */
+  if(isStudent){
+    refreshTargetSelect();
+    paint();
+  } else if(isParent){
+    refreshTargetSelect();
+    paint();
+  } else if(isTeacher){
+    refreshTargetSelect();
+    paint();
+  } else {
+    refreshTargetSelect();
+    paint();
+  }
+
+  /* Title */
+  document.title = 'Print Timetable · ' + (E.readStore(E.STORE_KEYS.settings, {}) || {}).name || 'EduCore';
+})();
+</script>
+</body>
+</html>

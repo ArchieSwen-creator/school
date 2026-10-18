@@ -41,6 +41,8 @@
     quizQuestions: 'educoreQuizQuestions',
     quizAttempts: 'educoreQuizAttempts',
     quizResponses: 'educoreQuizResponses',
+    timetableSettings: 'educoreTimetableSettings',
+    timetable: 'educoreTimetable',
     migratedCategories: 'educoreMigratedCategoriesV2',
     migratedResults: 'educoreMigratedResultsToPeriodsV1',
     migratedFees: 'educoreMigratedFeesV3'
@@ -52,11 +54,35 @@
       return raw === null ? fallback : JSON.parse(raw);
     }catch(e){ return fallback; }
   }
+
   function writeStore(key, value){
-    try{ localStorage.setItem(key, JSON.stringify(value)); }catch(e){}
+    try{
+      localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    }catch(e){
+      console.error('[EduCore writeStore] failed for', key, e);
+      return false;
+    }
   }
+
   function removeStore(key){
-    try{ localStorage.removeItem(key); }catch(e){}
+    try{ localStorage.removeItem(key); return true; }
+    catch(e){ return false; }
+  }
+
+  function storageAvailable(){
+    try{
+      const probe = '__educore_probe_' + Math.random().toString(36).slice(2);
+      localStorage.setItem(probe, '1');
+      const readBack = localStorage.getItem(probe);
+      localStorage.removeItem(probe);
+      if(readBack !== '1'){
+        return { ok:false, reason:'localStorage write did not persist.' };
+      }
+      return { ok:true };
+    }catch(e){
+      return { ok:false, reason: e.message || 'localStorage threw.' };
+    }
   }
 
   const DEVICE_ID = (function(){
@@ -79,12 +105,15 @@
     const session = readStore(STORE_KEYS.session, null);
     if(!session) return null;
 
-    const lastSeen = session.lastSeenAt || session.loggedInAt;
-    if(lastSeen){
-      const idleMin = (Date.now() - new Date(lastSeen).getTime()) / 60000;
-      if(idleMin > SESSION_TTL_MIN){
-        writeStore(STORE_KEYS.session, null);
-        return null;
+    const lastSeenRaw = session.lastSeenAt || session.loggedInAt;
+    if(lastSeenRaw){
+      const t = new Date(lastSeenRaw).getTime();
+      if(Number.isFinite(t)){
+        const deltaMin = (Date.now() - t) / 60000;
+        if(deltaMin > SESSION_TTL_MIN && deltaMin < 60 * 24 * 365){
+          writeStore(STORE_KEYS.session, null);
+          return null;
+        }
       }
     }
 
@@ -102,8 +131,6 @@
     return !!(u && u.permissions && u.permissions[perm]);
   }
 
-  /* Explicit value (true OR false) always wins.
-     Parent-menu fallback only when the sub-key was NEVER written. */
   function can(key){
     const u = currentUser();
     if(!u || !u.permissions) return false;
@@ -125,6 +152,7 @@
     }
     return u;
   }
+
   function requirePerm(perm, pageLabel){
     const u = requireLogin();
     if(!u) return null;
@@ -134,6 +162,7 @@
     }
     return u;
   }
+
   function logout(){
     const u = currentUser();
     if(u) audit('logout', 'User ' + u.username, '', '');
@@ -491,17 +520,14 @@
      PARENTS REGISTRY
      ============================================================ */
   function getParents(){ return readStore(STORE_KEYS.parents, []) || []; }
-
   function parentById(id){
     return getParents().find(p => p.id === id) || null;
   }
-
   function parentByName(name){
     const n = String(name || '').trim().toLowerCase();
     if(!n) return null;
     return getParents().find(p => String(p.name || '').trim().toLowerCase() === n) || null;
   }
-
   function addParent(data){
     const list = getParents();
     const name = String(data.name || '').trim();
@@ -527,7 +553,6 @@
     writeStore(STORE_KEYS.parents, list);
     return { ok:true, parent: row };
   }
-
   function updateParent(id, data){
     const list = getParents();
     const target = list.find(p => p.id === id);
@@ -561,7 +586,6 @@
     }
     return { ok:true, parent: target };
   }
-
   function deleteParent(id){
     const list = getParents();
     const target = list.find(p => p.id === id);
@@ -579,7 +603,6 @@
     writeStore(STORE_KEYS.parents, list.filter(p => p.id !== id));
     return { ok:true };
   }
-
   function allGuardianNames(){
     const set = new Set();
     getParents().forEach(p => { if(p.name) set.add(p.name); });
@@ -1477,7 +1500,9 @@
       quizResponses:  readStore(STORE_KEYS.quizResponses, []) || [],
       enrollments:    readStore(STORE_KEYS.enrollments, []) || [],
       semesters:      readStore(STORE_KEYS.semesters, {}) || {},
-      terms:          readStore(STORE_KEYS.terms, {}) || {}
+      terms:          readStore(STORE_KEYS.terms, {}) || {},
+      timetable:      readStore(STORE_KEYS.timetable, null),
+      timetableSettings: readStore(STORE_KEYS.timetableSettings, null)
     };
   }
   function studentYearlyAverage(student, year){
@@ -1582,6 +1607,7 @@
     writeStore(STORE_KEYS.sponsors, {});
     writeStore(STORE_KEYS.semesters, {});
     writeStore(STORE_KEYS.terms, {});
+    writeStore(STORE_KEYS.timetable, null);
 
     const settings = readStore(STORE_KEYS.settings, {}) || {};
     const [startYear, endYear] = year.split('/').map(Number);
@@ -1644,6 +1670,8 @@
     if(snap.enrollments)    writeStore(STORE_KEYS.enrollments, snap.enrollments);
     if(snap.semesters)      writeStore(STORE_KEYS.semesters, snap.semesters);
     if(snap.terms)          writeStore(STORE_KEYS.terms, snap.terms);
+    if(snap.timetable !== undefined)         writeStore(STORE_KEYS.timetable, snap.timetable);
+    if(snap.timetableSettings !== undefined) writeStore(STORE_KEYS.timetableSettings, snap.timetableSettings);
 
     const settings = readStore(STORE_KEYS.settings, {}) || {};
     settings.academicYear = year;
@@ -1850,6 +1878,400 @@
       results,
       attendance
     };
+  }
+
+  /* ============================================================
+     TIMETABLE ENGINE
+     ============================================================ */
+
+  const DAY_KEYS = ['Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  function getTimetableSettings(){
+    const defaults = {
+      year: currentAcademicYear(),
+      dayStart: '08:00',
+      dayEnd: '15:30',
+      periodMinutes: 45,
+      days: ['Mon','Tue','Wed','Thu','Fri'],
+      breaks: [
+        { afterPeriod: 3, minutes: 20, label: 'Recess' }
+      ]
+    };
+    const raw = readStore(STORE_KEYS.timetableSettings, null) || {};
+    const merged = Object.assign({}, defaults, raw);
+    if(!Array.isArray(merged.days) || !merged.days.length) merged.days = defaults.days;
+    if(!Array.isArray(merged.breaks)) merged.breaks = defaults.breaks;
+    return merged;
+  }
+
+  function saveTimetableSettings(s){
+    const y = currentAcademicYear();
+    const value = Object.assign({}, s, { year: y });
+    writeStore(STORE_KEYS.timetableSettings, value);
+    return value;
+  }
+
+  function computePeriodsPerDay(settings){
+    const s = settings || getTimetableSettings();
+    const toMin = hhmm => {
+      const [h, m] = String(hhmm || '0:0').split(':').map(Number);
+      return (h || 0) * 60 + (m || 0);
+    };
+    const totalMin = toMin(s.dayEnd) - toMin(s.dayStart);
+    if(totalMin <= 0) return 0;
+    const breakMin = (s.breaks || []).reduce((sum, b) => sum + (Number(b.minutes) || 0), 0);
+    const usable = totalMin - breakMin;
+    if(usable <= 0) return 0;
+    return Math.floor(usable / Number(s.periodMinutes || 45));
+  }
+
+  function buildPeriodGrid(settings){
+    const s = settings || getTimetableSettings();
+    const toMin = hhmm => {
+      const [h, m] = String(hhmm || '0:0').split(':').map(Number);
+      return (h || 0) * 60 + (m || 0);
+    };
+    const toHHMM = min => {
+      const h = Math.floor(min / 60);
+      const m = min % 60;
+      return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+    };
+    const breaksByAfter = {};
+    (s.breaks || []).forEach(b => {
+      const k = Number(b.afterPeriod);
+      if(k > 0) breaksByAfter[k] = (breaksByAfter[k] || 0) + (Number(b.minutes) || 0);
+    });
+
+    const periods = [];
+    let cursor = toMin(s.dayStart);
+    const per = Number(s.periodMinutes || 45);
+    let idx = 1;
+    const total = computePeriodsPerDay(s);
+    for(let i = 1; i <= total; i++){
+      periods.push({
+        index: idx,
+        start: toHHMM(cursor),
+        end: toHHMM(cursor + per),
+        isBreak: false
+      });
+      cursor += per;
+      if(breaksByAfter[idx]){
+        periods.push({
+          index: null,
+          start: toHHMM(cursor),
+          end: toHHMM(cursor + breaksByAfter[idx]),
+          isBreak: true
+        });
+        cursor += breaksByAfter[idx];
+      }
+      idx++;
+    }
+    return periods;
+  }
+
+  function getTeacherAvailability(teacherId){
+    const teachers = getTeachers();
+    const t = teachers.find(x => x.id === teacherId);
+    if(!t) return { availableDays: ['Mon','Tue','Wed','Thu','Fri'], unavailablePeriods: [] };
+    const s = getTimetableSettings();
+    const defaultDays = t.status === 'Part-time' ? ['Mon','Wed','Fri'] : s.days;
+    return {
+      availableDays: Array.isArray(t.availableDays) && t.availableDays.length
+        ? t.availableDays
+        : defaultDays,
+      unavailablePeriods: Array.isArray(t.unavailablePeriods) ? t.unavailablePeriods : []
+    };
+  }
+
+  function saveTeacherAvailability(teacherId, avail){
+    const teachers = getTeachers();
+    const t = teachers.find(x => x.id === teacherId);
+    if(!t) return false;
+    t.availableDays = Array.isArray(avail.availableDays) ? avail.availableDays.slice() : undefined;
+    t.unavailablePeriods = Array.isArray(avail.unavailablePeriods) ? avail.unavailablePeriods.slice() : [];
+    writeStore(STORE_KEYS.teachers, teachers);
+    return true;
+  }
+
+  function getTimetable(){
+    const raw = readStore(STORE_KEYS.timetable, null);
+    if(raw) return raw;
+    return {
+      year: currentAcademicYear(),
+      status: 'draft',
+      generatedAt: null,
+      lessons: [],
+      unplaced: []
+    };
+  }
+  function writeTimetable(tt){
+    writeStore(STORE_KEYS.timetable, tt);
+  }
+  function clearTimetable(){
+    const tt = {
+      year: currentAcademicYear(),
+      status: 'draft',
+      generatedAt: null,
+      lessons: [],
+      unplaced: []
+    };
+    writeTimetable(tt);
+    return tt;
+  }
+  function publishTimetable(){
+    const tt = getTimetable();
+    tt.status = 'published';
+    tt.publishedAt = new Date().toISOString();
+    tt.publishedBy = (currentUser() || {}).username || '';
+    writeTimetable(tt);
+    audit('update', 'Timetable published', '', `${tt.lessons.length} lessons`);
+    return tt;
+  }
+  function isTimetablePublished(){
+    return getTimetable().status === 'published';
+  }
+
+  function generateTimetable({ timeLimitMs = 5000 } = {}){
+    const settings = getTimetableSettings();
+    const days = settings.days.slice();
+    const periodsPerDay = computePeriodsPerDay(settings);
+    const totalSlots = days.length * periodsPerDay;
+
+    if(!days.length || periodsPerDay <= 0){
+      return {
+        ok: false,
+        error: 'Time grid is invalid. Set school start/end times and period length first.'
+      };
+    }
+
+    const classes = getClasses();
+    const assignments = getAssignments();
+    const teachers = getTeachers();
+    const teacherById = Object.fromEntries(teachers.map(t => [t.id, t]));
+
+    const demand = [];
+    const classProblems = [];
+
+    classes.forEach(c => {
+      const myAsn = assignments.filter(a => a.className === c.name);
+      const weekly = myAsn.reduce((sum, a) => sum + Number(a.periodsPerWeek || 0), 0);
+      if(weekly > totalSlots){
+        classProblems.push({
+          className: c.name,
+          reason: `Requires ${weekly} periods but only ${totalSlots} available.`
+        });
+        return;
+      }
+      myAsn.forEach(a => {
+        const t = teacherById[a.teacherId];
+        const name = t ? t.name : a.teacherName || a.teacherId;
+        const n = Number(a.periodsPerWeek || 0);
+        for(let i = 0; i < n; i++){
+          demand.push({
+            className: c.name,
+            subject: a.subject,
+            teacherId: a.teacherId,
+            teacherName: name
+          });
+        }
+      });
+    });
+
+    if(classProblems.length){
+      return {
+        ok: false,
+        error: 'Some classes require more periods than are available.',
+        classProblems
+      };
+    }
+    if(!demand.length){
+      return { ok: false, error: 'Nothing to schedule. Add class assignments first.' };
+    }
+
+    const teacherAvail = {};
+    teachers.forEach(t => {
+      const a = getTeacherAvailability(t.id);
+      const daySet = new Set(a.availableDays);
+      const blockedSet = new Set(
+        (a.unavailablePeriods || []).map(x => `${x.day}|${x.period}`)
+      );
+      teacherAvail[t.id] = { daySet, blockedSet };
+    });
+
+    const teacherLoadCount = {};
+    demand.forEach(d => {
+      teacherLoadCount[d.teacherId] = (teacherLoadCount[d.teacherId] || 0) + 1;
+    });
+    demand.sort((a, b) => {
+      const da = teacherAvail[a.teacherId]?.daySet.size || 5;
+      const db = teacherAvail[b.teacherId]?.daySet.size || 5;
+      if(da !== db) return da - db;
+      const la = teacherLoadCount[a.teacherId] || 0;
+      const lb = teacherLoadCount[b.teacherId] || 0;
+      if(la !== lb) return lb - la;
+      if(a.className !== b.className) return a.className.localeCompare(b.className);
+      return a.subject.localeCompare(b.subject);
+    });
+
+    const classBusy = {};
+    const teacherBusy = {};
+    const slotKey = (day, p) => `${day}|${p}`;
+
+    const lessons = [];
+    const startTime = Date.now();
+    let timedOut = false;
+
+    function canPlace(lesson, day, period){
+      const k = slotKey(day, period);
+      if(classBusy[`${lesson.className}|${k}`]) return false;
+      if(teacherBusy[`${lesson.teacherId}|${k}`]) return false;
+      const av = teacherAvail[lesson.teacherId];
+      if(av){
+        if(!av.daySet.has(day)) return false;
+        if(av.blockedSet.has(k)) return false;
+      }
+      return true;
+    }
+
+    function placeAt(lesson, day, period){
+      const k = slotKey(day, period);
+      classBusy[`${lesson.className}|${k}`] = true;
+      teacherBusy[`${lesson.teacherId}|${k}`] = true;
+      lessons.push({
+        id: 'L-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6),
+        className: lesson.className,
+        subject: lesson.subject,
+        teacherId: lesson.teacherId,
+        teacherName: lesson.teacherName,
+        day,
+        period
+      });
+    }
+
+    function tryPlace(idx){
+      if(idx >= demand.length) return true;
+      if(Date.now() - startTime > timeLimitMs){
+        timedOut = true;
+        return false;
+      }
+      const lesson = demand[idx];
+      const candidates = [];
+      for(let di = 0; di < days.length; di++){
+        for(let p = 1; p <= periodsPerDay; p++){
+          if(canPlace(lesson, days[di], p)){
+            candidates.push({ day: days[di], period: p, di });
+          }
+        }
+      }
+      candidates.sort((a, b) => {
+        const sameDayA = lessons.some(L =>
+          L.className === lesson.className && L.subject === lesson.subject && L.day === a.day);
+        const sameDayB = lessons.some(L =>
+          L.className === lesson.className && L.subject === lesson.subject && L.day === b.day);
+        if(sameDayA !== sameDayB) return sameDayA ? 1 : -1;
+        return a.di - b.di;
+      });
+      for(const c of candidates){
+        placeAt(lesson, c.day, c.period);
+        if(tryPlace(idx + 1)) return true;
+        lessons.pop();
+        const k = slotKey(c.day, c.period);
+        delete classBusy[`${lesson.className}|${k}`];
+        delete teacherBusy[`${lesson.teacherId}|${k}`];
+        if(timedOut) return false;
+      }
+      return false;
+    }
+
+    tryPlace(0);
+
+    const placedCount = lessons.length;
+    const unplaced = demand.slice(placedCount).map(d => ({
+      className: d.className,
+      subject: d.subject,
+      teacherId: d.teacherId,
+      teacherName: d.teacherName,
+      reason: timedOut ? 'Time limit reached' : 'No free slot'
+    }));
+
+    audit('create', 'Timetable generated', '',
+      `${lessons.length} placed · ${unplaced.length} unplaced${timedOut ? ' · timed out' : ''}`);
+
+    return {
+      ok: true,
+      lessons,
+      unplaced,
+      timedOut,
+      totalDemand: demand.length
+    };
+  }
+
+  function saveGeneratedTimetable(result){
+    if(!result || !result.ok) return false;
+    const tt = {
+      year: currentAcademicYear(),
+      status: 'draft',
+      generatedAt: new Date().toISOString(),
+      generatedBy: (currentUser() || {}).username || '',
+      lessons: result.lessons || [],
+      unplaced: result.unplaced || []
+    };
+    writeTimetable(tt);
+    return true;
+  }
+
+  function deleteLesson(lessonId){
+    const tt = getTimetable();
+    tt.lessons = (tt.lessons || []).filter(l => l.id !== lessonId);
+    writeTimetable(tt);
+    return true;
+  }
+  function updateLesson(lessonId, patch){
+    const tt = getTimetable();
+    const l = (tt.lessons || []).find(x => x.id === lessonId);
+    if(!l) return { ok:false, error:'Lesson not found.' };
+    Object.assign(l, patch);
+    writeTimetable(tt);
+    return { ok:true };
+  }
+  function checkLessonConflict(patch, ignoreId){
+    const tt = getTimetable();
+    for(const l of (tt.lessons || [])){
+      if(l.id === ignoreId) continue;
+      if(l.day !== patch.day || l.period !== patch.period) continue;
+      if(patch.className && l.className === patch.className){
+        return { ok:false, error:`${patch.className} already has ${l.subject} at ${patch.day} P${patch.period}.` };
+      }
+      if(patch.teacherId && l.teacherId === patch.teacherId){
+        return { ok:false, error:`${l.teacherName} is already teaching ${l.className} at ${patch.day} P${patch.period}.` };
+      }
+    }
+    return { ok:true };
+  }
+
+  function lessonsForClass(className){
+    return (getTimetable().lessons || []).filter(l => l.className === className);
+  }
+  function lessonsForTeacher(teacherId){
+    return (getTimetable().lessons || []).filter(l => l.teacherId === teacherId);
+  }
+  function lessonsForStudent(student){
+    if(!student) return [];
+    return lessonsForClass(student.class);
+  }
+  function buildTimetableGrid(lessons){
+    const settings = getTimetableSettings();
+    const days = settings.days;
+    const perDay = computePeriodsPerDay(settings);
+    const grid = {};
+    days.forEach(d => {
+      for(let p = 1; p <= perDay; p++) grid[`${d}|${p}`] = null;
+    });
+    (lessons || []).forEach(l => {
+      const k = `${l.day}|${l.period}`;
+      if(Object.prototype.hasOwnProperty.call(grid, k)) grid[k] = l;
+    });
+    return { days, perDay, grid };
   }
 
   /* ============================================================
@@ -2061,6 +2483,13 @@
         { key:'manage_subjects', label:'Manage class subjects', desc:'Choose which subjects a class offers' },
         { key:'promote', label:'Promote students', desc:'Move students to the next class' }
       ]},
+      { key:'timetable', label:'Timetable', desc:'School timetable / scheduler', subFeatures:[
+        { key:'settings', label:'Configure settings', desc:'School day, periods, breaks, teacher availability' },
+        { key:'generate', label:'Generate schedule', desc:'Run the scheduler' },
+        { key:'edit', label:'Edit lessons', desc:'Manually adjust generated lessons' },
+        { key:'publish', label:'Publish', desc:'Make the timetable visible to teachers/students/parents' },
+        { key:'view', label:'View', desc:'See the published timetable' }
+      ]},
       { key:'attendance', label:'Attendance', desc:'Daily attendance register', subFeatures:[
         { key:'save', label:'Save attendance', desc:'Record attendance for a class and date' },
         { key:'clear_day', label:'Clear day', desc:'Erase a day\'s attendance' },
@@ -2172,8 +2601,6 @@
     ]}
   ];
 
-  /* Deduplicated — because everything is derived from PERMISSION_GROUPS,
-     these arrays are now guaranteed to match what the modal renders. */
   const ALL_PERMISSION_KEYS = Array.from(new Set(
     PERMISSION_GROUPS.flatMap(g => g.items.map(i => i.key))
   ));
@@ -2183,13 +2610,12 @@
   ));
   const ALL_KEYS = Array.from(new Set([...ALL_PERMISSION_KEYS, ...ALL_SUB_FEATURE_KEYS]));
 
-  /* Number of toggle switches the users.html modal actually renders */
   function renderedPermissionToggleCount(){
     let count = 0;
     PERMISSION_GROUPS.forEach(g => {
       g.items.forEach(it => {
-        count += 1;                             // main menu toggle
-        count += (it.subFeatures || []).length; // sub-feature toggles
+        count += 1;
+        count += (it.subFeatures || []).length;
       });
     });
     return count;
@@ -2218,6 +2644,7 @@
           'parents','parents.add','parents.edit','parents.delete','parents.export',
           'teachers','teachers.add','teachers.edit','teachers.delete','teachers.assignments','teachers.sponsorship',
           'classes','classes.add','classes.delete','classes.archive','classes.manage_subjects','classes.promote',
+          'timetable','timetable.settings','timetable.generate','timetable.edit','timetable.publish','timetable.view',
           'attendance','attendance.save','attendance.clear_day','attendance.mark_all',
           'exams','exams.add','exams.edit','exams.delete',
           'reportcard','reportcard.open','reportcard.batch_print','reportcard.copy_prev_term',
@@ -2237,6 +2664,7 @@
           'dashboard',
           'students','students.report',
           'classes',
+          'timetable','timetable.view',
           'attendance','attendance.save','attendance.mark_all',
           'exams','exams.add','exams.edit',
           'reportcard','reportcard.open',
@@ -2254,6 +2682,7 @@
           'quizzes',
           'fees','fees.view_history',
           'announcements',
+          'timetable','timetable.view',
           'transcripts','transcripts.request',
           'recommendations','recommendations.request',
           'idcards','idcards.print_single'
@@ -2266,6 +2695,7 @@
           'exams',
           'fees','fees.view_history',
           'announcements',
+          'timetable','timetable.view',
           'transcripts','transcripts.request',
           'recommendations','recommendations.request',
           'idcards','idcards.print_single',
@@ -2309,7 +2739,7 @@
         'userManagement','settings','fees','teachers','classes',
         'students','parents','audit','archive','attendance','exams',
         'reportcard','announcements','transfers','transcripts',
-        'recommendations','idcards','promotions','termLock'
+        'recommendations','idcards','promotions','termLock','timetable'
       ],
       label: 'Student'
     },
@@ -2325,7 +2755,8 @@
         'quizzes.create','quizzes.edit','quizzes.delete','quizzes.publish',
         'quizzes.grade','quizzes.view_all','quizzes.reset','quizzes.assign',
         'announcements.publish','announcements.edit','announcements.delete',
-        'announcements.pin'
+        'announcements.pin',
+        'timetable.settings','timetable.generate','timetable.edit','timetable.publish'
       ],
       label: 'Parent / Guardian'
     }
@@ -2398,6 +2829,7 @@
     { key:'teachers',        label:'Teachers',          icon:'♧', group:'Main menu',      perm:'teachers',   file:'teachers.html' },
     { key:'subjects',        label:'Subjects',          icon:'📚', group:'Academic',      perm:'classes',    file:'subjects.html' },
     { key:'classes',         label:'Classes',           icon:'▤', group:'Academic',      perm:'classes',    file:'classes.html' },
+    { key:'timetable',       label:'Timetable',         icon:'📅', group:'Academic',      perm:'timetable',  file:'timetable.html' },
     { key:'attendance',      label:'Attendance',        icon:'✓', group:'Academic',      perm:'attendance', file:'attendance.html' },
     { key:'gradesheet',      label:'Gradesheet',        icon:'✎', group:'Academic',      perm:'exams',      file:'gradesheet.html' },
     { key:'ledger',          label:'Gradesheet Ledger', icon:'▦', group:'Academic',      perm:'reportcard', file:'report-card-ledger.html' },
@@ -2525,7 +2957,7 @@
      PUBLIC API
      ============================================================ */
   global.EduCore = {
-    STORE_KEYS, readStore, writeStore, removeStore,
+    STORE_KEYS, readStore, writeStore, removeStore, storageAvailable,
     DEVICE_ID, SESSION_TTL_MIN,
     currentUser, hasPerm, can, requireLogin, requirePerm, logout,
     readAudit, writeAudit, audit,
@@ -2595,6 +3027,18 @@
     archivedResultsForStudent,
     getArchive, updateArchivedResult, deleteArchivedResult, archivedLedgerRow,
     reportCardSource,
+
+    /* TIMETABLE */
+    DAY_KEYS,
+    getTimetableSettings, saveTimetableSettings,
+    computePeriodsPerDay, buildPeriodGrid,
+    getTeacherAvailability, saveTeacherAvailability,
+    getTimetable, writeTimetable, clearTimetable,
+    publishTimetable, isTimetablePublished,
+    generateTimetable, saveGeneratedTimetable,
+    deleteLesson, updateLesson, checkLessonConflict,
+    lessonsForClass, lessonsForTeacher, lessonsForStudent,
+    buildTimetableGrid,
 
     PERMISSION_GROUPS, ALL_PERMISSION_KEYS, ALL_SUB_FEATURE_KEYS, ALL_KEYS,
     renderedPermissionToggleCount,

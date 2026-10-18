@@ -226,6 +226,17 @@ tbody tr:last-child td{border-bottom:0}
   text-transform:uppercase;letter-spacing:.7px;font-weight:800;margin-bottom:6px}
 .attendance-mini .mini strong{font-size:20px;color:var(--navy)}
 
+/* Today's timetable panel */
+.today-list{display:flex;flex-direction:column;gap:8px}
+.today-row{display:grid;grid-template-columns:90px 1fr auto;gap:12px;align-items:center;
+  padding:12px 14px;background:#f8faff;border:1px solid var(--line);border-radius:10px;
+  border-left:3px solid #3987ee}
+.today-row.break{background:#fff8e6;border-left-color:#d88922;border-color:#f3d999}
+.today-row .time{font-family:monospace;font-size:11px;color:var(--muted);font-weight:700}
+.today-row .subject{font-size:13px;color:var(--navy);font-weight:800}
+.today-row .detail{font-size:10.5px;color:var(--muted);margin-top:3px}
+.today-row .badge{font-size:10px;background:#eaf2ff;color:#1d4d82;padding:4px 9px;border-radius:20px;font-weight:800}
+
 .rpt-status{display:flex;align-items:center;gap:14px;padding:16px 20px;
   border-radius:12px;margin-bottom:18px;border:1px solid;font-size:12.5px;line-height:1.6}
 .rpt-status.unlocked{background:#f0fdf7;border-color:#b8e9d3;color:#0e6b4a}
@@ -377,9 +388,6 @@ tbody tr:last-child td{border-bottom:0}
   </main>
 </div>
 
-<!-- ============================================================
-     INLINE BOOT DIAGNOSTIC HELPER (runs before shared JS)
-     ============================================================ -->
 <script>
   window.__bootDiag = function(kind, title, lines, buttons){
     const el = document.getElementById('bootDiag');
@@ -394,24 +402,16 @@ tbody tr:last-child td{border-bottom:0}
         ).join('')}</div>`
       : '';
     el.innerHTML = `<strong>${title}</strong>${list}${btns}`;
-
     el.querySelectorAll('[data-diag-action]').forEach(btn => {
       btn.addEventListener('click', () => {
         const a = btn.dataset.diagAction;
         if(a === 'reload-hard') location.reload(true);
         if(a === 'reset-storage'){
           try{
-            Object.keys(localStorage)
-              .filter(k => k.indexOf('educore') === 0)
+            Object.keys(localStorage).filter(k => k.indexOf('educore') === 0)
               .forEach(k => localStorage.removeItem(k));
             location.reload();
-          }catch(e){
-            alert('Could not clear storage: ' + e.message);
-          }
-        }
-        if(a === 'clear-login'){
-          try{ sessionStorage.clear(); }catch(e){}
-          location.reload();
+          }catch(e){ alert('Could not clear storage: ' + e.message); }
         }
       });
     });
@@ -422,58 +422,43 @@ tbody tr:last-child td{border-bottom:0}
   };
 </script>
 
-<!-- Cache-busted shared script -->
-<script src="educore-shared.js?v=4"></script>
+<script src="educore-shared.js?v=5"></script>
 
 <script>
 (function(){
   'use strict';
   const E = window.EduCore;
 
-  /* ============================================================
-     HARD GUARD — this runs before anything else.
-     If the shared file failed to load, or a critical symbol is
-     missing, we stop with a visible banner. Never a blank screen.
-     ============================================================ */
   if(!E){
     window.__bootDiag('error', 'Could not load educore-shared.js', [
       'The shared JavaScript file did not load.',
-      'Check the browser console (F12) → Network tab for a 404.',
-      'Verify <code>educore-shared.js</code> exists in the same folder as <code>index.html</code>.'
-    ], [
-      { label: 'Reload with cache bypass', action: 'reload-hard' }
-    ]);
+      'Check the browser console (F12) → Network tab for a 404.'
+    ], [{ label: 'Reload with cache bypass', action: 'reload-hard' }]);
     return;
   }
   const REQUIRED_SYMBOLS = [
     'STORE_KEYS','readStore','writeStore','currentUser','can','requirePerm',
     'PAGE_REGISTRY','ROLE_PRESETS','PERMISSION_GROUPS','ALL_KEYS',
-    'renderedPermissionToggleCount','viewerGradesheetAccess','visibleResultsFor'
+    'renderedPermissionToggleCount','getTimetable','buildPeriodGrid',
+    'computePeriodsPerDay','lessonsForClass','lessonsForTeacher'
   ];
   const missing = REQUIRED_SYMBOLS.filter(k => typeof E[k] === 'undefined');
   if(missing.length){
     window.__bootDiag('error', 'educore-shared.js is incomplete or outdated', [
       'Missing symbols: <code>' + missing.join('</code>, <code>') + '</code>',
       'Your browser may be serving a cached older copy of the file.',
-      'Hard-refresh with <strong>Ctrl+Shift+R</strong> (Cmd+Shift+R on Mac), or use the button below.'
-    ], [
-      { label: 'Reload with cache bypass', action: 'reload-hard' }
-    ]);
+      'Hard-refresh with <strong>Ctrl+Shift+R</strong>.'
+    ], [{ label: 'Reload with cache bypass', action: 'reload-hard' }]);
     return;
   }
 
-  /* ============================================================
-     STORAGE PROBE — fail loudly if localStorage is blocked
-     ============================================================ */
   if(typeof E.storageAvailable === 'function'){
     const probe = E.storageAvailable();
     if(!probe.ok){
       window.__bootDiag('error', 'Browser storage is blocked', [
         'EduCore needs <code>localStorage</code> to save your session and data.',
         'Reason: <code>' + (probe.reason || 'unknown') + '</code>',
-        'This usually means you are in <strong>private / incognito mode</strong>, or your browser is blocking site data.',
-        'Open this page in a normal window, or allow cookies / site data for this domain.',
-        'If you already tried and it still fails, click <strong>Reset site data</strong> below.'
+        'This usually means you are in private / incognito mode.'
       ], [
         { label: 'Reload with cache bypass', action: 'reload-hard' },
         { label: 'Reset site data', action: 'reset-storage', ghost: true }
@@ -484,9 +469,6 @@ tbody tr:last-child td{border-bottom:0}
 
   const $ = E.$, $$ = E.$$, esc = E.esc, initials = E.initials, money = E.money;
 
-  /* ============================================================
-     PASSWORD HASH
-     ============================================================ */
   async function hashPassword(plain){
     try{
       const enc = new TextEncoder().encode('educore::' + plain);
@@ -499,9 +481,6 @@ tbody tr:last-child td{border-bottom:0}
     }
   }
 
-  /* ============================================================
-     SEED USERS — self-healing, verified
-     ============================================================ */
   const KNOWN_SEEDS = [
     { username:'admin',      password:'admin123', role:'Principal', name:'System Administrator', linkedTeacherId:null, linkedStudentId:null, linkedStudentIds:null },
     { username:'principal1', password:'demo123',  role:'Principal', name:'Mrs. A. Smith',         linkedTeacherId:null, linkedStudentId:null, linkedStudentIds:null },
@@ -513,7 +492,6 @@ tbody tr:last-child td{border-bottom:0}
 
   async function seedUsersIfNeeded(){
     let existing = E.readStore(E.STORE_KEYS.users, null);
-
     if(Array.isArray(existing) && existing.length){
       let touched = false;
       const knownMap = Object.fromEntries(KNOWN_SEEDS.map(s => [s.username, s.password]));
@@ -532,13 +510,10 @@ tbody tr:last-child td{border-bottom:0}
       if(touched) E.writeStore(E.STORE_KEYS.users, existing);
       return { ok:true, seeded:false, count:existing.length };
     }
-
     const users = [];
     for(const s of KNOWN_SEEDS){
       try{
-        const perms = (E.ROLE_PRESETS && E.ROLE_PRESETS[s.role])
-          ? { ...E.ROLE_PRESETS[s.role] }
-          : {};
+        const perms = (E.ROLE_PRESETS && E.ROLE_PRESETS[s.role]) ? { ...E.ROLE_PRESETS[s.role] } : {};
         const hash = await hashPassword(s.password);
         users.push({
           id: 'u-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,6) + '-' + s.username,
@@ -560,54 +535,36 @@ tbody tr:last-child td{border-bottom:0}
           lastLogin: null
         });
         E.writeStore(E.STORE_KEYS.users, users);
-      }catch(err){
-        console.error('Seed failed for', s.username, err);
-      }
+      }catch(err){ console.error('Seed failed for', s.username, err); }
     }
-
     const verify = E.readStore(E.STORE_KEYS.users, []) || [];
-    if(!verify.length){
-      return { ok:false, error:'All seed writes failed. localStorage may be disabled or full.' };
-    }
+    if(!verify.length) return { ok:false, error:'All seed writes failed.' };
     E.writeStore(E.STORE_KEYS.seeded, true);
     return { ok:true, seeded:true, count:verify.length };
   }
 
-  /* ============================================================
-     LOGIN — writes session and VERIFIES it landed
-     ============================================================ */
   function login(username, passwordHash){
     const users = E.readStore(E.STORE_KEYS.users, []) || [];
     const u = users.find(x => x.username.toLowerCase() === username.toLowerCase());
     if(!u) return { ok:false, error:'No such user.' };
     if(!u.active) return { ok:false, error:'This account has been disabled.' };
     if(u.passwordHash !== passwordHash) return { ok:false, error:'Incorrect password.' };
-
     const sessionRow = {
       userId: u.id,
       loggedInAt: new Date().toISOString(),
       lastSeenAt: new Date().toISOString()
     };
-    const wrote = E.writeStore(E.STORE_KEYS.session, sessionRow);
-
-    /* Read back immediately — this is the fix for the hosted-site bug */
+    E.writeStore(E.STORE_KEYS.session, sessionRow);
     const readBack = E.readStore(E.STORE_KEYS.session, null);
     if(!readBack || readBack.userId !== u.id){
-      return {
-        ok:false,
-        error:'Your browser is blocking session storage. Enable cookies/site data and reload.'
-      };
+      return { ok:false, error:'Your browser is blocking session storage. Enable cookies/site data and reload.' };
     }
-
     u.lastLogin = new Date().toISOString();
     E.writeStore(E.STORE_KEYS.users, users);
     E.audit('login', 'User ' + u.username, '', '');
     return { ok:true, user:u };
   }
 
-  /* ============================================================
-     SHOW / HIDE PASSWORD TOGGLES
-     ============================================================ */
   function bindPasswordToggle(btnId, inputId){
     const btn = document.getElementById(btnId);
     const inp = document.getElementById(inputId);
@@ -616,7 +573,6 @@ tbody tr:last-child td{border-bottom:0}
       const showing = inp.type === 'text';
       inp.type = showing ? 'password' : 'text';
       btn.textContent = showing ? '👁' : '🙈';
-      btn.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
     });
   }
   bindPasswordToggle('loginPassToggle', 'loginPass');
@@ -624,24 +580,17 @@ tbody tr:last-child td{border-bottom:0}
   bindPasswordToggle('fpNewToggle', 'fpNew');
   bindPasswordToggle('fpConfirmToggle', 'fpConfirm');
 
-  /* ============================================================
-     FORCED PASSWORD CHANGE
-     ============================================================ */
   function passwordRules(pw, confirm){
     return {
-      len: pw.length >= 8,
-      upper: /[A-Z]/.test(pw),
-      lower: /[a-z]/.test(pw),
-      digit: /[0-9]/.test(pw),
-      symbol: /[!@#%*^&()_\-+=.,;:]/.test(pw),
+      len: pw.length >= 8, upper: /[A-Z]/.test(pw), lower: /[a-z]/.test(pw),
+      digit: /[0-9]/.test(pw), symbol: /[!@#%*^&()_\-+=.,;:]/.test(pw),
       match: pw && pw === confirm
     };
   }
   function paintRuleChecklist(pw, confirm){
     const rules = passwordRules(pw, confirm);
     document.querySelectorAll('#fpRules li').forEach(li => {
-      const k = li.dataset.rule;
-      li.classList.toggle('ok', !!rules[k]);
+      li.classList.toggle('ok', !!rules[li.dataset.rule]);
     });
     return Object.values(rules).every(Boolean);
   }
@@ -656,51 +605,38 @@ tbody tr:last-child td{border-bottom:0}
     document.getElementById('forcePassScreen').classList.add('show');
   }
   document.getElementById('fpNew').addEventListener('input', () => {
-    const pw = document.getElementById('fpNew').value;
-    const confirm = document.getElementById('fpConfirm').value;
-    document.getElementById('fpSubmit').disabled = !paintRuleChecklist(pw, confirm);
+    document.getElementById('fpSubmit').disabled = !paintRuleChecklist(
+      document.getElementById('fpNew').value,
+      document.getElementById('fpConfirm').value);
   });
   document.getElementById('fpConfirm').addEventListener('input', () => {
-    const pw = document.getElementById('fpNew').value;
-    const confirm = document.getElementById('fpConfirm').value;
-    document.getElementById('fpSubmit').disabled = !paintRuleChecklist(pw, confirm);
+    document.getElementById('fpSubmit').disabled = !paintRuleChecklist(
+      document.getElementById('fpNew').value,
+      document.getElementById('fpConfirm').value);
   });
   document.getElementById('forcePassForm').addEventListener('submit', async e => {
     e.preventDefault();
     const err = document.getElementById('fpError');
     err.classList.remove('show');
     const session = E.readStore(E.STORE_KEYS.session, null);
-    if(!session){
-      err.textContent = 'Your session has expired. Please sign in again.';
-      err.classList.add('show');
-      return;
-    }
+    if(!session){ err.textContent='Session expired.'; err.classList.add('show'); return; }
     const current = document.getElementById('fpCurrent').value;
-    const next    = document.getElementById('fpNew').value;
+    const next = document.getElementById('fpNew').value;
     const confirm = document.getElementById('fpConfirm').value;
     if(!paintRuleChecklist(next, confirm)){
       err.textContent = 'Please satisfy all password requirements.';
-      err.classList.add('show');
-      return;
+      err.classList.add('show'); return;
     }
     const users = E.readStore(E.STORE_KEYS.users, []) || [];
     const idx = users.findIndex(x => x.id === session.userId);
-    if(idx < 0){
-      err.textContent = 'Your account could not be located. Please sign in again.';
-      err.classList.add('show');
-      return;
-    }
+    if(idx < 0){ err.textContent='Account not found.'; err.classList.add('show'); return; }
     const target = users[idx];
     const currentHash = await hashPassword(current);
     if(currentHash !== target.passwordHash){
-      err.textContent = 'Your current (temporary) password is incorrect.';
-      err.classList.add('show');
-      return;
+      err.textContent='Current password is incorrect.'; err.classList.add('show'); return;
     }
     if(current === next){
-      err.textContent = 'Your new password must be different from the temporary password.';
-      err.classList.add('show');
-      return;
+      err.textContent='New password must be different.'; err.classList.add('show'); return;
     }
     const newHash = await hashPassword(next);
     target.passwordHash = newHash;
@@ -710,15 +646,12 @@ tbody tr:last-child td{border-bottom:0}
     target.demoHintState = 'custom';
     E.writeStore(E.STORE_KEYS.users, users);
     const verify = (E.readStore(E.STORE_KEYS.users, []) || []).find(x => x.id === target.id);
-    if(!verify || verify.passwordHash !== newHash || verify.mustChangePassword !== false){
-      err.textContent = 'Password change could not be saved. Please try again.';
-      err.classList.add('show');
-      return;
+    if(!verify || verify.passwordHash !== newHash){
+      err.textContent='Could not save. Try again.'; err.classList.add('show'); return;
     }
-    E.audit('update', `User ${target.username}`, '', 'password changed by user');
+    E.audit('update', `User ${target.username}`, '', 'password changed');
     E.writeStore(E.STORE_KEYS.session, {
-      userId: target.id,
-      loggedInAt: session.loggedInAt,
+      userId: target.id, loggedInAt: session.loggedInAt,
       lastSeenAt: new Date().toISOString()
     });
     document.getElementById('forcePassScreen').classList.remove('show');
@@ -726,16 +659,9 @@ tbody tr:last-child td{border-bottom:0}
     enterApp();
   });
 
-  /* ============================================================
-     SIDEBAR
-     ============================================================ */
   function buildSidebar(){
     const u = E.currentUser();
-    if(!u){
-      $('#appShell').classList.add('hidden');
-      $('#loginScreen').classList.remove('hidden');
-      return;
-    }
+    if(!u){ $('#appShell').classList.add('hidden'); $('#loginScreen').classList.remove('hidden'); return; }
     const gsAccess = E.viewerGradesheetAccess();
     const isFeeBlocked = !gsAccess.allowed;
     const feeBlockedKeys = new Set(['gradesheet', 'ledger']);
@@ -752,9 +678,6 @@ tbody tr:last-child td{border-bottom:0}
         const feeLocked = isFeeBlocked && feeBlockedKeys.has(p.key);
         const locked = permLocked || feeLocked;
         const current = p.key === 'dashboard' ? 'active' : '';
-        const title = feeLocked
-          ? `Locked — ${E.money(gsAccess.totalShortfall || 0)} in outstanding fees`
-          : '';
         let badgeHTML = '';
         if(p.key === 'announcements' && !locked){
           const unread = E.unreadAnnouncementCount(u);
@@ -765,8 +688,7 @@ tbody tr:last-child td{border-bottom:0}
           }
         }
         return `<button data-page="${p.key}" class="${current} ${locked?'locked':''}"
-          ${locked?'data-locked="1"':''} ${feeLocked?'data-fee-locked="1"':''}
-          ${title?`title="${E.esc(title)}"`:''}>
+          ${locked?'data-locked="1"':''} ${feeLocked?'data-fee-locked="1"':''}>
           <span class="ico">${p.icon}</span>
           <span style="flex:1;text-align:left">${p.label}${feeLocked ? ' 🔒' : ''}</span>
           ${badgeHTML}
@@ -800,9 +722,6 @@ tbody tr:last-child td{border-bottom:0}
     });
   }
 
-  /* ============================================================
-     HEADER
-     ============================================================ */
   function syncHeaderUser(){
     const u = E.currentUser();
     if(!u) return;
@@ -813,15 +732,11 @@ tbody tr:last-child td{border-bottom:0}
     $('#sidebarFooter').textContent = 'Signed in as ' + u.username;
   }
 
-  /* ============================================================
-     DEMO CHIPS
-     ============================================================ */
   function paintDemoChips(){
     const users = E.readStore(E.STORE_KEYS.users, []) || [];
     const chips = $('#demoChips');
     if(!chips) return;
-    const eligible = users
-      .filter(u => u.active && u.demoHint)
+    const eligible = users.filter(u => u.active && u.demoHint)
       .sort((a,b) => {
         const order = { Principal:0, Registrar:1, Teacher:2, Student:3, Parent:4 };
         const ra = order[a.role] ?? 9, rb = order[b.role] ?? 9;
@@ -850,7 +765,6 @@ tbody tr:last-child td{border-bottom:0}
     chips.querySelectorAll('[data-user]').forEach(btn => {
       btn.addEventListener('click', () => {
         const uname = btn.dataset.user;
-        const users = E.readStore(E.STORE_KEYS.users, []) || [];
         const target = users.find(u => u.username === uname);
         $('#loginUser').value = uname;
         $('#loginPass').value = target?.demoHint || '';
@@ -859,9 +773,6 @@ tbody tr:last-child td{border-bottom:0}
     });
   }
 
-  /* ============================================================
-     DUX + ATTENDANCE
-     ============================================================ */
   function computeDux(scope){
     const u = E.currentUser();
     if(!u) return { school:[], classTop:{} };
@@ -875,9 +786,7 @@ tbody tr:last-child td{border-bottom:0}
       if(scope === 'S1' && Number(r.semester) !== 1) return;
       if(scope === 'S2' && Number(r.semester) !== 2) return;
       const key = r.student + '|' + r.class;
-      if(!studentAvg[key]){
-        studentAvg[key] = { student: r.student, class: r.class, total: 0, count: 0, category };
-      }
+      if(!studentAvg[key]) studentAvg[key] = { student: r.student, class: r.class, total:0, count:0, category };
       let numeric = Number(r.score);
       if(!Number.isFinite(numeric)){
         const mid = E.midpointForLetter(r.score, category);
@@ -908,6 +817,7 @@ tbody tr:last-child td{border-bottom:0}
     });
     return { school, classTop };
   }
+
   function attendanceToday(){
     const attendance = E.readStore(E.STORE_KEYS.attendance, {}) || {};
     const date = E.todayISO();
@@ -917,9 +827,6 @@ tbody tr:last-child td{border-bottom:0}
     return total ? Math.round(present / total * 100) + '%' : '0%';
   }
 
-  /* ============================================================
-     BANNER + ANNOUNCEMENT HELPERS
-     ============================================================ */
   function reportStatusBanner(studentId, className){
     const t = E.getReportThreshold();
     if(!t.enabled) return '';
@@ -929,9 +836,8 @@ tbody tr:last-child td{border-bottom:0}
       return `<div class="rpt-status unlocked">
         <span class="icon">✅</span>
         <div><strong>Your report card is unlocked.</strong>
-          Payment threshold met — you can open your report card anytime.
           (Paid ${E.money(access.paid)} of ${E.money(access.billed)} · ${pct}%)</div>
-        <div class="actions"><a href="report-card-print.html?student=${encodeURIComponent(studentId)}" target="_blank">📄 Open report card</a></div>
+        <div class="actions"><a href="report-card-print.html?student=${encodeURIComponent(studentId)}" target="_blank">📄 Open</a></div>
       </div>`;
     }
     return `<div class="rpt-status locked">
@@ -940,11 +846,11 @@ tbody tr:last-child td{border-bottom:0}
         ${access.mode === 'percent'
           ? `You need <strong>${access.value}%</strong> of your bill paid.`
           : `You need <strong>${E.money(access.value)}</strong> paid.`}
-        You've paid ${E.money(access.paid)} of ${E.money(access.billed)} · ${pct}%.
         Shortfall: <strong>${E.money(access.shortfall)}</strong>.</div>
       <div class="actions"><a href="fees.html">＄ Go to Fees</a></div>
     </div>`;
   }
+
   function visibleAnnouncementsFor(u){
     const list = E.readStore(E.STORE_KEYS.announcements, []) || [];
     const rank = p => {
@@ -962,6 +868,7 @@ tbody tr:last-child td{border-bottom:0}
         return new Date(b.at || 0) - new Date(a.at || 0);
       });
   }
+
   function announcementCardHTML(a){
     const priority = String(a.priority || 'Normal');
     const priorityPill = priority !== 'Normal'
@@ -985,20 +892,84 @@ tbody tr:last-child td{border-bottom:0}
   }
 
   /* ============================================================
+     TODAY'S TIMETABLE PANEL
+     Shows the periods scheduled for the current weekday.
+     ============================================================ */
+  function todayPanel(lessons, showClass){
+    const settings = E.getTimetableSettings();
+    const dayIdx = new Date().getDay(); // 0=Sun,1=Mon,...,6=Sat
+    const dayMap = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const today = dayMap[dayIdx];
+    const isSchoolDay = settings.days.includes(today);
+
+    if(!isSchoolDay){
+      return `<div class="panel"><div class="panel-head">
+        <h3>Today's timetable</h3><p>No classes scheduled today</p>
+      </div><div class="panel-body">
+        <div class="empty" style="padding:20px">Today is not a school day.</div>
+      </div></div>`;
+    }
+
+    const perDay = E.computePeriodsPerDay(settings);
+    const periodsGrid = E.buildPeriodGrid(settings);
+    const todayLessons = lessons.filter(l => l.day === today)
+      .sort((a,b) => a.period - b.period);
+
+    const breaksByAfter = {};
+    (settings.breaks || []).forEach(b => {
+      const k = Number(b.afterPeriod);
+      if(k > 0) breaksByAfter[k] = b;
+    });
+
+    const rows = [];
+    for(let p = 1; p <= perDay; p++){
+      const lesson = todayLessons.find(l => Number(l.period) === p);
+      const label = periodsGrid.find(x => x.index === p && !x.isBreak) || {};
+      if(lesson){
+        rows.push(`<div class="today-row">
+          <div class="time">${label.start || ''}–${label.end || ''}</div>
+          <div>
+            <div class="subject">${esc(E.subjectName(lesson.subject))}</div>
+            <div class="detail">${showClass ? esc(lesson.teacherName) : esc(lesson.className)}</div>
+          </div>
+          <div class="badge">P${p}</div>
+        </div>`);
+      }
+      if(breaksByAfter[p]){
+        const b = breaksByAfter[p];
+        const brk = periodsGrid.find(x => x.isBreak && String(x.start) === String(label.end));
+        rows.push(`<div class="today-row break">
+          <div class="time">${brk ? brk.start + '–' + brk.end : b.minutes + ' min'}</div>
+          <div><div class="subject">${esc(b.label || 'Break')}</div></div>
+          <div class="badge" style="background:#fef1d5;color:#8a6a1a">Recess</div>
+        </div>`);
+      }
+    }
+
+    if(!todayLessons.length){
+      return `<div class="panel"><div class="panel-head">
+        <h3>Today's timetable</h3><p>${today}</p>
+      </div><div class="panel-body">
+        <div class="empty" style="padding:20px">No lessons scheduled for today.</div>
+      </div></div>`;
+    }
+
+    return `<div class="panel"><div class="panel-head">
+      <h3>Today's timetable</h3><p>${today} · ${todayLessons.length} lesson${todayLessons.length === 1 ? '' : 's'}</p>
+      <button class="link-btn" data-goto="timetable">Full week →</button>
+    </div><div class="panel-body"><div class="today-list">${rows.join('')}</div></div></div>`;
+  }
+
+  /* ============================================================
      DASHBOARD
      ============================================================ */
   function renderDashboard(){
     const user = E.currentUser();
-    if(!user){
-      $('#appShell').classList.add('hidden');
-      $('#loginScreen').classList.remove('hidden');
-      paintDemoChips();
-      return;
-    }
+    if(!user){ $('#appShell').classList.add('hidden'); $('#loginScreen').classList.remove('hidden'); paintDemoChips(); return; }
     const students = E.readStore(E.STORE_KEYS.students, []) || [];
     const teachers = E.readStore(E.STORE_KEYS.teachers, []) || [];
 
-    /* STUDENT */
+    /* ---------- STUDENT ---------- */
     if(user.role === 'Student'){
       const s = students.find(x => x.id === user.linkedStudentId);
       const category = s ? E.classCategoryFor(s.class) : '';
@@ -1014,7 +985,6 @@ tbody tr:last-child td{border-bottom:0}
       const currentAvgText = currentAvg != null
         ? currentAvg.toFixed(1) + '%' + (E.isNurseryCategory(category) ? ' · ' + E.gradeFromNumber(currentAvg, category) : '') : '—';
       const currentSemester = (s2Avg != null && s1Avg != null) ? 'Semester Two' : s1Avg != null ? 'Semester One' : 'Semester One';
-
       const attendanceRegisters = E.readStore(E.STORE_KEYS.attendance, {}) || {};
       let attPresent = 0, attLate = 0, attAbsent = 0;
       Object.keys(attendanceRegisters).forEach(key => {
@@ -1039,6 +1009,7 @@ tbody tr:last-child td{border-bottom:0}
         return `<button class="btn outline" disabled style="color:#a86414">🔒 Report card locked (${E.money(access.shortfall || 0)} owed)</button>`;
       })();
       const anns = visibleAnnouncementsFor(user).slice(0, 5);
+      const myLessons = s ? E.lessonsForClass(s.class) : [];
 
       $('#contentRoot').innerHTML = `
         <div class="welcome">
@@ -1049,10 +1020,11 @@ tbody tr:last-child td{border-bottom:0}
         ${s ? reportStatusBanner(s.id, s.class) : ''}
         <div class="stats">
           <div class="stat"><div class="stat-head">Current average <span class="stat-icon">✎</span></div><h3>${currentAvgText}</h3><div class="trend">${esc(currentSemester)}</div></div>
-          <div class="stat"><div class="stat-head">Subjects recorded <span class="stat-icon">▤</span></div><h3>${myRows.length}</h3><div class="trend">Two semesters</div></div>
+          <div class="stat"><div class="stat-head">Subjects <span class="stat-icon">▤</span></div><h3>${myRows.length}</h3><div class="trend">Two semesters</div></div>
           ${user.permissions && user.permissions.fees && summary ? `<div class="stat"><div class="stat-head">Fee balance <span class="stat-icon">＄</span></div><h3>${E.money(Math.max(0, summary.balance))}</h3><div class="trend">${summary.balance <= 0 ? 'Paid' : 'Outstanding'}</div></div>` : ''}
           ${user.permissions && user.permissions.idcards ? `<div class="stat"><div class="stat-head">My ID card <span class="stat-icon">🪪</span></div><h3 style="font-size:16px;margin-top:16px">Ready</h3><div class="trend">Student ID</div></div>` : ''}
         </div>
+        ${todayPanel(myLessons, false)}
         <div class="dashboard-grid">
           <div>
             <div class="panel"><div class="panel-head"><h3>My academic record</h3><p>Subject · S1 Avg · S2 Avg · Yearly</p></div>
@@ -1065,8 +1037,8 @@ tbody tr:last-child td{border-bottom:0}
                         <td>${r.s2Avg ? r.s2Avg.number.toFixed(1) + '%' : '—'}</td>
                         <td>${r.yearly ? r.yearly.number.toFixed(1) + '% <span class="pill ' + (r.yearly.letter==='A'?'green':r.yearly.letter==='F'?'red':'blue') + '">' + r.yearly.letter + '</span>' : '—'}</td>
                       </tr>`).join('')
-                    : '<tr><td colspan="4" class="empty">No results yet.</td></tr>'
-                }</tbody>
+                    : '<tr><td colspan="4" class="empty">No results yet.</td></tr>'}
+                </tbody>
               </table></div>
             </div>
             <div class="panel">
@@ -1094,7 +1066,7 @@ tbody tr:last-child td{border-bottom:0}
       return;
     }
 
-    /* PARENT */
+    /* ---------- PARENT ---------- */
     if(user.role === 'Parent'){
       const kids = E.childrenOf(user);
       if(!kids.length){
@@ -1102,7 +1074,7 @@ tbody tr:last-child td{border-bottom:0}
           <div class="welcome"><div><h2>Welcome, ${esc(user.name)} 👋</h2>
             <p>Your account is not yet linked to any students.</p></div></div>
           <div class="panel"><div class="panel-body">
-            <div class="empty">Ask the school office to link your children's records to your account.</div>
+            <div class="empty">Ask the school office to link your children's records.</div>
           </div></div>`;
         return;
       }
@@ -1124,9 +1096,16 @@ tbody tr:last-child td{border-bottom:0}
         return vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) + '%' : '—';
       })();
       const anns = visibleAnnouncementsFor(user).slice(0, 5);
+
+      /* Today's schedule for each child */
+      const todaySchedules = kids.map(k => {
+        const lessons = E.lessonsForClass(k.class);
+        return { kid: k, lessons };
+      });
+
       $('#contentRoot').innerHTML = `
         <div class="welcome">
-          <div><h2>Welcome, ${esc(user.name)} 👋</h2><p>Here's a quick overview of your ${kids.length === 1 ? 'child' : 'children'}.</p></div>
+          <div><h2>Welcome, ${esc(user.name)} 👋</h2><p>Overview of your ${kids.length === 1 ? 'child' : 'children'}.</p></div>
           ${user.permissions && user.permissions.children ? `<button class="btn" data-goto="children">👨‍👩‍👧 My children</button>` : ''}
         </div>
         ${kids.map(k => reportStatusBanner(k.id, k.class)).join('')}
@@ -1136,6 +1115,7 @@ tbody tr:last-child td{border-bottom:0}
           <div class="stat"><div class="stat-head">Total paid <span class="stat-icon">✓</span></div><h3>${money(totalPaid)}</h3><div class="trend">All children</div></div>
           <div class="stat"><div class="stat-head">Outstanding <span class="stat-icon">＄</span></div><h3>${money(outstanding)}</h3><div class="trend">Fee balance</div></div>
         </div>
+        ${todaySchedules.map(t => todayPanel(t.lessons, false)).join('')}
         <div class="panel">
           <div class="panel-head"><h3>My children</h3></div>
           <div class="panel-body">
@@ -1168,6 +1148,7 @@ tbody tr:last-child td{border-bottom:0}
           <div class="panel-body">${anns.length ? anns.map(a => announcementCardHTML(a)).join('') : '<div class="empty">No announcements.</div>'}</div>
         </div>
         <div class="footer">EduCore · Front-end demonstration only.</div>`;
+
       document.querySelectorAll('[data-open-kid-report]').forEach(btn => {
         btn.addEventListener('click', () => {
           const sid = btn.dataset.openKidReport;
@@ -1184,13 +1165,70 @@ tbody tr:last-child td{border-bottom:0}
       return;
     }
 
-    /* STAFF */
+    /* ---------- TEACHER ---------- */
+    if(user.role === 'Teacher'){
+      const tid = E.currentTeacherId();
+      const myLessons = tid ? E.lessonsForTeacher(tid) : [];
+      const myClasses = Array.from(new Set(myLessons.map(l => l.className)));
+      const myStudents = E.visibleStudentsFor(user);
+      const anns = visibleAnnouncementsFor(user).slice(0, 5);
+
+      $('#contentRoot').innerHTML = `
+        <div class="welcome">
+          <div><h2>Hello, ${esc(user.name)} 👋</h2>
+            <p>${myClasses.length} class${myClasses.length === 1 ? '' : 'es'} · ${myLessons.length} weekly lesson${myLessons.length === 1 ? '' : 's'}</p></div>
+        </div>
+        <div class="stats">
+          <div class="stat"><div class="stat-head">My classes <span class="stat-icon">▤</span></div><h3>${myClasses.length}</h3><div class="trend">This week</div></div>
+          <div class="stat"><div class="stat-head">Weekly lessons <span class="stat-icon">📅</span></div><h3>${myLessons.length}</h3><div class="trend">Published timetable</div></div>
+          <div class="stat"><div class="stat-head">My students <span class="stat-icon">♙</span></div><h3>${myStudents.length}</h3><div class="trend">Across my classes</div></div>
+          <div class="stat"><div class="stat-head">Announcements <span class="stat-icon">◉</span></div><h3>${anns.length}</h3><div class="trend">Visible to you</div></div>
+        </div>
+        ${todayPanel(myLessons, false)}
+        <div class="dashboard-grid">
+          <div>
+            <div class="panel"><div class="panel-head">
+              <h3>My classes this week</h3>
+              <button class="link-btn" data-goto="timetable">Open timetable →</button>
+            </div>
+              <div class="table-wrap"><table>
+                <thead><tr><th>Class</th><th>Lessons</th><th>Students</th></tr></thead>
+                <tbody>${myClasses.length
+                  ? myClasses.map(c => {
+                      const lessonCount = myLessons.filter(l => l.className === c).length;
+                      const studentCount = myStudents.filter(s => s.class === c).length;
+                      return `<tr>
+                        <td><strong>${esc(c)}</strong></td>
+                        <td>${lessonCount}</td>
+                        <td>${studentCount}</td>
+                      </tr>`;
+                    }).join('')
+                  : '<tr><td colspan="3" class="empty">No timetable published yet. Ask the admin to generate and publish.</td></tr>'}
+                </tbody>
+              </table></div>
+            </div>
+          </div>
+          <div>
+            <div class="panel"><div class="panel-head">
+              <h3>Announcements</h3>
+              <button class="link-btn" data-goto="announcements">View all →</button>
+            </div>
+              <div class="panel-body">${anns.length ? anns.map(a => announcementCardHTML(a)).join('') : '<div class="empty">No announcements.</div>'}</div>
+            </div>
+          </div>
+        </div>
+        <div class="footer">EduCore · Front-end demonstration only.</div>`;
+      return;
+    }
+
+    /* ---------- STAFF ---------- */
     const { school, classTop } = computeDux('S1');
     const visibleStudents = E.visibleStudentsFor(user);
     const allStudents = E.readStore(E.STORE_KEYS.students, []) || [];
     let totalOutstanding = 0;
     allStudents.forEach(s => { const sum = E.studentFeeSummary(s.id, s.class); totalOutstanding += Math.max(0, sum.balance); });
     const anns = visibleAnnouncementsFor(user).slice(0, 5);
+    const tt = E.getTimetable();
 
     $('#contentRoot').innerHTML = `
       <div class="welcome">
@@ -1204,7 +1242,24 @@ tbody tr:last-child td{border-bottom:0}
       </div>
       <div class="panel">
         <div class="panel-head">
-          <div><h3>🏅 Dux Leaderboard</h3><p>Top 3 students ${user.role === 'Teacher' ? 'across your classes' : 'of the school'} and top 3 of every class</p></div>
+          <div><h3>📅 Timetable</h3><p>${tt.status === 'published'
+            ? `${tt.lessons.length} lessons published`
+            : `${tt.lessons.length} lessons in draft — not yet published`}</p></div>
+          <button class="link-btn" data-goto="timetable">Open timetable →</button>
+        </div>
+        <div class="panel-body">
+          <div class="empty" style="padding:20px">
+            ${tt.status === 'published'
+              ? 'The timetable is live. Teachers, students, and parents can see it.'
+              : tt.lessons.length
+                ? 'The timetable is still a draft. Open it to review and publish.'
+                : 'No timetable has been generated yet. Open the timetable page to configure and generate one.'}
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>🏅 Dux Leaderboard</h3><p>Top 3 students of the school and top 3 of every class</p></div>
           <select id="duxScope" style="border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:12px;background:#fff">
             <option value="S1">Semester One</option>
             <option value="S2">Semester Two</option>
@@ -1225,7 +1280,7 @@ tbody tr:last-child td{border-bottom:0}
                 <div style="font-size:11px;color:#7a8498">${esc(x.class)}</div>
                 <div style="font-size:20px;font-weight:800;color:#14213d;margin-top:8px">${x.avg.toFixed(1)}% <span style="font-size:12px;color:#8a6a1a">· ${gradeLetter}</span></div>
               </div>`;
-            }).join('') : '<div class="empty" style="grid-column:1/-1">No results yet. Enroll students and enter grades to see rankings.</div>'}
+            }).join('') : '<div class="empty" style="grid-column:1/-1">No results yet.</div>'}
           </div>
           <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:800;margin:24px 0 10px">Class Top 3</div>
           <div id="duxClassList">
@@ -1253,7 +1308,7 @@ tbody tr:last-child td{border-bottom:0}
                 <td>${esc(s.class)}</td>
                 <td><span class="pill ${E.isNurseryClass(s.class) ? 'orange' : 'blue'}">${esc(E.classCategoryFor(s.class) || '—')}</span></td>
                 <td><span class="pill ${s.status==='Active'?'green':s.status==='Inactive'?'red':'orange'}">${esc(s.status)}</span></td>
-              </tr>`).join('') || '<tr><td colspan="4" class="empty">No students enrolled yet. Go to <strong>Students</strong> to add the first one.</td></tr>'}
+              </tr>`).join('') || '<tr><td colspan="4" class="empty">No students enrolled yet.</td></tr>'}
               </tbody>
             </table></div>
           </div>
@@ -1264,7 +1319,8 @@ tbody tr:last-child td{border-bottom:0}
           </div>
         </div>
       </div>
-      <div class="footer">EduCore · Front-end demonstration only.</div>`;
+      <div class="footer">EduCore · Front-end demonstration only.</div>
+    `;
 
     $('#duxScope')?.addEventListener('change', e => {
       const scope = e.target.value;
@@ -1294,9 +1350,6 @@ tbody tr:last-child td{border-bottom:0}
     });
   }
 
-  /* ============================================================
-     MOBILE + USER MENU + GOTO
-     ============================================================ */
   function closeMobile(){
     $('#sidebar')?.classList.remove('open');
     $('#mobileOverlay')?.classList.remove('show');
@@ -1343,24 +1396,19 @@ tbody tr:last-child td{border-bottom:0}
     renderDashboard();
   });
 
-  /* ============================================================
-     ENTER APP — with session verification
-     ============================================================ */
   function enterApp(){
-    /* Verify the session landed BEFORE doing anything else */
     const u = E.currentUser();
     if(!u){
       $('#appShell').classList.add('hidden');
       $('#loginScreen').classList.remove('hidden');
       paintDemoChips();
-      window.__bootDiag('warn', 'Session did not persist',
-        ['Your sign-in succeeded, but the browser could not save the session.',
-         'This usually means <code>localStorage</code> is being blocked or cleared immediately.',
-         'Try in a normal (non-incognito) window, and make sure cookies/site data are allowed for this domain.'],
-        [
-          { label: 'Reset site data and reload', action: 'reset-storage' },
-          { label: 'Reload with cache bypass', action: 'reload-hard', ghost: true }
-        ]);
+      window.__bootDiag('warn', 'Session did not persist', [
+        'Your sign-in succeeded, but the browser could not save the session.',
+        'Try in a normal (non-incognito) window.'
+      ], [
+        { label: 'Reset site data and reload', action: 'reset-storage' },
+        { label: 'Reload with cache bypass', action: 'reload-hard', ghost: true }
+      ]);
       return;
     }
     $('#loginScreen').classList.add('hidden');
@@ -1375,22 +1423,14 @@ tbody tr:last-child td{border-bottom:0}
     }
   }
 
-  /* ============================================================
-     BOOTSTRAP
-     ============================================================ */
   async function bootstrap(){
     let seedResult = { ok:true };
-    try{
-      seedResult = await seedUsersIfNeeded();
-    }catch(err){
-      console.error('Seed threw', err);
-      seedResult = { ok:false, error: err.message || String(err) };
-    }
+    try{ seedResult = await seedUsersIfNeeded(); }
+    catch(err){ console.error('Seed threw', err); seedResult = { ok:false, error: err.message || String(err) }; }
     if(!seedResult.ok){
       window.__bootDiag('error', 'Could not initialise user accounts', [
         esc(seedResult.error || 'Unknown error'),
-        'Your browser may be blocking <code>localStorage</code>.',
-        'Try in a normal (non-incognito) window, then reload.'
+        'Your browser may be blocking <code>localStorage</code>.'
       ], [
         { label: 'Reset site data and reload', action: 'reset-storage' },
         { label: 'Reload with cache bypass', action: 'reload-hard', ghost: true }
@@ -1398,7 +1438,6 @@ tbody tr:last-child td{border-bottom:0}
       paintDemoChips();
       return;
     }
-
     const u = E.currentUser();
     if(u){
       if(u.mustChangePassword){
@@ -1410,59 +1449,44 @@ tbody tr:last-child td{border-bottom:0}
       enterApp();
       return;
     }
-
     paintDemoChips();
     const authErr = sessionStorage.getItem('educoreAuthError');
     if(authErr){
       const el = $('#loginError');
-      el.textContent = authErr;
-      el.classList.add('show');
+      el.textContent = authErr; el.classList.add('show');
       sessionStorage.removeItem('educoreAuthError');
     }
   }
 
-  /* ============================================================
-     LOGIN SUBMIT
-     ============================================================ */
   $('#loginForm').addEventListener('submit', async e => {
     e.preventDefault();
     const err = $('#loginError');
     err.classList.remove('show');
     const btn = document.getElementById('loginSubmitBtn');
     if(btn){ btn.disabled = true; btn.textContent = 'Signing in…'; }
-
     try{
       const users = E.readStore(E.STORE_KEYS.users, []) || [];
       if(!users.length){
         window.__bootDiag('error', 'No user accounts found', [
           'The system could not find any user records in <code>localStorage</code>.',
-          'This usually means the seed step was blocked by the browser.',
-          'Open DevTools (F12) → Application → Local Storage, and check for <code>educoreUsers</code>.'
-        ], [
-          { label: 'Reset site data and reload', action: 'reset-storage' }
-        ]);
+          'Open DevTools (F12) → Application → Local Storage.'
+        ], [{ label: 'Reset site data and reload', action: 'reset-storage' }]);
         return;
       }
-
       const user = $('#loginUser').value.trim();
       const pass = $('#loginPass').value;
       const hash = await hashPassword(pass);
       const res = login(user, hash);
       if(!res.ok){
-        err.textContent = res.error;
-        err.classList.add('show');
-        return;
+        err.textContent = res.error; err.classList.add('show'); return;
       }
-
       window.__clearBootDiag();
-
       if(res.user.mustChangePassword){
         $('#loginScreen').classList.add('hidden');
         $('#appShell').classList.add('hidden');
         showForcePasswordScreen(res.user);
         return;
       }
-
       enterApp();
       E.toast('Welcome, ' + res.user.name);
     }catch(ex){

@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timetable | EduCore</title>
+<style>
+  :root{
+    --navy:#12315a;--blue:#3987ee;--line:#e8ebf2;--text:#23354d;--muted:#73849a;
+    --green:#14805e;--orange:#d88922;--red:#d64545;--gold:#c99a2e;--gold2:#fff4d6;
+    --shadow:0 8px 24px rgba(24,42,78,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:64px 16px 40px;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+  .page{width:100%;max-width:1320px;margin:0 auto}
+
+  .band{background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
+    border-radius:16px;padding:22px 28px;margin-bottom:20px;
+    box-shadow:0 18px 50px #16345417;display:flex;justify-content:space-between;
+    align-items:center;gap:16px;flex-wrap:wrap;border-top:5px solid #58a4ff}
+  .band-left{display:flex;align-items:center;gap:14px}
+  .band-logo{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;place-items:center;
+    overflow:hidden;color:var(--navy);font-weight:900;font-size:18px;border:3px solid #d8e8ff;flex:0 0 48px}
+  .band-logo img{width:100%;height:100%;object-fit:contain}
+  .band h1{margin:0;font-size:19px;letter-spacing:.3px;text-transform:uppercase}
+  .band p{margin:4px 0 0;font-size:11px;color:#cfdcf5}
+  .band-user{display:flex;align-items:center;gap:10px;font-size:11px;color:#cfdcf5;
+    background:#ffffff14;border:1px solid #ffffff36;padding:7px 12px;border-radius:20px}
+  .band-user strong{color:#fff}
+
+  .btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{filter:brightness(.96)}
+  .btn.secondary{background:#eef2fb;color:#34415c}
+  .btn.outline{background:#fff;color:#34415c;border:1px solid var(--line)}
+  .btn.danger{background:#fff0f1;color:var(--red)}
+  .btn.green{background:#e6f7f0;color:#16835f}
+  .btn.gold{background:linear-gradient(135deg,#f7d97a,#c99a2e);color:#5a3a00}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);margin-bottom:18px;overflow:hidden}
+  .card-head{display:flex;justify-content:space-between;align-items:center;
+    padding:16px 20px;border-bottom:1px solid var(--line);gap:12px;flex-wrap:wrap}
+  .card-head h3{margin:0;font-size:14px}
+  .card-body{padding:20px}
+
+  .tabs{display:flex;gap:4px;border-bottom:2px solid var(--line);margin-bottom:16px}
+  .tab{border:0;background:transparent;padding:11px 18px;font-size:12px;font-weight:800;
+    color:var(--muted);border-bottom:2px solid transparent;cursor:pointer;margin-bottom:-2px}
+  .tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+  .tabpanel{display:none}
+  .tabpanel.active{display:block}
+
+  .form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+  .form-grid .full{grid-column:1/-1}
+  .form-grid label{display:block;font-size:11px;color:#657089;font-weight:800;
+    text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
+  .form-grid input,.form-grid select{width:100%;border:1px solid #dfe4ee;border-radius:8px;
+    padding:10px 12px;font-size:12px;outline:none;background:#fff}
+  .form-grid input:focus,.form-grid select:focus{border-color:var(--blue)}
+
+  .day-chip-row{display:flex;gap:6px;flex-wrap:wrap}
+  .day-chip{padding:8px 14px;border-radius:8px;border:1px solid var(--line);
+    background:#fff;color:#34415c;font-size:11px;font-weight:800;cursor:pointer}
+  .day-chip.on{background:#245d9c;color:#fff;border-color:#245d9c}
+
+  .break-row{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;
+    align-items:end;margin-bottom:8px}
+  .break-row input{border:1px solid #dfe4ee;border-radius:8px;padding:9px 11px;
+    font-size:12px;outline:none;width:100%}
+  .break-row .rm{border:0;background:#fff0f1;color:#d64545;border-radius:8px;
+    padding:9px 11px;font-size:11px;font-weight:800;cursor:pointer}
+
+  .summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:16px}
+  .summary-cell{background:#f8faff;border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .summary-cell small{display:block;font-size:9.5px;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.7px;font-weight:800;margin-bottom:4px}
+  .summary-cell strong{font-size:16px;color:var(--navy);font-family:monospace}
+
+  .avail-table{width:100%;border-collapse:collapse;font-size:11.5px}
+  .avail-table th{text-align:left;background:#fafbfe;color:#7a8498;font-size:10px;
+    text-transform:uppercase;letter-spacing:.6px;padding:10px 12px;
+    border-bottom:1px solid var(--line);font-weight:800}
+  .avail-table td{padding:10px 12px;border-bottom:1px solid #f0f2f7;vertical-align:top}
+  .avail-table tr:last-child td{border-bottom:0}
+  .avail-table .day-cell{font-weight:800;color:var(--navy);width:60px}
+  .avail-toggle{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;
+    border-radius:6px;font-size:11px;font-weight:700;background:#f8faff;
+    border:1px solid var(--line);cursor:pointer;margin:2px 4px 2px 0}
+  .avail-toggle.on{background:#e6f7f0;color:#16835f;border-color:#b8e9d3}
+
+  .grid-wrap{overflow-x:auto}
+  .tt-table{width:100%;border-collapse:collapse;white-space:nowrap;min-width:760px}
+  .tt-table th{background:#eaf0fb;color:#263b61;font-size:10px;text-transform:uppercase;
+    letter-spacing:.5px;padding:11px 8px;border:1px solid #dbe4f2;font-weight:800}
+  .tt-table th.row-label{width:130px;text-align:left;padding-left:14px;background:#f4f6fb}
+  .tt-table td{border:1px solid #eef1f7;padding:9px 10px;font-size:11.5px;vertical-align:top;
+    min-width:130px;height:56px}
+  .tt-table td.period-label{background:#f8faff;font-weight:800;color:#263b61;font-size:10.5px;
+    width:130px;white-space:nowrap}
+  .tt-table td.period-label small{display:block;color:var(--muted);font-weight:600;font-size:9px;margin-top:2px}
+  .tt-table tr.break-row td{background:#fff8e6}
+  .tt-table tr.break-row td.period-label{background:#fff3d0;color:#8a6a1a}
+  .lesson{background:#eaf2ff;border-left:3px solid #3987ee;border-radius:6px;
+    padding:6px 8px;font-size:11px;line-height:1.35}
+  .lesson strong{display:block;color:#14213d;font-size:11.5px}
+  .lesson small{display:block;color:#54637d;font-size:10px;margin-top:2px}
+  .lesson.break{background:linear-gradient(135deg,#fff2dd,#fef1d5);border-left-color:#d88922;
+    color:#8a6a1a;font-weight:800;text-align:center;padding:8px}
+  .empty-slot{color:#c5cee0;text-align:center;padding:12px 0;font-size:11px}
+
+  .unplaced-box{background:#fff8e6;border:1px solid #f3d999;border-radius:10px;
+    padding:14px 16px;margin-bottom:14px;font-size:12px;line-height:1.6;color:#8a6a1a}
+  .unplaced-box strong{display:block;color:#5a3a00;margin-bottom:6px}
+  .unplaced-box ul{margin:0;padding-left:20px}
+  .unplaced-box li{margin-bottom:4px}
+
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:11px;color:var(--muted)}
+  .legend .item{display:inline-flex;align-items:center;gap:6px}
+  .legend .swatch{width:14px;height:14px;border-radius:3px}
+
+  .status-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;
+    border-radius:20px;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+  .status-pill.draft{background:#fff2dd;color:#a86414}
+  .status-pill.published{background:#e6f7f0;color:#16835f}
+
+  .conflict-box{background:#fff0f1;border:1px solid #f6c9ce;color:#8a1e28;
+    padding:12px 14px;border-radius:10px;margin-bottom:14px;font-size:12px}
+
+  @media (max-width:900px){
+    .form-grid{grid-template-columns:1fr 1fr}
+    .summary-grid{grid-template-columns:1fr 1fr}
+  }
+  @media (max-width:650px){
+    body{padding:64px 8px 24px}
+    .band{padding:18px 20px}
+    .band h1{font-size:15px}
+    .form-grid{grid-template-columns:1fr}
+    .summary-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="band">
+    <div class="band-left">
+      <div class="band-logo" id="bandLogo">EC</div>
+      <div>
+        <h1 id="bandSchool">Timetable</h1>
+        <p id="bandSub">Scheduler</p>
+      </div>
+    </div>
+    <div class="band-user">Signed in as <strong id="bandUser">—</strong></div>
+  </div>
+
+  <div id="pageBody"></div>
+
+</div>
+
+<script src="educore-shared.js"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  const user = E.requirePerm('timetable', 'Timetable');
+  if(!user) return;
+
+  const isAdmin = user.role === 'Principal' || user.role === 'Registrar';
+  const canConfigure = E.can('timetable.settings');
+  const canGenerate  = E.can('timetable.generate');
+  const canEdit      = E.can('timetable.edit');
+  const canPublish   = E.can('timetable.publish');
+  const canView      = E.can('timetable.view');
+
+  const state = {
+    activeTab: 'week',
+    settings: E.getTimetableSettings(),
+    lessons: [],
+    unplaced: [],
+    status: 'draft',
+    filterMode: 'class',
+    filterClass: '',
+    filterTeacher: ''
+  };
+
+  function paintHeader(){
+    const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const name = settings.name || 'EduCore High School';
+    if(settings.logo){
+      document.getElementById('bandLogo').innerHTML = `<img src="${settings.logo}" alt="">`;
+    } else {
+      document.getElementById('bandLogo').textContent =
+        name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
+    }
+    document.getElementById('bandSchool').textContent = name;
+    document.getElementById('bandSub').textContent = isAdmin
+      ? 'Configure the school day, generate the timetable, and publish'
+      : 'Your weekly timetable';
+    document.getElementById('bandUser').textContent = user.name || user.username;
+  }
+
+  /* ============================================================
+     ROOT RENDER
+     ============================================================ */
+  function paint(){
+    const tt = E.getTimetable();
+    state.lessons = tt.lessons || [];
+    state.unplaced = tt.unplaced || [];
+    state.status = tt.status || 'draft';
+    state.settings = E.getTimetableSettings();
+
+    const body = document.getElementById('pageBody');
+    body.innerHTML = `
+      ${isAdmin ? buildAdminTabs() : ''}
+      ${buildWeekCard()}
+    `;
+    if(isAdmin) bindAdminTabs();
+    bindWeekCard();
+  }
+
+  /* ============================================================
+     ADMIN TABS
+     ============================================================ */
+  function buildAdminTabs(){
+    const tabs = [
+      { key:'week',    label:'Weekly timetable' },
+      { key:'settings',label:'Settings' },
+      { key:'avail',   label:'Teacher availability' },
+      { key:'generate',label:'Generate' }
+    ];
+    return `
+      <div class="card">
+        <div class="card-body" style="padding-bottom:0">
+          <div class="tabs" id="adminTabs">
+            ${tabs.map(t => `<button class="tab ${state.activeTab === t.key ? 'active' : ''}" data-tab="${t.key}">${t.label}</button>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div id="adminPanels">
+        <div class="tabpanel ${state.activeTab === 'settings' ? 'active' : ''}" data-panel="settings">
+          ${buildSettingsPanel()}
+        </div>
+        <div class="tabpanel ${state.activeTab === 'avail' ? 'active' : ''}" data-panel="avail">
+          ${buildAvailabilityPanel()}
+        </div>
+        <div class="tabpanel ${state.activeTab === 'generate' ? 'active' : ''}" data-panel="generate">
+          ${buildGeneratePanel()}
+        </div>
+      </div>`;
+  }
+
+  function bindAdminTabs(){
+    document.querySelectorAll('#adminTabs .tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        state.activeTab = tab.dataset.tab;
+        document.querySelectorAll('#adminTabs .tab').forEach(t => t.classList.toggle('active', t === tab));
+        document.querySelectorAll('#adminPanels .tabpanel').forEach(p =>
+          p.classList.toggle('active', p.dataset.panel === state.activeTab));
+      });
+    });
+    bindSettingsPanel();
+    bindAvailabilityPanel();
+    bindGeneratePanel();
+  }
+
+  /* ============================================================
+     SETTINGS PANEL
+     ============================================================ */
+  function buildSettingsPanel(){
+    const s = state.settings;
+    const perDay = E.computePeriodsPerDay(s);
+    const total = perDay * s.days.length;
+
+    return `
+      <div class="card">
+        <div class="card-head">
+          <h3>Time grid</h3>
+          <span style="font-size:11px;color:var(--muted)">Configure the school day, period length, and breaks</span>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div><label>Day starts</label>
+              <input type="time" id="dayStart" value="${E.esc(s.dayStart)}">
+            </div>
+            <div><label>Day ends</label>
+              <input type="time" id="dayEnd" value="${E.esc(s.dayEnd)}">
+            </div>
+            <div><label>Period length (minutes)</label>
+              <input type="number" id="periodMinutes" min="20" max="120" value="${Number(s.periodMinutes)}">
+            </div>
+            <div class="full"><label>School days</label>
+              <div class="day-chip-row" id="dayChips">
+                ${E.DAY_KEYS.map(d =>
+                  `<button type="button" class="day-chip ${s.days.includes(d) ? 'on' : ''}" data-day="${d}">${d}</button>`
+                ).join('')}
+              </div>
+            </div>
+            <div class="full">
+              <label>Breaks</label>
+              <div id="breakList"></div>
+              <button type="button" class="btn outline" id="addBreakBtn" style="margin-top:8px">＋ Add break</button>
+            </div>
+          </div>
+
+          <div class="summary-grid">
+            <div class="summary-cell"><small>Periods per day</small><strong>${perDay}</strong></div>
+            <div class="summary-cell"><small>Days per week</small><strong>${s.days.length}</strong></div>
+            <div class="summary-cell"><small>Total slots / week</small><strong>${total}</strong></div>
+            <div class="summary-cell"><small>Status</small><strong>${state.status.toUpperCase()}</strong></div>
+          </div>
+
+          <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn green" id="saveSettingsBtn" ${canConfigure ? '' : 'disabled'}>💾 Save settings</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function paintBreakList(){
+    const wrap = document.getElementById('breakList');
+    if(!wrap) return;
+    const s = state.settings;
+    wrap.innerHTML = (s.breaks || []).map((b, i) => `
+      <div class="break-row" data-idx="${i}">
+        <div>
+          <label style="font-size:10px;color:#657089;font-weight:800;text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;display:block">After period</label>
+          <input type="number" min="1" max="30" data-break-after value="${Number(b.afterPeriod)}">
+        </div>
+        <div>
+          <label style="font-size:10px;color:#657089;font-weight:800;text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;display:block">Minutes</label>
+          <input type="number" min="5" max="120" data-break-min value="${Number(b.minutes)}">
+        </div>
+        <div>
+          <label style="font-size:10px;color:#657089;font-weight:800;text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;display:block">Label</label>
+          <input type="text" data-break-label value="${E.esc(b.label || '')}" placeholder="e.g. Recess">
+        </div>
+        <button type="button" class="rm" data-rm-break>✕ Remove</button>
+      </div>
+    `).join('') || '<div style="font-size:11px;color:var(--muted);padding:6px 0">No breaks configured.</div>';
+
+    wrap.querySelectorAll('[data-rm-break]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = Number(btn.closest('.break-row').dataset.idx);
+        state.settings.breaks.splice(idx, 1);
+        paintBreakList();
+      });
+    });
+    wrap.querySelectorAll('[data-break-after]').forEach(inp => {
+      inp.addEventListener('change', () => {
+        const idx = Number(inp.closest('.break-row').dataset.idx);
+        state.settings.breaks[idx].afterPeriod = Number(inp.value) || 1;
+      });
+    });
+    wrap.querySelectorAll('[data-break-min]').forEach(inp => {
+      inp.addEventListener('change', () => {
+        const idx = Number(inp.closest('.break-row').dataset.idx);
+        state.settings.breaks[idx].minutes = Number(inp.value) || 0;
+      });
+    });
+    wrap.querySelectorAll('[data-break-label]').forEach(inp => {
+      inp.addEventListener('input', () => {
+        const idx = Number(inp.closest('.break-row').dataset.idx);
+        state.settings.breaks[idx].label = inp.value;
+      });
+    });
+  }
+
+  function bindSettingsPanel(){
+    if(!document.getElementById('dayStart')) return;
+    paintBreakList();
+
+    document.getElementById('addBreakBtn')?.addEventListener('click', () => {
+      state.settings.breaks = state.settings.breaks || [];
+      state.settings.breaks.push({ afterPeriod: 1, minutes: 15, label: 'Break' });
+      paintBreakList();
+    });
+
+    document.querySelectorAll('#dayChips .day-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const d = chip.dataset.day;
+        const i = state.settings.days.indexOf(d);
+        if(i >= 0) state.settings.days.splice(i, 1);
+        else state.settings.days.push(d);
+        /* Preserve canonical order */
+        const order = E.DAY_KEYS;
+        state.settings.days.sort((a,b) => order.indexOf(a) - order.indexOf(b));
+        chip.classList.toggle('on', state.settings.days.includes(d));
+      });
+    });
+
+    document.getElementById('saveSettingsBtn')?.addEventListener('click', () => {
+      if(!canConfigure){ E.toast('You do not have permission.'); return; }
+      state.settings.dayStart = document.getElementById('dayStart').value;
+      state.settings.dayEnd = document.getElementById('dayEnd').value;
+      state.settings.periodMinutes = Number(document.getElementById('periodMinutes').value) || 45;
+
+      if(state.settings.days.length === 0){ E.toast('Select at least one day.'); return; }
+      const perDay = E.computePeriodsPerDay(state.settings);
+      if(perDay <= 0){ E.toast('That time grid produces zero periods. Check the times and period length.'); return; }
+
+      E.saveTimetableSettings(state.settings);
+      E.audit('update', 'Timetable settings', '', `${perDay} periods × ${state.settings.days.length} days`);
+      E.toast('Settings saved.');
+      paint();
+    });
+  }
+
+  /* ============================================================
+     TEACHER AVAILABILITY PANEL
+     ============================================================ */
+  function buildAvailabilityPanel(){
+    const teachers = E.getTeachers().slice().sort((a,b) => a.name.localeCompare(b.name));
+    const days = state.settings.days;
+    const perDay = E.computePeriodsPerDay(state.settings);
+
+    if(!teachers.length){
+      return `<div class="card"><div class="card-body">
+        <div style="text-align:center;color:var(--muted);padding:30px">
+          No teachers registered yet. Add teachers first.
+        </div></div></div>`;
+    }
+
+    const rows = teachers.map(t => {
+      const avail = E.getTeacherAvailability(t.id);
+      const daySet = new Set(avail.availableDays);
+      const blocked = new Set((avail.unavailablePeriods || []).map(x => `${x.day}|${x.period}`));
+
+      const dayChips = E.DAY_KEYS.map(d => {
+        const on = daySet.has(d);
+        return `<button type="button" class="avail-toggle ${on ? 'on' : ''}" data-tid="${E.esc(t.id)}" data-day="${d}">
+          ${on ? '✓ ' : ''}${d}
+        </button>`;
+      }).join('');
+
+      /* Simple per-period blocker grid: only render for the current working days */
+      const blockGrid = days.map(d => {
+        const cells = [];
+        for(let p = 1; p <= perDay; p++){
+          const isBlocked = blocked.has(`${d}|${p}`);
+          cells.push(`<button type="button" class="avail-toggle ${isBlocked ? '' : 'on'}"
+            data-tid="${E.esc(t.id)}" data-block-day="${d}" data-block-period="${p}"
+            style="padding:4px 7px;font-size:9.5px;min-width:26px"
+            title="P${p} on ${d}">${p}</button>`);
+        }
+        return `<div style="margin-bottom:4px">
+          <span style="display:inline-block;width:36px;font-size:10px;color:var(--muted);font-weight:800">${d}</span>
+          ${cells.join('')}
+        </div>`;
+      }).join('');
+
+      return `<tr>
+        <td>
+          <strong style="display:block;font-size:12px;color:var(--navy)">${E.esc(t.name)}</strong>
+          <small style="display:block;font-size:10px;color:var(--muted);margin-top:3px">
+            ${E.esc(t.status || 'Full-time')} · ${E.esc(t.department || '—')}
+          </small>
+        </td>
+        <td>
+          <div>${dayChips}</div>
+          <div style="margin-top:6px;font-size:10px;color:var(--muted)">
+            Click a period to block/unblock it. Green = available.
+          </div>
+          <div style="margin-top:8px">${blockGrid}</div>
+        </td>
+      </tr>`;
+    }).join('');
+
+    return `<div class="card">
+      <div class="card-head">
+        <h3>Teacher availability</h3>
+        <span style="font-size:11px;color:var(--muted)">Set which days each teacher works and which periods they are unavailable</span>
+      </div>
+      <div class="card-body">
+        <div style="overflow-x:auto">
+          <table class="avail-table">
+            <thead><tr><th style="width:180px">Teacher</th><th>Availability</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function bindAvailabilityPanel(){
+    document.querySelectorAll('[data-tid][data-day]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tid = btn.dataset.tid;
+        const d = btn.dataset.day;
+        const cur = E.getTeacherAvailability(tid);
+        const set = new Set(cur.availableDays);
+        if(set.has(d)) set.delete(d); else set.add(d);
+        const order = E.DAY_KEYS;
+        const days = Array.from(set).sort((a,b) => order.indexOf(a) - order.indexOf(b));
+        E.saveTeacherAvailability(tid, { availableDays: days, unavailablePeriods: cur.unavailablePeriods });
+        paint();
+      });
+    });
+    document.querySelectorAll('[data-block-day]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tid = btn.dataset.tid;
+        const day = btn.dataset.blockDay;
+        const period = Number(btn.dataset.blockPeriod);
+        const cur = E.getTeacherAvailability(tid);
+        const list = Array.isArray(cur.unavailablePeriods) ? cur.unavailablePeriods.slice() : [];
+        const idx = list.findIndex(x => x.day === day && Number(x.period) === period);
+        if(idx >= 0) list.splice(idx, 1);
+        else list.push({ day, period });
+        E.saveTeacherAvailability(tid, { availableDays: cur.availableDays, unavailablePeriods: list });
+        paint();
+      });
+    });
+  }
+
+  /* ============================================================
+     GENERATE PANEL
+     ============================================================ */
+  function buildGeneratePanel(){
+    const perDay = E.computePeriodsPerDay(state.settings);
+    const totalSlots = perDay * state.settings.days.length;
+    const classes = E.getClasses();
+    const assignments = E.getAssignments();
+
+    /* Per-class demand summary */
+    const classDemand = classes.map(c => {
+      const myAsn = assignments.filter(a => a.className === c.name);
+      const total = myAsn.reduce((sum, a) => sum + Number(a.periodsPerWeek || 0), 0);
+      return { className: c.name, subjects: myAsn.length, periods: total, over: total > totalSlots };
+    });
+
+    const overClasses = classDemand.filter(c => c.over);
+
+    const unplacedBox = state.unplaced.length ? `
+      <div class="unplaced-box">
+        <strong>⚠ ${state.unplaced.length} lesson${state.unplaced.length === 1 ? '' : 's'} could not be placed</strong>
+        <ul>
+          ${state.unplaced.slice(0, 20).map(u =>
+            `<li>${E.esc(u.className)} · ${E.esc(E.subjectName(u.subject))} · ${E.esc(u.teacherName)} — ${E.esc(u.reason)}</li>`
+          ).join('')}
+          ${state.unplaced.length > 20 ? `<li>… and ${state.unplaced.length - 20} more</li>` : ''}
+        </ul>
+        <div style="margin-top:8px">Add more free periods or reduce weekly loads in <strong>Teachers → Assignments</strong>, then regenerate.</div>
+      </div>` : '';
+
+    const overBox = overClasses.length ? `
+      <div class="conflict-box">
+        <strong>The following classes require more periods than are available:</strong>
+        <ul style="margin:8px 0 0;padding-left:20px">
+          ${overClasses.map(c => `<li><strong>${E.esc(c.className)}</strong> — needs ${c.periods} periods but only ${totalSlots} fit.</li>`).join('')}
+        </ul>
+      </div>` : '';
+
+    return `
+      <div class="card">
+        <div class="card-head">
+          <h3>Generate timetable</h3>
+          <span class="status-pill ${state.status}">${state.status}</span>
+        </div>
+        <div class="card-body">
+          <div class="summary-grid">
+            <div class="summary-cell"><small>Classes</small><strong>${classes.length}</strong></div>
+            <div class="summary-cell"><small>Slots / week</small><strong>${totalSlots}</strong></div>
+            <div class="summary-cell"><small>Lessons placed</small><strong>${state.lessons.length}</strong></div>
+            <div class="summary-cell"><small>Unplaced</small><strong>${state.unplaced.length}</strong></div>
+          </div>
+
+          ${overBox}
+          ${unplacedBox}
+
+          <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn green" id="genBtn" ${canGenerate ? '' : 'disabled'}>
+              ⚙ Generate schedule
+            </button>
+            <button class="btn gold" id="publishBtn"
+              ${canPublish && state.lessons.length && state.status !== 'published' ? '' : 'disabled'}>
+              🚀 Publish timetable
+            </button>
+            <button class="btn outline" id="clearBtn"
+              ${canEdit && state.lessons.length ? '' : 'disabled'}>
+              🗑 Clear timetable
+            </button>
+          </div>
+          <div style="margin-top:10px;font-size:11px;color:var(--muted);line-height:1.6">
+            The scheduler respects teacher availability, class subject loads, and available periods.
+            Any lessons it cannot place are listed above — you can add them manually in the weekly view.
+            Publishing makes the timetable visible to teachers, students, and parents.
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function bindGeneratePanel(){
+    document.getElementById('genBtn')?.addEventListener('click', () => {
+      if(!canGenerate){ E.toast('You do not have permission.'); return; }
+      E.toast('Running scheduler…');
+      setTimeout(() => {
+        const res = E.generateTimetable({ timeLimitMs: 8000 });
+        if(!res.ok){
+          E.openModal('Cannot generate timetable',
+            `<div class="full" style="font-size:12.5px;line-height:1.7">
+              <p style="margin:0 0 10px">${E.esc(res.error || 'Unknown error.')}</p>
+              ${(res.classProblems || []).length ? `
+                <ul style="margin:8px 0 0;padding-left:20px">
+                  ${res.classProblems.map(c =>
+                    `<li><strong>${E.esc(c.className)}</strong> — ${E.esc(c.reason)}</li>`
+                  ).join('')}
+                </ul>` : ''}
+            </div>`, null, null);
+          return;
+        }
+        E.saveGeneratedTimetable(res);
+        E.toast(`Generated ${res.lessons.length} lessons · ${res.unplaced.length} unplaced`);
+        paint();
+      }, 50);
+    });
+
+    document.getElementById('publishBtn')?.addEventListener('click', async () => {
+      if(!canPublish){ E.toast('You do not have permission.'); return; }
+      const ok = await E.confirmModal({
+        title: 'Publish timetable?',
+        message: 'Once published, teachers, students, and parents will see this timetable. You can still edit it, but published changes become visible immediately.',
+        submitText: 'Publish'
+      });
+      if(!ok) return;
+      E.publishTimetable();
+      E.toast('Timetable published.');
+      paint();
+    });
+
+    document.getElementById('clearBtn')?.addEventListener('click', async () => {
+      if(!canEdit){ E.toast('You do not have permission.'); return; }
+      const ok = await E.confirmModal({
+        title: 'Clear timetable?',
+        message: 'This removes all lessons from the draft. Nothing is published yet.',
+        submitText: 'Clear',
+        danger: true
+      });
+      if(!ok) return;
+      E.clearTimetable();
+      E.toast('Timetable cleared.');
+      paint();
+    });
+  }
+
+  /* ============================================================
+     WEEK CARD — universal view
+     ============================================================ */
+  function buildWeekCard(){
+    const isPublished = state.status === 'published';
+    const classes = E.getClasses();
+    const teachers = E.getTeachers();
+
+    /* For teacher/student/parent: pick a default filter */
+    if(user.role === 'Teacher'){
+      const tid = E.currentTeacherId();
+      if(!state.filterMode || state.filterMode !== 'teacher'){
+        state.filterMode = 'teacher';
+      }
+      if(!state.filterTeacher && tid) state.filterTeacher = tid;
+    } else if(user.role === 'Student' || user.role === 'Parent'){
+      if(!state.filterMode || state.filterMode !== 'class'){
+        state.filterMode = 'class';
+      }
+      if(!state.filterClass){
+        const visible = E.visibleClassNamesFor(user);
+        if(visible.length) state.filterClass = visible[0];
+      }
+    } else {
+      if(!state.filterClass && classes.length) state.filterClass = classes[0].name;
+    }
+
+    /* Filter lessons based on mode */
+    let lessonsToShow = state.lessons;
+    if(state.filterMode === 'class' && state.filterClass){
+      lessonsToShow = state.lessons.filter(l => l.className === state.filterClass);
+    } else if(state.filterMode === 'teacher' && state.filterTeacher){
+      lessonsToShow = state.lessons.filter(l => l.teacherId === state.filterTeacher);
+    }
+
+    const toolbarAdmin = isAdmin ? `
+      <div class="card" style="margin-bottom:12px">
+        <div class="card-body" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:14px 20px">
+          <label style="font-size:11px;color:#657089;font-weight:800;text-transform:uppercase;letter-spacing:.7px">View mode</label>
+          <select class="pick" id="modeFilter" style="border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:12px;background:#fff">
+            <option value="class" ${state.filterMode === 'class' ? 'selected' : ''}>By class</option>
+            <option value="teacher" ${state.filterMode === 'teacher' ? 'selected' : ''}>By teacher</option>
+          </select>
+          ${state.filterMode === 'class' ? `
+            <select id="classFilter" style="border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:12px;background:#fff">
+              ${classes.map(c => `<option ${state.filterClass === c.name ? 'selected' : ''}>${E.esc(c.name)}</option>`).join('')}
+            </select>` : `
+            <select id="teacherFilter" style="border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:12px;background:#fff">
+              ${teachers.map(t => `<option value="${E.esc(t.id)}" ${state.filterTeacher === t.id ? 'selected' : ''}>${E.esc(t.name)}</option>`).join('')}
+            </select>`}
+          <span style="margin-left:auto"></span>
+          <span style="font-size:11px;color:var(--muted)">Status:</span>
+          <span class="status-pill ${state.status}">${state.status}</span>
+        </div>
+      </div>` : '';
+
+    /* Build the grid */
+    const { days, perDay, grid } = E.buildTimetableGrid(lessonsToShow);
+    const periodTimes = E.buildPeriodGrid(state.settings);
+
+    /* Map period index → row index (breaks are interleaved) */
+    const teachingRows = periodTimes.filter(p => !p.isBreak).length;
+    const rowIndexForPeriod = {};
+    let ri = 0;
+    periodTimes.forEach((p, i) => {
+      if(!p.isBreak){ ri++; rowIndexForPeriod[p.index] = ri; }
+    });
+
+    /* Build <tr> for each item in periodTimes (including breaks) */
+    const trs = [];
+    const breaksByAfter = {};
+    (state.settings.breaks || []).forEach(b => {
+      const k = Number(b.afterPeriod);
+      if(k > 0) breaksByAfter[k] = b;
+    });
+
+    for(let p = 1; p <= perDay; p++){
+      const label = periodTimes.find(x => x.index === p && !x.isBreak) || {};
+      const cells = [`<td class="period-label">P${p}<small>${label.start || ''} – ${label.end || ''}</small></td>`];
+      days.forEach(d => {
+        const k = `${d}|${p}`;
+        const lesson = grid[k];
+        if(lesson){
+          cells.push(`<td>
+            <div class="lesson">
+              <strong>${E.esc(E.subjectName(lesson.subject))}</strong>
+              <small>${state.filterMode === 'class' ? E.esc(lesson.teacherName) : E.esc(lesson.className)}</small>
+            </div>
+          </td>`);
+        } else {
+          cells.push(`<td><div class="empty-slot">—</div></td>`);
+        }
+      });
+      trs.push(`<tr>${cells.join('')}</tr>`);
+
+      /* Interleave breaks */
+      if(breaksByAfter[p]){
+        const b = breaksByAfter[p];
+        const brk = periodTimes.find(x => x.isBreak && String(x.start) === String(label.end));
+        const breakCells = [`<td class="period-label">${E.esc(b.label || 'Break')}<small>${brk ? brk.start + ' – ' + brk.end : b.minutes + ' min'}</small></td>`];
+        days.forEach(() => breakCells.push(`<td style="text-align:center;color:#8a6a1a;font-weight:800;font-size:10.5px">${E.esc(b.label || 'Break')}</td>`));
+        trs.push(`<tr class="break-row">${breakCells.join('')}</tr>`);
+      }
+    }
+
+    const headerRow = [
+      '<th class="row-label">Period</th>',
+      ...days.map(d => `<th>${d}</th>`)
+    ].join('');
+
+    return `
+      ${toolbarAdmin}
+      <div class="card">
+        <div class="card-head">
+          <h3>${state.filterMode === 'class'
+            ? (state.filterClass ? `Class: ${E.esc(state.filterClass)}` : 'Weekly timetable')
+            : (state.filterTeacher
+                ? `Teacher: ${E.esc((E.getTeachers().find(t => t.id === state.filterTeacher) || {}).name || '')}`
+                : 'Weekly timetable')}</h3>
+          <span style="font-size:11px;color:var(--muted)">${days.length} days · ${perDay} periods / day</span>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div class="grid-wrap">
+            <table class="tt-table">
+              <thead><tr>${headerRow}</tr></thead>
+              <tbody>${trs.join('')}</tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <span class="item"><span class="swatch" style="background:#eaf2ff;border:1px solid #b9d1f6"></span> Lesson</span>
+        <span class="item"><span class="swatch" style="background:#fff8e6;border:1px solid #f3d999"></span> Break / recess</span>
+      </div>
+
+      ${!isPublished && (user.role !== 'Principal' && user.role !== 'Registrar') ? `
+        <div class="card" style="margin-top:16px">
+          <div class="card-body" style="text-align:center;color:var(--muted);font-size:12px;line-height:1.7">
+            This timetable is not yet published by the school. Check back later.
+          </div>
+        </div>` : ''}
+    `;
+  }
+
+  function bindWeekCard(){
+    const mode = document.getElementById('modeFilter');
+    const cf = document.getElementById('classFilter');
+    const tf = document.getElementById('teacherFilter');
+
+    if(mode) mode.addEventListener('change', e => {
+      state.filterMode = e.target.value;
+      if(state.filterMode === 'class' && !state.filterClass){
+        const first = E.getClasses()[0];
+        if(first) state.filterClass = first.name;
+      }
+      if(state.filterMode === 'teacher' && !state.filterTeacher){
+        const first = E.getTeachers()[0];
+        if(first) state.filterTeacher = first.id;
+      }
+      paint();
+    });
+    if(cf) cf.addEventListener('change', e => { state.filterClass = e.target.value; paint(); });
+    if(tf) tf.addEventListener('change', e => { state.filterTeacher = e.target.value; paint(); });
+  }
+
+  /* ============================================================
+     INIT
+     ============================================================ */
+  paintHeader();
+  paint();
+})();
+</script>
+</body>
+</html>

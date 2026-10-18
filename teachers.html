@@ -87,9 +87,16 @@
   .pill.red{background:#ffeaec;color:#bd3b48}
   .pill.blue{background:#edf2ff;color:#3b5cc1}
   .pill.gold{background:var(--gold2);color:#8a6a1a;font-weight:800}
+  .pill.grey{background:#eef1f6;color:#59647c}
 
   .row-actions{display:flex;gap:5px;flex-wrap:wrap}
   .row-actions .btn{padding:8px 10px;font-size:11px}
+
+  .avail-indicator{display:inline-flex;align-items:center;gap:5px;
+    font-size:10px;color:#16835f;font-weight:800;
+    background:#e6f7f0;padding:4px 9px;border-radius:12px}
+  .avail-indicator.partial{background:#fff2dd;color:#a86414}
+  .avail-indicator.none{background:#eef1f6;color:#59647c}
 
   .empty{padding:40px 20px;text-align:center;color:var(--muted);font-size:13px}
   .chips-cell{white-space:normal;max-width:340px}
@@ -166,6 +173,7 @@
             <th>Department</th>
             <th>Teaching assignments</th>
             <th>Class sponsor</th>
+            <th>Schedule</th>
             <th>Phone</th>
             <th>Employment</th>
             <th>Action</th>
@@ -184,29 +192,19 @@
   'use strict';
   const E = window.EduCore;
 
-  /* ---------- GUARD ---------- */
   const user = E.requirePerm('teachers', 'Teachers');
   if(!user) return;
 
-  /* ---------- SCOPE ----------
-     Roles and what they see on this page:
-       Principal   → all teachers
-       Registrar   → all teachers
-       Teacher     → only their own record (self-service read-only)
-       Student     → not allowed (no teachers permission)
-       Parent      → not allowed
-  ------------------------------------------------------------- */
   const canSeeAll = (user.role === 'Principal' || user.role === 'Registrar');
   const myTeacherId = E.currentTeacherId();
 
-  /* ---------- SUB-FEATURE PERMISSIONS ---------- */
   const canAdd         = canSeeAll && E.can('teachers.add');
   const canEdit        = canSeeAll && E.can('teachers.edit');
   const canDelete      = canSeeAll && E.can('teachers.delete');
   const canAssignments = canSeeAll && E.can('teachers.assignments');
   const canSponsorship = canSeeAll && E.can('teachers.sponsorship');
+  const canManageSchedule = E.can('timetable.settings') || E.can('timetable.generate');
 
-  /* ---------- HEADER ---------- */
   function paintHeader(){
     const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
     const name = settings.name || 'EduCore High School';
@@ -223,7 +221,6 @@
     document.getElementById('bandUser').textContent = user.name || user.username;
   }
 
-  /* ---------- SCOPE NOTE ---------- */
   function paintScopeNote(){
     const el = document.getElementById('scopeNote');
     if(!canSeeAll){
@@ -239,11 +236,9 @@
     }
   }
 
-  /* ---------- SCOPE FILTER ---------- */
   function scopedTeachers(){
     const all = E.readStore(E.STORE_KEYS.teachers, []) || [];
     if(canSeeAll) return all;
-    /* Teacher / anyone else: only their own record */
     if(myTeacherId){
       const self = all.find(t => t.id === myTeacherId);
       return self ? [self] : [];
@@ -251,12 +246,27 @@
     return [];
   }
 
-  /* ---------- RENDER ---------- */
   function statusPill(s){
     const t = (s === 'Full-time') ? 'green'
             : (s === 'Part-time') ? 'orange'
             : 'blue';
     return `<span class="pill ${t}">${E.esc(s||'Full-time')}</span>`;
+  }
+
+  /* Small badge showing how many days a teacher is available */
+  function availabilityBadge(teacherId){
+    const avail = E.getTeacherAvailability(teacherId);
+    const days = avail.availableDays || [];
+    const settings = E.getTimetableSettings();
+    const allDays = settings.days || [];
+    if(!days.length){
+      return `<span class="avail-indicator none" title="No days selected">🗓 None</span>`;
+    }
+    if(days.length === allDays.length){
+      return `<span class="avail-indicator" title="${days.join(', ')}">🗓 All days</span>`;
+    }
+    const label = days.join(' · ');
+    return `<span class="avail-indicator partial" title="${label}">🗓 ${days.length}/${allDays.length}</span>`;
   }
 
   function paintTable(){
@@ -279,10 +289,15 @@
         ? `<span class="pill gold">👑 ${E.esc(sponsored)}</span>`
         : '<span style="color:var(--muted);font-size:11px">—</span>';
 
-      const showAssignBtn = canAssignments || canSponsorship;
+      const scheduleCell = (canManageSchedule || canSeeAll)
+        ? `${availabilityBadge(t.id)}
+           ${canManageSchedule ? `<button class="btn outline" data-schedule="${E.esc(t.id)}"
+              style="padding:5px 9px;font-size:10px;margin-left:6px" title="Open timetable → Teacher availability">✎ Manage</button>` : ''}`
+        : '<span style="color:var(--muted);font-size:11px">—</span>';
+
       const actionBits = [];
       if(canEdit) actionBits.push(`<button class="btn secondary" data-edit="${E.esc(t.id)}">Edit</button>`);
-      if(showAssignBtn) actionBits.push(`<button class="btn" data-assign="${E.esc(t.id)}">Assignments</button>`);
+      if(canAssignments || canSponsorship) actionBits.push(`<button class="btn" data-assign="${E.esc(t.id)}">Assignments</button>`);
       if(canDelete) actionBits.push(`<button class="btn danger" data-delete="${E.esc(t.id)}">Delete</button>`);
 
       const actionCell = actionBits.length
@@ -299,38 +314,62 @@
         <td>${E.esc(t.department||'—')}</td>
         <td class="chips-cell">${chips}</td>
         <td>${sponsorCell}</td>
+        <td>${scheduleCell}</td>
         <td>${E.esc(t.phone||'—')}</td>
         <td>${statusPill(t.status)}</td>
         ${actionCell}
       </tr>`;
-    }).join('') || `<tr><td colspan="7" class="empty">${
+    }).join('') || `<tr><td colspan="8" class="empty">${
       canSeeAll ? 'No teachers found.' : 'Your teacher record could not be located. Ask the admin to link your account.'
     }</td></tr>`;
 
     document.getElementById('count').textContent = arr.length;
   }
 
-  /* ---------- ADD / EDIT ---------- */
+  /* ============================================================
+     ADD / EDIT TEACHER
+     ============================================================ */
   function openTeacherModal(existing){
     if(!canSeeAll){ E.toast("You don't have permission to edit teacher records."); return; }
     const t = existing || {};
     const html = `
-      <div class="full"><label>Full name</label><input name="name" required value="${E.esc(t.name||'')}"></div>
-      <div><label>Department</label><input name="department" value="${E.esc(t.department||'')}"></div>
-      <div><label>Phone</label><input name="phone" value="${E.esc(t.phone||'')}"></div>
-      <div class="full"><label>Employment</label>
+      <div class="full"><label>Full name <span style="color:#bd3b48">*</span></label>
+        <input name="name" required value="${E.esc(t.name||'')}">
+      </div>
+      <div><label>Department</label>
+        <input name="department" value="${E.esc(t.department||'')}">
+      </div>
+      <div><label>Phone</label>
+        <input name="phone" value="${E.esc(t.phone||'')}">
+      </div>
+      <div class="full"><label>Employment status</label>
         <select name="status">
           <option ${t.status === 'Full-time' ? 'selected' : ''}>Full-time</option>
           <option ${t.status === 'Part-time' ? 'selected' : ''}>Part-time</option>
           <option ${t.status === 'Contract' ? 'selected' : ''}>Contract</option>
         </select>
+        <small style="color:var(--muted);font-size:10px;display:block;margin-top:4px;line-height:1.5">
+          Part-time teachers default to <strong>Mon / Wed / Fri</strong> in the scheduler.
+          Change their available days from the <strong>Timetable → Teacher availability</strong> tab,
+          or click <strong>Manage</strong> in the Schedule column.
+        </small>
       </div>`;
+
     E.openModal(existing ? `Edit teacher · ${t.name}` : 'Add teacher', html, 'Save teacher', d => {
       const teachers = E.readStore(E.STORE_KEYS.teachers, []) || [];
       if(existing){
         const target = teachers.find(x => x.id === existing.id);
         if(!target) return;
+
+        /* Preserve scheduling fields managed by the timetable page */
+        const savedAvailableDays = target.availableDays;
+        const savedUnavailablePeriods = target.unavailablePeriods;
+
         Object.assign(target, d);
+
+        if(savedAvailableDays !== undefined) target.availableDays = savedAvailableDays;
+        if(savedUnavailablePeriods !== undefined) target.unavailablePeriods = savedUnavailablePeriods;
+
         E.audit('update', `Teacher ${target.id}`, '', d.name);
       } else {
         teachers.push({
@@ -346,7 +385,9 @@
     });
   }
 
-  /* ---------- DELETE ---------- */
+  /* ============================================================
+     DELETE
+     ============================================================ */
   function deleteTeacher(teacherId){
     if(!canDelete){ E.toast("You don't have permission to delete teachers."); return; }
     const t = (E.readStore(E.STORE_KEYS.teachers, []) || []).find(x => x.id === teacherId);
@@ -354,11 +395,13 @@
     const asnCount = E.assignmentsForTeacher(teacherId).length;
     const sponsored = E.sponsorClassOf(teacherId);
     const linkedUsers = (E.readStore(E.STORE_KEYS.users, []) || []).filter(u => u.linkedTeacherId === teacherId).length;
+    const lessons = E.lessonsForTeacher(teacherId).length;
 
     const lines = [];
     if(asnCount) lines.push(`• teaching assignments: ${asnCount}`);
     if(sponsored) lines.push(`• class sponsorship: ${sponsored}`);
     if(linkedUsers) lines.push(`• linked user accounts: ${linkedUsers}`);
+    if(lessons) lines.push(`• scheduled lessons: ${lessons}`);
 
     const msg = `Delete teacher ${t.name}?\n\n` +
       (lines.length ? `This will also remove or update:\n${lines.join('\n')}\n\n` : '') +
@@ -376,6 +419,14 @@
 
     E.clearSponsor(teacherId);
 
+    /* Remove this teacher's scheduled lessons so the timetable stays consistent */
+    if(lessons){
+      const tt = E.getTimetable();
+      tt.lessons = (tt.lessons || []).filter(l => l.teacherId !== teacherId);
+      tt.unplaced = (tt.unplaced || []).filter(l => l.teacherId !== teacherId);
+      E.writeTimetable(tt);
+    }
+
     const users = E.readStore(E.STORE_KEYS.users, []) || [];
     let unlinked = 0;
     users.forEach(u => { if(u.linkedTeacherId === teacherId){ u.linkedTeacherId = null; unlinked++; } });
@@ -386,7 +437,9 @@
     E.toast(`Teacher ${t.name} deleted${unlinked ? ` · ${unlinked} user account unlinked` : ''}.`);
   }
 
-  /* ---------- ASSIGNMENTS + SPONSOR MODAL ---------- */
+  /* ============================================================
+     ASSIGNMENTS + SPONSOR MODAL
+     ============================================================ */
   function openAssignmentsModal(teacherId){
     if(!canAssignments && !canSponsorship){
       E.toast("You don't have permission to manage assignments.");
@@ -541,7 +594,6 @@
     });
   }
 
-  /* ---------- DELEGATED REMOVE ASSIGNMENT ---------- */
   document.addEventListener('click', e => {
     const rmAsn = e.target.closest('[data-remove-asn]');
     if(rmAsn){
@@ -556,23 +608,30 @@
   });
 
   document.getElementById('tbody').addEventListener('click', e => {
-    const edit   = e.target.closest('[data-edit]');
-    const del    = e.target.closest('[data-delete]');
-    const assign = e.target.closest('[data-assign]');
+    const edit     = e.target.closest('[data-edit]');
+    const del      = e.target.closest('[data-delete]');
+    const assign   = e.target.closest('[data-assign]');
+    const schedule = e.target.closest('[data-schedule]');
+
     if(edit){
       const t = (E.readStore(E.STORE_KEYS.teachers, []) || []).find(x => x.id === edit.dataset.edit);
       if(t) openTeacherModal(t);
     }
     if(del) deleteTeacher(del.dataset.delete);
     if(assign) openAssignmentsModal(assign.dataset.assign);
+
+    if(schedule){
+      /* Jump straight to Timetable → Teacher availability tab, pre-filtered */
+      sessionStorage.setItem('educoreTimetableTeacher', schedule.dataset.schedule);
+      sessionStorage.setItem('educoreTimetableOpenTab', 'avail');
+      window.location.href = 'timetable.html';
+    }
   });
 
-  /* ---------- FILTERS ---------- */
   document.getElementById('search').addEventListener('input', paintTable);
   document.getElementById('statusFilter').addEventListener('change', paintTable);
   document.getElementById('addBtn').addEventListener('click', () => openTeacherModal(null));
 
-  /* ---------- INIT ---------- */
   paintHeader();
   paintScopeNote();
   paintTable();

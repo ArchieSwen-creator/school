@@ -84,6 +84,7 @@
 
   .row-actions{display:flex;gap:5px;flex-wrap:wrap}
   .row-actions .btn{padding:8px 10px;font-size:11px}
+  .row-actions .btn.icon{padding:8px 9px;font-size:12px}
 
   .empty{padding:40px 20px;text-align:center;color:var(--muted);font-size:13px}
   .check-cell{width:32px}
@@ -173,6 +174,7 @@
   const canDelete = E.can('students.delete');
   const canReport = E.can('students.report');
   const canExport = E.can('students.export');
+  const canSeeTimetable = E.can('timetable.view');
 
   function paintHeader(){
     const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
@@ -236,6 +238,7 @@
       <td>${statusPill(s.status||'Active')}</td>
       <td>
         <div class="row-actions">
+          ${canSeeTimetable ? `<button class="btn outline icon" data-timetable="${E.esc(s.id)}" title="Open this student's class timetable">🗓</button>` : ''}
           ${canEdit ? `<button class="btn secondary" data-edit="${E.esc(s.id)}">Edit</button>` : ''}
           ${canReport ? `<button class="btn" data-report="${E.esc(s.id)}">Report</button>` : ''}
           ${canDelete ? `<button class="btn danger" data-delete="${E.esc(s.id)}">Delete</button>` : ''}
@@ -258,10 +261,8 @@
     btn.textContent = n > 0 ? `🗑 Delete selected (${n})` : '🗑 Delete selected';
   }
 
-  /* Build the guardian dropdown.
-     - If the student already has a guardian that is NOT in the registry,
-       we keep it as a fallback option so no data is lost.
-     - Otherwise show every parent from the registry (plus any legacy names). */
+  /* Build the guardian dropdown. Legacy guardians not in the registry
+     are preserved as a fallback option so no data is lost. */
   function guardianSelectHTML(currentGuardian){
     const names = E.allGuardianNames();
     const current = String(currentGuardian || '').trim();
@@ -460,6 +461,15 @@
     window.open('report-card-print.html?student=' + encodeURIComponent(sid), '_blank');
   }
 
+  /* Jump to this student's class timetable */
+  function openStudentTimetable(studentId){
+    const s = (E.readStore(E.STORE_KEYS.students, []) || []).find(x => x.id === studentId);
+    if(!s) return;
+    sessionStorage.setItem('educoreTimetableClass', s.class);
+    sessionStorage.setItem('educoreTimetableFilterMode', 'class');
+    window.location.href = 'timetable.html';
+  }
+
   function exportCSV(){
     const scope = E.visibleStudentsFor(user);
     if(!scope.length){ E.toast('No students to export.'); return; }
@@ -490,15 +500,17 @@
   });
 
   document.getElementById('tbody').addEventListener('click', e => {
-    const edit   = e.target.closest('[data-edit]');
-    const del    = e.target.closest('[data-delete]');
-    const rep    = e.target.closest('[data-report]');
+    const edit       = e.target.closest('[data-edit]');
+    const del        = e.target.closest('[data-delete]');
+    const rep        = e.target.closest('[data-report]');
+    const timetable  = e.target.closest('[data-timetable]');
     if(edit){
       const s = (E.readStore(E.STORE_KEYS.students, []) || []).find(x => x.id === edit.dataset.edit);
       if(s) openStudentModal(s);
     }
     if(del) deleteStudent(del.dataset.delete);
     if(rep) openReport(rep.dataset.report);
+    if(timetable) openStudentTimetable(timetable.dataset.timetable);
   });
 
   paintHeader();
