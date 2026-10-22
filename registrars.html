@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registrars | EduCore</title>
+<style>
+  :root{
+    --navy:#12315a;--navy2:#14213d;--blue:#3987ee;--pale:#eef5ff;--border:#d8e4f2;
+    --text:#23354d;--muted:#73849a;--green:#14805e;--orange:#d88922;--red:#d64545;
+    --gold:#c99a2e;--gold2:#fff4d6;--bg:#f5f7fb;--line:#e8ebf2;--white:#fff;
+    --shadow:0 8px 24px rgba(24,42,78,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:64px 16px 40px;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+  .page{width:100%;max-width:1100px;margin:0 auto}
+
+  .band{
+    background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
+    border-radius:16px;padding:22px 28px;margin-bottom:20px;
+    box-shadow:0 18px 50px #16345417;display:flex;justify-content:space-between;
+    align-items:center;gap:16px;flex-wrap:wrap;border-top:5px solid #58a4ff;
+  }
+  .band-left{display:flex;align-items:center;gap:14px}
+  .band-logo{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;place-items:center;
+    overflow:hidden;color:var(--navy);font-weight:900;font-size:18px;border:3px solid #d8e8ff;flex:0 0 48px}
+  .band-logo img{width:100%;height:100%;object-fit:contain}
+  .band h1{margin:0;font-size:19px;letter-spacing:.3px;text-transform:uppercase}
+  .band p{margin:4px 0 0;font-size:11px;color:#cfdcf5}
+  .band-user{display:flex;align-items:center;gap:10px;font-size:11px;color:#cfdcf5;
+    background:#ffffff14;border:1px solid #ffffff36;padding:7px 12px;border-radius:20px}
+  .band-user strong{color:#fff}
+
+  .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:16px 18px;
+    box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--blue)}
+  .stat.green::before{background:var(--green)}
+  .stat.orange::before{background:var(--orange)}
+  .stat small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.8px;
+    color:var(--muted);font-weight:800;margin-bottom:8px}
+  .stat strong{font-size:22px;color:var(--navy);font-weight:800}
+
+  .toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;
+    flex-wrap:wrap;margin-bottom:16px}
+  .toolbar-left{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .field,.pick{border:1px solid var(--line);border-radius:9px;padding:10px 12px;
+    background:#fff;color:var(--text);font-size:12px;outline:none}
+  .field{min-width:230px}
+  .field:focus,.pick:focus{border-color:var(--blue)}
+
+  .btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{filter:brightness(.96)}
+  .btn.secondary{background:#eef2fb;color:#34415c}
+  .btn.outline{background:#fff;color:#34415c;border:1px solid var(--line)}
+  .btn.danger{background:#fff0f1;color:var(--red)}
+  .btn.green{background:#e6f7f0;color:#16835f}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);overflow:hidden}
+  .card-head{display:flex;justify-content:space-between;align-items:center;
+    padding:18px 22px;border-bottom:1px solid var(--line);gap:12px;flex-wrap:wrap}
+  .card-head h3{margin:0;font-size:14px}
+  .card-head .count{padding:4px 9px;border-radius:20px;background:#edf2ff;color:#3b5cc1;
+    font-size:10px;font-weight:800}
+
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;white-space:nowrap}
+  th{text-align:left;background:#fafbfe;color:#7a8498;font-size:10px;
+    text-transform:uppercase;letter-spacing:.6px;padding:13px 18px;
+    border-bottom:1px solid var(--line)}
+  td{padding:14px 18px;border-bottom:1px solid #f0f2f7;font-size:12px}
+  tbody tr:last-child td{border-bottom:0}
+
+  .person{display:flex;align-items:center;gap:10px}
+  .mini-avatar{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;
+    background:#fff2dd;color:#a86414;font-size:10px;font-weight:700;overflow:hidden}
+  .mini-avatar img{width:100%;height:100%;object-fit:cover}
+  .person strong{display:block;font-size:12px}
+  .person small{display:block;color:var(--muted);font-size:10px;margin-top:4px}
+
+  .pill{display:inline-block;padding:5px 8px;border-radius:20px;font-size:10px;font-weight:700}
+  .pill.green{background:#e6f7f0;color:#16835f}
+  .pill.red{background:#ffeaec;color:#bd3b48}
+  .pill.blue{background:#edf2ff;color:#3b5cc1}
+
+  .row-actions{display:flex;gap:5px;flex-wrap:wrap}
+  .row-actions .btn{padding:7px 10px;font-size:11px}
+
+  .empty{padding:60px 20px;text-align:center;color:var(--muted);font-size:13px}
+  .empty .icon{font-size:48px;margin-bottom:14px;opacity:.5;display:block}
+
+  /* View modal */
+  .view-head{
+    display:flex;align-items:center;gap:16px;
+    padding-bottom:16px;border-bottom:1px solid #e8ebf2;margin-bottom:6px;
+  }
+  .view-avatar{
+    width:72px;height:72px;border-radius:18px;background:#fff2dd;
+    color:#a86414;display:grid;place-items:center;font-weight:800;font-size:20px;
+    overflow:hidden;flex:0 0 72px;border:2px solid #f0d9a0;
+  }
+  .view-avatar img{width:100%;height:100%;object-fit:cover}
+  .view-name{margin:0;font-size:18px;color:#14213d}
+  .view-sub{font-size:12px;color:#73849a;margin-top:4px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .view-pill{
+    display:inline-flex;align-items:center;gap:5px;padding:3px 9px;
+    border-radius:20px;font-size:10px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;
+  }
+  .view-pill.green{background:#e6f7f0;color:#16835f}
+  .view-pill.orange{background:#fff2dd;color:#a86414}
+  .view-pill.red{background:#ffeaec;color:#bd3b48}
+  .view-pill.blue{background:#edf2ff;color:#3b5cc1}
+
+  .view-section{margin-top:16px}
+  .view-section-head{
+    font-size:10px;font-weight:800;color:#73849a;
+    text-transform:uppercase;letter-spacing:1px;
+    padding-bottom:6px;border-bottom:1px solid #e8ebf2;margin-bottom:8px;
+  }
+  .view-row{
+    display:flex;justify-content:space-between;gap:14px;
+    padding:7px 0;font-size:12.5px;border-bottom:1px dotted #f0f2f7;
+  }
+  .view-row:last-child{border-bottom:0}
+  .view-row .label{
+    color:#73849a;font-weight:700;font-size:10px;
+    text-transform:uppercase;letter-spacing:.5px;flex:0 0 42%;
+  }
+  .view-row .value{
+    color:#14213d;text-align:right;word-break:break-word;font-weight:700;
+  }
+
+  @media (max-width:650px){
+    body{padding:64px 8px 24px}
+    .band{padding:18px 20px}
+    .band h1{font-size:15px}
+    .field,.pick{min-width:0;width:100%}
+    .toolbar{flex-direction:column;align-items:stretch}
+    .toolbar-left{width:100%}
+    .stats{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="band">
+    <div class="band-left">
+      <div class="band-logo" id="bandLogo">EC</div>
+      <div>
+        <h1 id="bandSchool">Registrars</h1>
+        <p id="bandSub">Administrative staff accounts</p>
+      </div>
+    </div>
+    <div class="band-user">Signed in as <strong id="bandUser">—</strong></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><small>Total registrars</small><strong id="kTotal">0</strong></div>
+    <div class="stat green"><small>Active</small><strong id="kActive">0</strong></div>
+    <div class="stat orange"><small>Disabled</small><strong id="kDisabled">0</strong></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <input class="field" id="search" placeholder="Search name or username...">
+      <select class="pick" id="statusFilter">
+        <option value="">All statuses</option>
+        <option value="active">Active only</option>
+        <option value="disabled">Disabled only</option>
+      </select>
+    </div>
+    <div class="toolbar-left">
+      <button class="btn outline" id="manageBtn">👥 Open User Management</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h3>Registrar accounts <span class="count" id="count">0</span></h3>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Status</th>
+            <th>Last login</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script src="educore-shared.js?v=14"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  const user = E.requirePerm('userManagement', 'Registrars');
+  if(!user) return;
+
+  function paintHeader(){
+    const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const name = settings.name || 'EduCore High School';
+    if(settings.logo){
+      document.getElementById('bandLogo').innerHTML = `<img src="${settings.logo}" alt="">`;
+    } else {
+      document.getElementById('bandLogo').textContent =
+        name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
+    }
+    document.getElementById('bandSchool').textContent = name;
+    document.getElementById('bandUser').textContent = user.name || user.username;
+  }
+
+  function statusPill(active){
+    return active ? '<span class="pill green">Active</span>' : '<span class="pill red">Disabled</span>';
+  }
+
+  function paintTable(){
+    const users = E.readStore(E.STORE_KEYS.users, []) || [];
+    const registrars = users.filter(u => u.role === 'Registrar');
+    const q = document.getElementById('search').value.toLowerCase();
+    const status = document.getElementById('statusFilter').value;
+
+    const arr = registrars.filter(u => {
+      if(q && !(`${u.name} ${u.username}`).toLowerCase().includes(q)) return false;
+      if(status === 'active' && !u.active) return false;
+      if(status === 'disabled' && u.active) return false;
+      return true;
+    }).sort((a,b) => (a.name||a.username).localeCompare(b.name||b.username));
+
+    document.getElementById('kTotal').textContent = registrars.length;
+    document.getElementById('kActive').textContent = registrars.filter(u => u.active).length;
+    document.getElementById('kDisabled').textContent = registrars.filter(u => !u.active).length;
+
+    const tb = document.getElementById('tbody');
+    tb.innerHTML = arr.map(u => {
+      const photo = u.photo;
+      const avatar = photo
+        ? `<img src="${E.esc(photo)}" alt="">`
+        : E.initials(u.name || u.username);
+
+      return `<tr>
+        <td>
+          <div class="person">
+            <div class="mini-avatar">${avatar}</div>
+            <div>
+              <strong>${E.esc(u.name || u.username)}</strong>
+              <small>${u.id === user.id ? 'You' : ''}</small>
+            </div>
+          </div>
+        </td>
+        <td>${E.esc(u.username)}</td>
+        <td>${E.esc(u.email || '—')}</td>
+        <td>${E.esc(u.phone || '—')}</td>
+        <td>${statusPill(u.active)}</td>
+        <td>${u.lastLogin ? E.fmtDateTime(u.lastLogin) : '—'}</td>
+        <td>
+          <div class="row-actions">
+            <button class="btn outline" data-view="${E.esc(u.id)}">View</button>
+            <button class="btn secondary" data-edit="${E.esc(u.id)}">Edit</button>
+            ${u.id !== user.id ? `<button class="btn ${u.active?'danger':'green'}" data-toggle="${E.esc(u.id)}">
+              ${u.active ? 'Disable' : 'Enable'}
+            </button>` : ''}
+          </div>
+        </td>
+      </tr>`;
+    }).join('') || `<tr><td colspan="7" class="empty">
+      <span class="icon">📋</span>
+      No Registrar accounts match your filters.
+    </td></tr>`;
+
+    document.getElementById('count').textContent = arr.length;
+  }
+
+  /* ============================================================
+     VIEW MODAL — registrar basic information
+     ============================================================ */
+  function openViewModal(id){
+    const users = E.readStore(E.STORE_KEYS.users, []) || [];
+    const u = users.find(x => x.id === id);
+    if(!u) return;
+
+    function renderSection(title, rows){
+      const filled = rows.filter(([, v]) => v && String(v).trim() && String(v).trim() !== '—');
+      if(!filled.length) return '';
+      return `<div class="view-section">
+        <div class="view-section-head">${E.esc(title)}</div>
+        ${filled.map(([label, value]) => `
+          <div class="view-row">
+            <span class="label">${E.esc(label)}</span>
+            <strong class="value">${E.esc(String(value))}</strong>
+          </div>`).join('')}
+      </div>`;
+    }
+
+    const personalHTML = renderSection('Personal & identity', [
+      ['Full name', u.name],
+      ['Username', u.username],
+      ['Email', u.email],
+      ['Phone', u.phone],
+      ['Nationality', u.nationality],
+      ['County of origin', u.countyOfOrigin],
+      ['Ethnic group', u.ethnicGroup],
+      ['Religion', u.religion]
+    ]);
+
+    const accountHTML = renderSection('Account', [
+      ['Role', u.role],
+      ['Account status', u.active ? 'Active' : 'Disabled'],
+      ['Must change password', u.mustChangePassword ? 'Yes' : 'No'],
+      ['Public verify', u.showInPublicVerify ? '✓ Shown' : 'Hidden'],
+      ['Created at', u.createdAt ? E.fmtDateTime(u.createdAt) : '—'],
+      ['Created by', u.createdBy],
+      ['Last login', u.lastLogin ? E.fmtDateTime(u.lastLogin) : 'Never']
+    ]);
+
+    const avatarHTML = u.photo
+      ? `<img src="${E.esc(u.photo)}" alt="">`
+      : E.initials(u.name || u.username);
+
+    const html = `
+      <div class="full view-head">
+        <div class="view-avatar">${avatarHTML}</div>
+        <div>
+          <h3 class="view-name">${E.esc(u.name || u.username)}</h3>
+          <div class="view-sub">
+            <span class="view-pill orange">Registrar</span>
+            <span class="view-pill ${u.active ? 'green' : 'red'}">${u.active ? 'Active' : 'Disabled'}</span>
+            <span>${E.esc(u.username)}</span>
+          </div>
+        </div>
+      </div>
+
+      ${personalHTML}
+      ${accountHTML}
+    `;
+
+    E.openModal('Registrar profile', html, 'Edit account', () => {
+      E.closeModal();
+      sessionStorage.setItem('educoreOpenUserEdit', u.id);
+      window.location.href = 'users.html';
+    }, true);
+  }
+
+  function toggleActive(id){
+    const list = E.readStore(E.STORE_KEYS.users, []) || [];
+    const u = list.find(x => x.id === id);
+    if(!u) return;
+    if(u.id === user.id){ E.toast('You cannot disable your own account.'); return; }
+
+    if(u.active){
+      if(!confirm(`Disable ${u.name || u.username}?\n\nThey will not be able to sign in until re-enabled.`)) return;
+    }
+    u.active = !u.active;
+    E.writeStore(E.STORE_KEYS.users, list);
+    E.audit('update', `User ${u.username}`, '', u.active ? 'enabled' : 'disabled');
+    paintTable();
+    E.toast(`Registrar ${u.active ? 'enabled' : 'disabled'}.`);
+  }
+
+  document.getElementById('search').addEventListener('input', paintTable);
+  document.getElementById('statusFilter').addEventListener('change', paintTable);
+  document.getElementById('manageBtn').addEventListener('click', () => {
+    window.location.href = 'users.html';
+  });
+
+  document.getElementById('tbody').addEventListener('click', e => {
+    const view = e.target.closest('[data-view]');
+    const edit = e.target.closest('[data-edit]');
+    const toggle = e.target.closest('[data-toggle]');
+    if(view) openViewModal(view.dataset.view);
+    if(edit){
+      sessionStorage.setItem('educoreOpenUserEdit', edit.dataset.edit);
+      window.location.href = 'users.html';
+    }
+    if(toggle) toggleActive(toggle.dataset.toggle);
+  });
+
+  paintHeader();
+  paintTable();
+})();
+</script>
+</body>
+</html>

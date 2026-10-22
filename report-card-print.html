@@ -24,7 +24,6 @@
     color:#fff;font-weight:700;font-size:12px}
   .btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--border)}
 
-  /* Archive notice banner at the top of each card */
   .archive-banner{background:linear-gradient(120deg,#fff8e6,#fef4dc);
     border-bottom:1px solid #f3d999;color:#8a5f22;
     padding:12px 24px;font-size:11.5px;line-height:1.6;
@@ -33,8 +32,15 @@
   .archive-banner .badge{display:inline-flex;align-items:center;gap:5px;
     background:#c99a2e;color:#fff;padding:3px 9px;border-radius:20px;
     font-size:9.5px;font-weight:900;letter-spacing:.7px;text-transform:uppercase}
+  .approval-banner{background:linear-gradient(120deg,#e6f7f0,#d4f0e3);
+    border-bottom:1px solid #b8e9d3;color:#0e6b4a;
+    padding:12px 24px;font-size:11.5px;line-height:1.6;
+    display:flex;align-items:center;gap:10px}
+  .approval-banner strong{color:#0e6b4a}
+  .approval-banner .badge{display:inline-flex;align-items:center;gap:5px;
+    background:#14805e;color:#fff;padding:3px 9px;border-radius:20px;
+    font-size:9.5px;font-weight:900;letter-spacing:.7px;text-transform:uppercase}
 
-  /* Report card */
   .report-card{width:100%;max-width:1200px;margin:0 auto;background:#fff;
     border-radius:16px;overflow:hidden;box-shadow:0 18px 50px #16345417;margin-bottom:20px}
   .school-header{padding:24px 32px;color:#fff;
@@ -144,7 +150,7 @@
     .table-scroll{overflow:visible}
     table.subject-matrix{min-width:0;font-size:9px}
     table.subject-matrix th,table.subject-matrix td{padding:5px 3px;font-size:9px}
-    .archive-banner{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .archive-banner,.approval-banner{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   }
 
   @media (max-width:650px){
@@ -157,7 +163,7 @@
     .student-grid .info-card:first-child{grid-column:1/-1}
     .summary-grid{grid-template-columns:1fr 1fr}
     .signature-grid{gap:20px}
-    .archive-banner{padding:10px 14px;font-size:10.5px}
+    .archive-banner,.approval-banner{padding:10px 14px;font-size:10.5px}
   }
 </style>
 </head>
@@ -173,7 +179,7 @@
 
 <div id="content"></div>
 
-<script src="educore-shared.js"></script>
+<script src="educore-shared.js?v=10"></script>
 <script>
 (function(){
   'use strict';
@@ -195,6 +201,10 @@
     return;
   }
 
+  const isStudent = user.role === 'Student';
+  const isParent  = user.role === 'Parent';
+  const approvedOnly = isStudent || isParent;
+
   /* ---------- DATA ---------- */
   const settings       = E.readStore(E.STORE_KEYS.settings, {}) || {};
   const allStudents    = E.readStore(E.STORE_KEYS.students, []) || [];
@@ -210,7 +220,6 @@
     const s = allStudents.find(x => x.id === singleId);
     if(s) targets = [s];
   } else if(classParam){
-    /* Batch print by class + year */
     targets = allStudents.filter(s => s.class === classParam);
   }
 
@@ -225,7 +234,7 @@
     return;
   }
 
-  /* ---------- SCOPE CHECK FOR TEACHERS ---------- */
+  /* ---------- SCOPE CHECKS ---------- */
   if(user.role === 'Teacher'){
     const visible = new Set(E.visibleStudentsFor(user).map(s => s.id));
     const allAllowed = targets.every(t => visible.has(t.id));
@@ -240,16 +249,48 @@
       return;
     }
   }
+  if(isParent){
+    const kids = E.childrenOf(user);
+    const kidIds = new Set(kids.map(k => k.id));
+    const allAllowed = targets.every(t => kidIds.has(t.id));
+    if(!allAllowed){
+      document.getElementById('content').innerHTML = `
+        <div class="notfound">
+          <div class="icon">🔒</div>
+          <h1>Not authorised</h1>
+          <p>You can only open report cards for your own children.</p>
+          <a href="index.html">← Back to Dashboard</a>
+        </div>`;
+      return;
+    }
+  }
+  if(isStudent){
+    const allAllowed = targets.every(t => t.id === user.linkedStudentId);
+    if(!allAllowed){
+      document.getElementById('content').innerHTML = `
+        <div class="notfound">
+          <div class="icon">🔒</div>
+          <h1>Not authorised</h1>
+          <p>You can only open your own report card.</p>
+          <a href="index.html">← Back to Dashboard</a>
+        </div>`;
+      return;
+    }
+  }
 
   /* ---------- HELPERS ---------- */
   function gradeCls(letter){
     return ({ A:'a', B:'b', C:'c', D:'d', F:'f' }[letter] || 'b');
   }
 
-  /* Compute the ledger row from an arbitrary array of results (live or archived). */
-  function ledgerRowFromResults(results, subject, className, category){
+  /* Build a ledger row from an arbitrary results array.
+     Normalizes the subject on BOTH sides so code/name drift doesn't
+     produce a row of dashes. */
+  function ledgerRowFromResults(results, subjectCode, subjectDisplayName, className, category){
     const cat = category || E.classCategoryFor(className);
-    const rows = results.filter(r => r.subject === subject);
+    const target = E.normSubject(subjectCode);
+    const rows = results.filter(r => E.normSubject(r.subject) === target);
+
     const get = (semester, period) => {
       const r = rows.find(x =>
         Number(x.semester) === Number(semester) &&
@@ -291,10 +332,9 @@
       return null;
     })();
 
-    return { subject, p1, p2, p3, e1, s1Avg, p4, p5, p6, e2, s2Avg, yearly };
+    return { subject: subjectDisplayName, p1, p2, p3, e1, s1Avg, p4, p5, p6, e2, s2Avg, yearly };
   }
 
-  /* Class position from an arbitrary results list */
   function classPositionFor(student, results){
     const peers = {};
     results
@@ -350,21 +390,36 @@
     return `${present + late} / ${total} days`;
   }
 
+  /* Build the subject list — always as { code, name } pairs, deduped by
+     canonical name so we never render the same subject twice. */
   function subjectsForClass(className, results){
     const rec = allClasses.find(c => c.name === className);
+    let list = [];
+
     if(rec && Array.isArray(rec.subjects) && rec.subjects.length){
-      return rec.subjects.map(code => E.subjectName(code));
+      list = rec.subjects.map(code => ({ code, name: E.subjectName(code) }));
+    } else {
+      const set = new Set(results.map(r => r.subject));
+      list = Array.from(set).sort().map(s => ({ code: s, name: E.subjectName(s) }));
     }
-    const set = new Set(results.map(r => r.subject));
-    return Array.from(set).sort();
+
+    const seen = new Set();
+    return list.filter(s => {
+      const key = E.normSubject(s.name);
+      if(seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
   }
 
   /* ---------- BUILD ONE REPORT CARD ---------- */
   function buildCard(student){
-    /* Resolve this student's report card source */
-    const src = E.reportCardSource({ studentId: student.id, year });
+    const src = E.reportCardSource({
+      studentId: student.id,
+      year,
+      approvedOnly
+    });
 
-    /* If the archive doesn't contain them, fall back gracefully */
     if(!src.ok){
       return `<div class="card-page"><main class="report-card">
         <div style="padding:60px;text-align:center;color:#7a8498">
@@ -377,15 +432,23 @@
       </main></div>`;
     }
 
-    const s = src.student;                  /* student with the class at that time */
-    const results = src.results || [];
+    const s = src.student;
+    let results = src.results || [];
+
+    if(approvedOnly){
+      results = results.filter(r => !r.status || r.status === 'approved');
+    }
+
     const attendance = src.attendance || {};
     const category = E.classCategoryFor(s.class);
     const isNursery = E.isNurseryCategory(category);
+
     const subjects = subjectsForClass(s.class, results);
 
+    /* Pass both the code and the display name — the helper normalizes so
+       either form works regardless of what's stored on the row. */
     const rows = subjects.map(sub =>
-      ledgerRowFromResults(results, sub, s.class, category)
+      ledgerRowFromResults(results, sub.code, sub.name, s.class, category)
     );
 
     const s1Nums = rows.map(r => r.s1Avg?.number).filter(n => Number.isFinite(n));
@@ -411,7 +474,9 @@
       ? 'A strong and consistent performance this year. Keep up the excellent work.'
       : yrAvg != null && yrAvg >= 50
       ? 'A satisfactory year. Continued effort will further improve the results.'
-      : 'More attention is needed in core subjects. Please attend remedial classes.';
+      : yrAvg != null
+      ? 'More attention is needed in core subjects. Please attend remedial classes.'
+      : 'No approved results yet for this year.';
 
     const subjectRowsHTML = rows.length
       ? rows.map(r => {
@@ -437,14 +502,15 @@
           </tr>`;
         }).join('')
       : `<tr><td colspan="12" style="text-align:center;color:#7a8498;padding:24px">
-          No examination results on record for this academic year.
+          ${approvedOnly
+            ? 'No approved scores yet for this academic year.'
+            : 'No examination results on record for this academic year.'}
         </td></tr>`;
 
     const overallGradePill = yrAvg != null
       ? `<span class="grade-${gradeCls(yrGrade)}" style="font-size:15px;font-weight:800">${yrGrade}</span>`
       : '—';
 
-    /* Archive banner only shown when source is an archive */
     const archiveBanner = src.source === 'archive'
       ? `<div class="archive-banner">
            <span class="badge">Archived</span>
@@ -456,10 +522,21 @@
          </div>`
       : '';
 
+    const approvalBanner = approvedOnly
+      ? `<div class="approval-banner">
+           <span class="badge">Approved only</span>
+           <div>
+             <strong>This report card shows approved scores only.</strong>
+             Pending or returned scores are hidden until the admin approves them.
+           </div>
+         </div>`
+      : '';
+
     return `
       <div class="card-page">
         <main class="report-card">
           ${archiveBanner}
+          ${approvalBanner}
           <header class="school-header">
             <div class="school-brand">
               <div class="school-logo">${settings.logo
@@ -502,7 +579,7 @@
               <div class="section-heading">
                 <div class="section-number">02</div>
                 <div><h3>Subject Performance</h3>
-                  <p>Period scores, semester averages, and yearly average</p></div>
+                  <p>${approvedOnly ? 'Approved scores only' : 'Period scores, semester averages, and yearly average'}</p></div>
               </div>
               <div class="table-scroll">
                 <table class="subject-matrix">
@@ -575,7 +652,7 @@
 
             <div class="footer">
               <span>Generated by <strong>${E.esc(settings.name || 'EduCore')}</strong></span>
-              <span>Report Card · ${E.esc(year)}${src.source === 'archive' ? ' · Archived' : ''}</span>
+              <span>Report Card · ${E.esc(year)}${src.source === 'archive' ? ' · Archived' : ''}${approvedOnly ? ' · Approved only' : ''}</span>
             </div>
 
           </div>
@@ -588,7 +665,7 @@
 
   /* ---------- PAGE TITLE ---------- */
   const srcIsArchive = !!(E.readArchives()[year]);
-  const titleSuffix = srcIsArchive ? ' (Archived)' : '';
+  const titleSuffix = (srcIsArchive ? ' (Archived)' : '') + (approvedOnly ? ' (Approved only)' : '');
   if(targets.length === 1){
     document.title = `Report Card · ${targets[0].name}${titleSuffix} | ${settings.name || 'EduCore'}`;
     document.getElementById('titleText').textContent = `Report Card · ${targets[0].name}${titleSuffix}`;

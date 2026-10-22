@@ -72,7 +72,8 @@
 
   .person{display:flex;align-items:center;gap:10px}
   .mini-avatar{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;
-    background:#edf2ff;color:#3859b7;font-size:10px;font-weight:700}
+    background:#edf2ff;color:#3859b7;font-size:10px;font-weight:700;overflow:hidden}
+  .mini-avatar img{width:100%;height:100%;object-fit:cover}
   .person strong{display:block;font-size:12px}
   .person small{display:block;color:var(--muted);font-size:10px;margin-top:4px}
 
@@ -88,6 +89,73 @@
 
   .empty{padding:40px 20px;text-align:center;color:var(--muted);font-size:13px}
   .check-cell{width:32px}
+
+  /* View modal */
+  .view-head{
+    display:flex;align-items:center;gap:16px;
+    padding-bottom:16px;border-bottom:1px solid #e8ebf2;margin-bottom:6px;
+  }
+  .view-avatar{
+    width:72px;height:72px;border-radius:18px;background:#edf2ff;
+    color:#3859b7;display:grid;place-items:center;font-weight:800;font-size:20px;
+    overflow:hidden;flex:0 0 72px;border:2px solid #d8e8ff;
+  }
+  .view-avatar img{width:100%;height:100%;object-fit:cover}
+  .view-name{margin:0;font-size:18px;color:#14213d}
+  .view-sub{font-size:12px;color:#73849a;margin-top:4px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .view-pill{
+    display:inline-flex;align-items:center;gap:5px;padding:3px 9px;
+    border-radius:20px;font-size:10px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;
+  }
+  .view-pill.green{background:#e6f7f0;color:#16835f}
+  .view-pill.orange{background:#fff2dd;color:#a86414}
+  .view-pill.red{background:#ffeaec;color:#bd3b48}
+  .view-pill.blue{background:#edf2ff;color:#3b5cc1}
+  .view-pill.grey{background:#eef1f6;color:#59647c}
+
+  .view-section{margin-top:16px}
+  .view-section-head{
+    font-size:10px;font-weight:800;color:#73849a;
+    text-transform:uppercase;letter-spacing:1px;
+    padding-bottom:6px;border-bottom:1px solid #e8ebf2;margin-bottom:8px;
+  }
+  .view-row{
+    display:flex;justify-content:space-between;gap:14px;
+    padding:7px 0;font-size:12.5px;border-bottom:1px dotted #f0f2f7;
+  }
+  .view-row:last-child{border-bottom:0}
+  .view-row .label{
+    color:#73849a;font-weight:700;font-size:10px;
+    text-transform:uppercase;letter-spacing:.5px;flex:0 0 42%;
+  }
+  .view-row .value{
+    color:#14213d;text-align:right;word-break:break-word;font-weight:700;
+  }
+  .view-row .value.muted{color:#aab6c8;font-weight:500}
+  .view-children{padding:4px 0}
+  .view-child-row{
+    padding:8px 0;border-bottom:1px dashed #eef2f7;font-size:12.5px;
+  }
+  .view-child-row:last-child{border-bottom:0}
+  .view-child-row strong{color:#14213d}
+  .view-child-row span{color:#73849a}
+
+  /* Edit modal — profile block */
+  .personal-block-label{
+    font-size:12px;color:#34415c;letter-spacing:.5px;text-transform:uppercase;
+    padding-top:6px;border-top:1px dashed #e8ebf2;margin-top:6px;
+  }
+  .photo-field{display:flex;gap:14px;align-items:flex-start;margin-top:6px}
+  .photo-preview{
+    width:88px;height:88px;flex:0 0 88px;border-radius:14px;
+    border:2px dashed #c9d1e0;background:#f8faff;
+    display:grid;place-items:center;overflow:hidden;
+    color:#7a8498;font-size:11px;text-align:center;position:relative;
+    font-weight:800;
+  }
+  .photo-preview img{width:100%;height:100%;object-fit:cover}
+  .photo-actions{display:flex;flex-direction:column;gap:6px;flex:1}
+  .photo-actions .help{font-size:10.5px;color:#73849a;line-height:1.5}
 
   @media (max-width:650px){
     body{padding:64px 8px 24px}
@@ -160,7 +228,7 @@
 
 </div>
 
-<script src="educore-shared.js"></script>
+<script src="educore-shared.js?v=15"></script>
 <script>
 (function(){
   'use strict';
@@ -209,6 +277,20 @@
     return `<span class="pill ${t}">${E.esc(s)}</span>`;
   }
 
+  function linkedUserForStudent(studentId){
+    const users = E.readStore(E.STORE_KEYS.users, []) || [];
+    return users.find(u => u.role === 'Student' && u.linkedStudentId === studentId) || null;
+  }
+
+  function studentPhoto(student){
+    if(!student) return '';
+    const photos = E.readStore(E.STORE_KEYS.photos, {}) || {};
+    if(photos[student.id]) return photos[student.id];
+    const u = linkedUserForStudent(student.id);
+    if(u && u.photo) return u.photo;
+    return '';
+  }
+
   function paintTable(){
     const scope = E.visibleStudentsFor(user);
     const q  = document.getElementById('search').value.toLowerCase();
@@ -220,34 +302,136 @@
       (!st || s.status === st)
     );
     const tb = document.getElementById('tbody');
-    tb.innerHTML = arr.map(s => `<tr>
-      ${canDelete ? `<td class="check-cell"><input type="checkbox" class="pick-row" data-id="${E.esc(s.id)}"></td>` : ''}
-      <td>
-        <div class="person">
-          <div class="mini-avatar">${E.initials(s.name)}</div>
-          <div>
-            <strong>${E.esc(s.name)}</strong>
-            <small>${E.esc(s.id)}</small>
+    tb.innerHTML = arr.map(s => {
+      const photo = studentPhoto(s);
+      const avatar = photo
+        ? `<img src="${E.esc(photo)}" alt="">`
+        : E.initials(s.name);
+      return `<tr>
+        ${canDelete ? `<td class="check-cell"><input type="checkbox" class="pick-row" data-id="${E.esc(s.id)}"></td>` : ''}
+        <td>
+          <div class="person">
+            <div class="mini-avatar">${avatar}</div>
+            <div>
+              <strong>${E.esc(s.name)}</strong>
+              <small>${E.esc(s.id)}</small>
+            </div>
           </div>
-        </div>
-      </td>
-      <td>${E.esc(s.gender||'—')}</td>
-      <td>${E.esc(s.class)}</td>
-      <td>${E.esc(s.guardian||'—')}</td>
-      <td>${E.esc(s.phone||'—')}</td>
-      <td>${statusPill(s.status||'Active')}</td>
-      <td>
-        <div class="row-actions">
-          ${canSeeTimetable ? `<button class="btn outline icon" data-timetable="${E.esc(s.id)}" title="Open this student's class timetable">🗓</button>` : ''}
-          ${canEdit ? `<button class="btn secondary" data-edit="${E.esc(s.id)}">Edit</button>` : ''}
-          ${canReport ? `<button class="btn" data-report="${E.esc(s.id)}">Report</button>` : ''}
-          ${canDelete ? `<button class="btn danger" data-delete="${E.esc(s.id)}">Delete</button>` : ''}
-        </div>
-      </td>
-    </tr>`).join('') || `<tr><td colspan="${canDelete ? 8 : 7}" class="empty">No students match your search.</td></tr>`;
+        </td>
+        <td>${E.esc(s.gender||'—')}</td>
+        <td>${E.esc(s.class)}</td>
+        <td>${E.esc(s.guardian||'—')}</td>
+        <td>${E.esc(s.phone||'—')}</td>
+        <td>${statusPill(s.status||'Active')}</td>
+        <td>
+          <div class="row-actions">
+            <button class="btn outline" data-view="${E.esc(s.id)}">View</button>
+            ${canSeeTimetable ? `<button class="btn outline icon" data-timetable="${E.esc(s.id)}" title="Open this student's class timetable">🗓</button>` : ''}
+            ${canEdit ? `<button class="btn secondary" data-edit="${E.esc(s.id)}">Edit</button>` : ''}
+            ${canReport ? `<button class="btn" data-report="${E.esc(s.id)}">Report</button>` : ''}
+            ${canDelete ? `<button class="btn danger" data-delete="${E.esc(s.id)}">Delete</button>` : ''}
+          </div>
+        </td>
+      </tr>`;
+    }).join('') || `<tr><td colspan="${canDelete ? 8 : 7}" class="empty">No students match your search.</td></tr>`;
 
     document.getElementById('count').textContent = arr.length;
     updateBulkDelete();
+  }
+
+  /* ============================================================
+     VIEW MODAL — student basic information
+     ============================================================ */
+  function openViewModal(studentId){
+    const students = E.readStore(E.STORE_KEYS.students, []) || [];
+    const s = students.find(x => x.id === studentId);
+    if(!s) return;
+
+    const linkedUser = linkedUserForStudent(s.id);
+    const photo = studentPhoto(s);
+    const enrollments = (E.readStore(E.STORE_KEYS.enrollments, []) || [])
+      .filter(e => e.studentId === s.id);
+    const activeEnrollment = enrollments.find(e => e.status === 'active');
+
+    function renderSection(title, rows){
+      const filled = rows.filter(([, v]) => v && String(v).trim() && String(v).trim() !== '—');
+      if(!filled.length) return '';
+      return `<div class="view-section">
+        <div class="view-section-head">${E.esc(title)}</div>
+        ${filled.map(([label, value]) => `
+          <div class="view-row">
+            <span class="label">${E.esc(label)}</span>
+            <strong class="value">${E.esc(String(value))}</strong>
+          </div>`).join('')}
+      </div>`;
+    }
+
+    const statusClass = s.status === 'Active' ? 'green'
+                      : s.status === 'Pending' ? 'orange'
+                      : s.status === 'Inactive' ? 'red' : 'blue';
+
+    const personalHTML = renderSection('Personal & identity', [
+      ['Full name', s.name],
+      ['Student ID', s.id],
+      ['Class', s.class],
+      ['Class category', E.classCategoryFor(s.class) || '—'],
+      ['Gender', s.gender || '—'],
+      ['Status', s.status || 'Active'],
+      ['Nationality', linkedUser?.nationality || ''],
+      ['County of origin', linkedUser?.countyOfOrigin || ''],
+      ['Ethnic group', linkedUser?.ethnicGroup || ''],
+      ['Religion', linkedUser?.religion || ''],
+      ['Pass school', linkedUser?.passSchool || '']
+    ]);
+
+    const guardianHTML = renderSection('Guardian', [
+      ['Guardian name', s.guardian || '—'],
+      ['Guardian phone', s.phone || '—']
+    ]);
+
+    const enrollmentHTML = renderSection('Enrollment', [
+      ['Total enrollments', String(enrollments.length)],
+      ['Current class', activeEnrollment ? activeEnrollment.className : s.class]
+    ]);
+
+    const accountHTML = linkedUser
+      ? renderSection('Account', [
+          ['Username', linkedUser.username],
+          ['Account status', linkedUser.active ? 'Active' : 'Disabled'],
+          ['Public verify', linkedUser.showInPublicVerify ? '✓ Shown' : 'Hidden'],
+          ['Last login', linkedUser.lastLogin ? E.fmtDateTime(linkedUser.lastLogin) : 'Never']
+        ])
+      : '';
+
+    const avatarHTML = photo
+      ? `<img src="${E.esc(photo)}" alt="">`
+      : E.initials(s.name);
+
+    const html = `
+      <div class="full view-head">
+        <div class="view-avatar">${avatarHTML}</div>
+        <div>
+          <h3 class="view-name">${E.esc(s.name)}</h3>
+          <div class="view-sub">
+            <span class="view-pill ${statusClass}">${E.esc(s.status || 'Active')}</span>
+            <span>${E.esc(s.class)}</span>
+            <span style="color:#c5cee0">·</span>
+            <span>${E.esc(s.id)}</span>
+          </div>
+        </div>
+      </div>
+
+      ${personalHTML}
+      ${guardianHTML}
+      ${enrollmentHTML}
+      ${accountHTML}
+    `;
+
+    E.openModal('Student profile', html, 'Edit student', () => {
+      E.closeModal();
+      const target = (E.readStore(E.STORE_KEYS.students, []) || []).find(x => x.id === s.id);
+      if(target) openStudentModal(target);
+    }, true);
   }
 
   function getSelectedIds(){
@@ -261,8 +445,6 @@
     btn.textContent = n > 0 ? `🗑 Delete selected (${n})` : '🗑 Delete selected';
   }
 
-  /* Build the guardian dropdown. Legacy guardians not in the registry
-     are preserved as a fallback option so no data is lost. */
   function guardianSelectHTML(currentGuardian){
     const names = E.allGuardianNames();
     const current = String(currentGuardian || '').trim();
@@ -279,12 +461,31 @@
     return opts.join('');
   }
 
+  /* ============================================================
+     ADD / EDIT STUDENT (extended with profile fields)
+     ============================================================ */
   function openStudentModal(existing){
     const s = existing || {};
     const classes = E.readStore(E.STORE_KEYS.classes, []) || [];
 
+    const linkedUser = existing ? linkedUserForStudent(existing.id) : null;
+    const profile = {
+      photo: linkedUser?.photo || '',
+      nationality: linkedUser?.nationality || '',
+      countyOfOrigin: linkedUser?.countyOfOrigin || '',
+      ethnicGroup: linkedUser?.ethnicGroup || '',
+      religion: linkedUser?.religion || '',
+      passSchool: linkedUser?.passSchool || ''
+    };
+
+    const photoPreviewHTML = profile.photo
+      ? `<img src="${E.esc(profile.photo)}" alt="">`
+      : (s.name ? E.initials(s.name) : 'No photo');
+
     const html = `
-      <div class="full"><label>Full name</label><input name="name" required value="${E.esc(s.name||'')}"></div>
+      <div class="full"><label>Full name</label>
+        <input name="name" id="studentNameInput" required value="${E.esc(s.name||'')}">
+      </div>
       <div><label>Gender</label>
         <select name="gender">
           <option ${s.gender === 'Female' ? 'selected' : ''}>Female</option>
@@ -312,30 +513,155 @@
           <option ${s.status === 'Inactive' ? 'selected' : ''}>Inactive</option>
           <option ${s.status === 'Graduated' ? 'selected' : ''}>Graduated</option>
         </select>
+      </div>
+
+      <div class="full personal-block-label">Personal information</div>
+
+      <div class="full">
+        <label>Photo</label>
+        <div class="photo-field">
+          <div class="photo-preview" id="studentPhotoPreview">${photoPreviewHTML}</div>
+          <div class="photo-actions">
+            <input type="file" id="studentPhotoInput" accept="image/*" style="display:none">
+            <input type="hidden" name="photo" id="studentPhotoHidden" value="${E.esc(profile.photo)}">
+            <button type="button" class="btn secondary" id="studentPhotoPickBtn">📷 Upload photo</button>
+            <button type="button" class="btn outline" id="studentPhotoClearBtn"
+              ${profile.photo ? '' : 'style="display:none"'}>✕ Remove photo</button>
+            <span class="help">Square · max 1 MB · PNG / JPG / WEBP / GIF</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label>Nationality</label>
+        <input name="nationality" value="${E.esc(profile.nationality)}" placeholder="e.g. Liberian">
+      </div>
+
+      <div>
+        <label>County of origin</label>
+        <input name="countyOfOrigin" value="${E.esc(profile.countyOfOrigin)}" placeholder="e.g. Montserrado">
+      </div>
+
+      <div>
+        <label>Ethnic group</label>
+        <input name="ethnicGroup" value="${E.esc(profile.ethnicGroup)}" placeholder="e.g. Kpelle">
+      </div>
+
+      <div>
+        <label>Religion</label>
+        <input name="religion" value="${E.esc(profile.religion)}" placeholder="e.g. Christian">
+      </div>
+
+      <div class="full">
+        <label>Pass school (optional)</label>
+        <input name="passSchool" value="${E.esc(profile.passSchool)}" placeholder="Previous school">
+        <span style="font-size:10px;color:var(--muted);display:block;margin-top:4px">
+          Only for students who transferred in.
+        </span>
       </div>`;
 
     E.openModal(existing ? 'Edit student' : 'Add new student', html, 'Save student', d => {
       const students = E.readStore(E.STORE_KEYS.students, []) || [];
       const fees     = E.readStore(E.STORE_KEYS.fees, []) || [];
+      let studentRecord;
       if(existing){
         const target = students.find(x => x.id === existing.id);
         if(!target) return;
         const oldClass = target.class;
-        Object.assign(target, d);
+        Object.assign(target, {
+          name: d.name,
+          gender: d.gender,
+          class: d.class,
+          guardian: d.guardian,
+          phone: d.phone,
+          status: d.status
+        });
         if(oldClass !== d.class){ enroll(target.id, d.class); }
+        studentRecord = target;
         E.audit('update', `Student ${target.id}`, '', d.name);
       } else {
         const nid = 'STU-' + (1001 + Math.max(0, ...students.map(x => Number((x.id||'').split('-')[1]) - 1001)) + 1);
-        students.push({ id: nid, ...d });
+        studentRecord = {
+          id: nid,
+          name: d.name,
+          gender: d.gender,
+          class: d.class,
+          guardian: d.guardian,
+          phone: d.phone,
+          status: d.status
+        };
+        students.push(studentRecord);
         fees.push({ id: nid, name: d.name, class: d.class, total: 1200, paid: 0 });
         enroll(nid, d.class);
         E.audit('create', `Student ${nid}`, '', d.name);
       }
       E.writeStore(E.STORE_KEYS.students, students);
       E.writeStore(E.STORE_KEYS.fees, fees);
+
+      /* Write profile fields to linked user account */
+      const profilePatch = {
+        photo: d.photo || '',
+        nationality: d.nationality || '',
+        countyOfOrigin: d.countyOfOrigin || '',
+        ethnicGroup: d.ethnicGroup || '',
+        religion: d.religion || '',
+        passSchool: d.passSchool || ''
+      };
+      const res = E.updateLinkedUserProfile('Student', studentRecord.id, profilePatch);
+      if(!res.ok){
+        E.toast('Student saved. Note: no linked user account to store profile fields.');
+      } else {
+        E.toast('Student saved.');
+      }
+
+      /* Also update the ID-card photo store so the avatar/ID-card reflects the photo */
+      if(d.photo){
+        const photos = E.readStore(E.STORE_KEYS.photos, {}) || {};
+        photos[studentRecord.id] = d.photo;
+        E.writeStore(E.STORE_KEYS.photos, photos);
+      } else if(existing){
+        const photos = E.readStore(E.STORE_KEYS.photos, {}) || {};
+        if(photos[studentRecord.id]){
+          delete photos[studentRecord.id];
+          E.writeStore(E.STORE_KEYS.photos, photos);
+        }
+      }
+
       E.closeModal();
       paintTable();
-      E.toast('Student saved.');
+    }, true);
+
+    /* Photo picker */
+    const photoInput  = document.getElementById('studentPhotoInput');
+    const photoHidden = document.getElementById('studentPhotoHidden');
+    const photoPick   = document.getElementById('studentPhotoPickBtn');
+    const photoClear  = document.getElementById('studentPhotoClearBtn');
+    const photoPrev   = document.getElementById('studentPhotoPreview');
+    const nameInput   = document.getElementById('studentNameInput');
+
+    photoPick?.addEventListener('click', () => photoInput.click());
+    photoInput?.addEventListener('change', async () => {
+      const file = photoInput.files[0];
+      if(!file) return;
+      const read = await E.readPhotoFile(file);
+      if(!read.ok){ E.toast(read.error); photoInput.value = ''; return; }
+      const small = await E.downscalePhoto(read.dataUrl, 256);
+      photoHidden.value = small;
+      photoPrev.innerHTML = `<img src="${small}" alt="">`;
+      photoClear.style.display = '';
+    });
+    photoClear?.addEventListener('click', () => {
+      photoHidden.value = '';
+      const n = nameInput.value.trim();
+      photoPrev.innerHTML = n ? E.initials(n) : 'No photo';
+      photoClear.style.display = 'none';
+      photoInput.value = '';
+    });
+    nameInput?.addEventListener('input', () => {
+      if(!photoHidden.value && photoPrev && !photoPrev.querySelector('img')){
+        const n = nameInput.value.trim();
+        photoPrev.textContent = n ? E.initials(n) : 'No photo';
+      }
     });
   }
 
@@ -382,17 +708,16 @@
     const typed = prompt(`Type the student's ID (${studentId}) to confirm:`);
     if(typed !== studentId){ E.toast('Confirmation did not match.'); return; }
 
-    let students = (E.readStore(E.STORE_KEYS.students, []) || []).filter(x => x.id !== studentId);
-    let results  = (E.readStore(E.STORE_KEYS.results, []) || []).filter(r => !(r.student === s.name && r.class === s.class));
-    let fees     = (E.readStore(E.STORE_KEYS.fees, []) || []).filter(f => f.id !== studentId);
-    let payments = (E.readStore(E.STORE_KEYS.payments, []) || []).filter(p => p.studentId !== studentId);
-    let attendance = E.readStore(E.STORE_KEYS.attendance, {}) || {};
+    E.writeStore(E.STORE_KEYS.students,
+      (E.readStore(E.STORE_KEYS.students, []) || []).filter(x => x.id !== studentId));
+    E.writeStore(E.STORE_KEYS.results,
+      (E.readStore(E.STORE_KEYS.results, []) || []).filter(r => !(r.student === s.name && r.class === s.class)));
+    E.writeStore(E.STORE_KEYS.fees,
+      (E.readStore(E.STORE_KEYS.fees, []) || []).filter(f => f.id !== studentId));
+    E.writeStore(E.STORE_KEYS.payments,
+      (E.readStore(E.STORE_KEYS.payments, []) || []).filter(p => p.studentId !== studentId));
+    const attendance = E.readStore(E.STORE_KEYS.attendance, {}) || {};
     Object.keys(attendance).forEach(k => { if(attendance[k]?.[studentId]) delete attendance[k][studentId]; });
-
-    E.writeStore(E.STORE_KEYS.students, students);
-    E.writeStore(E.STORE_KEYS.results, results);
-    E.writeStore(E.STORE_KEYS.fees, fees);
-    E.writeStore(E.STORE_KEYS.payments, payments);
     E.writeStore(E.STORE_KEYS.attendance, attendance);
     E.writeStore(E.STORE_KEYS.enrollments, (E.readStore(E.STORE_KEYS.enrollments, []) || []).filter(x => x.studentId !== studentId));
     E.writeStore(E.STORE_KEYS.transfers, (E.readStore(E.STORE_KEYS.transfers, []) || []).filter(x => x.studentId !== studentId));
@@ -461,7 +786,6 @@
     window.open('report-card-print.html?student=' + encodeURIComponent(sid), '_blank');
   }
 
-  /* Jump to this student's class timetable */
   function openStudentTimetable(studentId){
     const s = (E.readStore(E.STORE_KEYS.students, []) || []).find(x => x.id === studentId);
     if(!s) return;
@@ -500,10 +824,12 @@
   });
 
   document.getElementById('tbody').addEventListener('click', e => {
+    const view       = e.target.closest('[data-view]');
     const edit       = e.target.closest('[data-edit]');
     const del        = e.target.closest('[data-delete]');
     const rep        = e.target.closest('[data-report]');
     const timetable  = e.target.closest('[data-timetable]');
+    if(view) openViewModal(view.dataset.view);
     if(edit){
       const s = (E.readStore(E.STORE_KEYS.students, []) || []).find(x => x.id === edit.dataset.edit);
       if(s) openStudentModal(s);

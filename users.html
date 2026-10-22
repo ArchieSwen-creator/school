@@ -97,7 +97,8 @@
 
   .person{display:flex;align-items:center;gap:10px}
   .mini-avatar{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;
-    background:#edf2ff;color:#3859b7;font-size:10px;font-weight:700}
+    background:#edf2ff;color:#3859b7;font-size:10px;font-weight:700;overflow:hidden}
+  .mini-avatar img{width:100%;height:100%;object-fit:cover}
   .person strong{display:block;font-size:12px}
   .person small{display:block;color:var(--muted);font-size:10px;margin-top:4px}
 
@@ -233,6 +234,80 @@
   .password-wrap button:hover{background:#e1e9f8}
   .password-hint{font-size:10px;color:var(--muted);margin-top:4px;display:block;line-height:1.4}
 
+  .public-verify-field{
+    background:#f0fdf7;border:1px solid #b8e9d3;border-radius:10px;
+    padding:14px 16px;
+  }
+  .public-verify-field label.pv-toggle-row{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    margin-bottom:8px;
+  }
+  .public-verify-field .pv-title{
+    font-size:11px;font-weight:800;color:#0e6b4a;
+    text-transform:uppercase;letter-spacing:.7px;
+  }
+  .public-verify-field .pv-help{
+    font-size:11px;color:#0e6b4a;line-height:1.6;
+    background:#fff;border:1px solid #b8e9d3;border-radius:8px;padding:10px 12px;
+  }
+
+  /* ---------- NEW: personal info block + photo uploader ---------- */
+  .personal-block-label{
+    font-size:12px;color:#34415c;letter-spacing:.5px;text-transform:uppercase;
+    padding-top:6px;border-top:1px dashed #e8ebf2;margin-top:6px;
+  }
+  .photo-field{display:flex;gap:14px;align-items:flex-start;margin-top:6px}
+  .photo-preview{
+    width:88px;height:88px;flex:0 0 88px;border-radius:14px;
+    border:2px dashed #c9d1e0;background:#f8faff;
+    display:grid;place-items:center;overflow:hidden;
+    color:#7a8498;font-size:11px;text-align:center;position:relative;
+    font-weight:800;
+  }
+  .photo-preview img{width:100%;height:100%;object-fit:cover}
+  .photo-actions{display:flex;flex-direction:column;gap:6px;flex:1}
+  .photo-actions .help{font-size:10.5px;color:#73849a;line-height:1.5}
+
+  /* ---------- NEW: view modal styles ---------- */
+  .view-modal-head{
+    display:flex;align-items:center;gap:14px;
+    padding-bottom:14px;border-bottom:1px solid #e8ebf2;margin-bottom:6px;
+  }
+  .view-modal-avatar{
+    width:60px;height:60px;border-radius:14px;background:#edf2ff;
+    color:#3859b7;display:grid;place-items:center;font-weight:800;font-size:16px;
+    overflow:hidden;flex:0 0 60px;
+  }
+  .view-modal-avatar img{width:100%;height:100%;object-fit:cover}
+  .view-modal-name{margin:0;font-size:16px;color:#14213d}
+  .view-modal-sub{font-size:12px;color:#73849a;margin-top:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .view-section{margin-top:14px}
+  .view-section-head{
+    font-size:10px;font-weight:800;color:#73849a;
+    text-transform:uppercase;letter-spacing:1px;
+    padding-bottom:6px;border-bottom:1px solid #e8ebf2;margin-bottom:8px;
+  }
+  .view-row{
+    display:flex;justify-content:space-between;gap:14px;
+    padding:6px 0;font-size:12px;border-bottom:1px dotted #f0f2f7;
+  }
+  .view-row:last-child{border-bottom:0}
+  .view-row .label{
+    color:#73849a;font-weight:700;font-size:10px;
+    text-transform:uppercase;letter-spacing:.5px;flex:0 0 42%;
+  }
+  .view-row .value{
+    color:#14213d;text-align:right;word-break:break-word;font-weight:700;
+  }
+  .view-row .value.muted{color:#aab6c8;font-weight:500}
+  .view-children{padding:6px 0}
+  .view-child-row{
+    padding:6px 0;border-bottom:1px dashed #eef2f7;font-size:12px;
+  }
+  .view-child-row:last-child{border-bottom:0}
+  .view-child-row strong{color:#14213d}
+  .view-child-row span{color:#73849a}
+
   @media (max-width:850px){
     .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
     .sub-features{grid-template-columns:1fr}
@@ -322,7 +397,7 @@
 
 </div>
 
-<script src="educore-shared.js"></script>
+<script src="educore-shared.js?v=13"></script>
 <script>
 (function(){
   'use strict';
@@ -466,10 +541,14 @@
       if(missing.length) flagBits.push(`<span class="pill red" title="${E.esc(missing.join(' · '))}" style="margin-left:6px">⚠</span>`);
       if(overrides.length) flagBits.push(`<span class="pill orange" title="${E.esc(overrides.join(' · '))}" style="margin-left:6px">✎ ${overrides.length}</span>`);
 
+      const avatarHTML = u.photo
+        ? `<img src="${E.esc(u.photo)}" alt="">`
+        : E.initials(u.name || u.username);
+
       return `<tr>
         <td>
           <div class="person">
-            <div class="mini-avatar">${E.initials(u.name || u.username)}</div>
+            <div class="mini-avatar">${avatarHTML}</div>
             <div><strong>${E.esc(u.name || u.username)}</strong><small>${isSelf ? 'You' : ''}</small></div>
           </div>
         </td>
@@ -481,6 +560,7 @@
         <td>${u.lastLogin ? E.fmtDateTime(u.lastLogin) : '—'}</td>
         <td>
           <div class="row-actions">
+            <button class="btn outline" data-view="${E.esc(u.id)}">View</button>
             <button class="btn secondary" data-edit="${E.esc(u.id)}">Edit</button>
             ${!isSelf ? `<button class="btn ${u.active?'danger':'green'}" data-toggle="${E.esc(u.id)}">
               ${u.active ? 'Disable' : 'Enable'}
@@ -491,6 +571,164 @@
     }).join('') || '<tr><td colspan="8" class="empty">No users match your filters.</td></tr>';
 
     document.getElementById('count').textContent = arr.length;
+  }
+
+  /* ============================================================
+     VIEW MODAL — read-only basic information per role
+     ============================================================ */
+  function openViewModal(id){
+    const users = E.readStore(E.STORE_KEYS.users, []) || [];
+    const u = users.find(x => x.id === id);
+    if(!u) return;
+
+    const students = E.readStore(E.STORE_KEYS.students, []) || [];
+    const teachers = E.readStore(E.STORE_KEYS.teachers, []) || [];
+    const parents  = E.readStore(E.STORE_KEYS.parents, []) || [];
+
+    /* --- Section renderer (only shows non-empty rows) --- */
+    function renderSection(title, rows){
+      const filled = rows.filter(([, v]) => v && String(v).trim() && String(v).trim() !== '—');
+      if(!filled.length) return '';
+      return `<div class="view-section">
+        <div class="view-section-head">${E.esc(title)}</div>
+        ${filled.map(([label, value]) => `
+          <div class="view-row">
+            <span class="label">${E.esc(label)}</span>
+            <strong class="value">${E.esc(String(value))}</strong>
+          </div>`).join('')}
+      </div>`;
+    }
+
+    /* --- Linked record sections --- */
+    let linkedHTML = '';
+
+    if(u.role === 'Teacher' && u.linkedTeacherId){
+      const t = teachers.find(x => x.id === u.linkedTeacherId);
+      if(t){
+        const sponsor = E.sponsorClassOf(t.id);
+        const assignments = E.assignmentsForTeacher(t.id);
+        const asnText = assignments.length
+          ? assignments.map(a => `${E.subjectName(a.subject)} · ${a.className}`).join(', ')
+          : '—';
+        const avail = E.getTeacherAvailability(t.id);
+        const availText = (avail.availableDays && avail.availableDays.length)
+          ? avail.availableDays.join(', ')
+          : '—';
+
+        linkedHTML = renderSection('Linked teacher record', [
+          ['Teacher ID', t.id],
+          ['Teacher name', t.name],
+          ['Department', t.department || '—'],
+          ['Teacher phone', t.phone || '—'],
+          ['Employment status', t.status || '—'],
+          ['Class sponsor of', sponsor || '—'],
+          ['Teaching assignments', asnText],
+          ['Available days', availText]
+        ]);
+      }
+    }
+
+    if(u.role === 'Student' && u.linkedStudentId){
+      const s = students.find(x => x.id === u.linkedStudentId);
+      if(s){
+        const enr = (E.readStore(E.STORE_KEYS.enrollments, []) || [])
+          .filter(e => e.studentId === s.id);
+        const activeEnr = enr.find(e => e.status === 'active');
+        const enrText = enr.length
+          ? `${enr.length} enrollment${enr.length === 1 ? '' : 's'}${activeEnr ? ' · current: ' + activeEnr.className : ''}`
+          : '—';
+
+        linkedHTML = renderSection('Linked student record', [
+          ['Student ID', s.id],
+          ['Student name', s.name],
+          ['Class', s.class],
+          ['Class category', E.classCategoryFor(s.class) || '—'],
+          ['Gender', s.gender || '—'],
+          ['Guardian', s.guardian || '—'],
+          ['Guardian phone', s.phone || '—'],
+          ['Status', s.status || 'Active'],
+          ['Enrollment history', enrText]
+        ]);
+      }
+    }
+
+    if(u.role === 'Parent'){
+      const ids = Array.isArray(u.linkedStudentIds) ? u.linkedStudentIds
+                : (u.linkedStudentId ? [u.linkedStudentId] : []);
+      const kids = ids.map(sid => students.find(s => s.id === sid)).filter(Boolean);
+
+      if(kids.length){
+        linkedHTML += `<div class="view-section">
+          <div class="view-section-head">Linked children (${kids.length})</div>
+          <div class="view-children">
+            ${kids.map(k => `
+              <div class="view-child-row">
+                <strong>${E.esc(k.name)}</strong>
+                <span> — ${E.esc(k.id)} · ${E.esc(k.class)} (${E.esc(k.status || 'Active')})</span>
+              </div>`).join('')}
+          </div>
+        </div>`;
+      }
+
+      const registry = parents.find(p => p.name === u.name);
+      if(registry){
+        linkedHTML += renderSection('Parent registry', [
+          ['Relationship', registry.relationship || '—'],
+          ['Occupation', registry.occupation || '—'],
+          ['Address', registry.address || '—'],
+          ['Registry phone', registry.phone || '—'],
+          ['Registry email', registry.email || '—']
+        ]);
+      }
+    }
+
+    /* --- Photo header --- */
+    const photoHTML = u.photo
+      ? `<img src="${E.esc(u.photo)}" alt="">`
+      : E.initials(u.name || u.username);
+
+    /* --- Build modal --- */
+    const html = `
+      <div class="full view-modal-head">
+        <div class="view-modal-avatar">${photoHTML}</div>
+        <div>
+          <h3 class="view-modal-name">${E.esc(u.name || u.username)}</h3>
+          <div class="view-modal-sub">
+            ${roleBadge(u.role)}
+            <span>${u.active ? 'Active' : 'Disabled'}</span>
+          </div>
+        </div>
+      </div>
+
+      ${renderSection('Personal & identity', [
+        ['Full name', u.name],
+        ['Username', u.username],
+        ['Email', u.email],
+        ['Phone', u.phone],
+        ['Nationality', u.nationality],
+        ['County of origin', u.countyOfOrigin],
+        ['Ethnic group', u.ethnicGroup],
+        ['Religion', u.religion],
+        ['Pass school', u.passSchool]
+      ])}
+
+      ${linkedHTML}
+
+      ${renderSection('Account', [
+        ['Role', u.role],
+        ['Account status', u.active ? 'Active' : 'Disabled'],
+        ['Must change password', u.mustChangePassword ? 'Yes' : 'No'],
+        ['Public verify', u.showInPublicVerify ? '✓ Shown' : 'Hidden'],
+        ['Created at', u.createdAt ? E.fmtDateTime(u.createdAt) : '—'],
+        ['Created by', u.createdBy],
+        ['Last login', u.lastLogin ? E.fmtDateTime(u.lastLogin) : 'Never']
+      ])}
+    `;
+
+    E.openModal('User profile', html, 'Edit this user', () => {
+      E.closeModal();
+      openUserModal(u.id);
+    }, true);
   }
 
   function strongPassword(){
@@ -671,7 +909,10 @@
       ? {
           name:'', username:'', role:'', active:true,
           linkedStudentId:'', linkedStudentIds:[], linkedTeacherId:'',
-          permissions: {}
+          permissions: {},
+          showInPublicVerify: true,
+          photo:'', nationality:'', countyOfOrigin:'', ethnicGroup:'',
+          religion:'', passSchool:''
         }
       : JSON.parse(JSON.stringify(users.find(x => x.id === existingId) || {}));
 
@@ -680,6 +921,13 @@
     if(!Array.isArray(u.linkedStudentIds)){
       u.linkedStudentIds = u.linkedStudentId ? [u.linkedStudentId] : [];
     }
+    if(typeof u.showInPublicVerify === 'undefined'){
+      u.showInPublicVerify = (u.role === 'Student' || u.role === 'Teacher');
+    }
+    /* Ensure new profile fields default to '' */
+    ['photo','nationality','countyOfOrigin','ethnicGroup','religion','passSchool'].forEach(k => {
+      if(typeof u[k] === 'undefined') u[k] = '';
+    });
 
     const currentRole = { value: u.role || '' };
     const autoFillState = { active: isNew };
@@ -720,7 +968,6 @@
            <span class="password-hint">
              Min 8 characters · uppercase · lowercase · digit · symbol.
              The user must change it on first sign-in.
-             It will appear on the login card until changed.
            </span>
          </div>`
       : `<div class="full">
@@ -730,6 +977,77 @@
              Use the <strong>Reset password</strong> button below to issue a new temporary password.
            </span>
          </div>`;
+
+    const publicVerifyBlock = `
+      <div class="full" id="publicVerifyField" style="${(u.role === 'Student' || u.role === 'Teacher') ? '' : 'display:none'}">
+        <div class="public-verify-field">
+          <label class="pv-toggle-row" for="pvToggle">
+            <span class="pv-title">Show in public verify</span>
+            <span class="toggle sm">
+              <input type="checkbox" id="pvToggle" name="showInPublicVerify" value="1" ${u.showInPublicVerify ? 'checked' : ''}>
+              <span class="slider"></span>
+            </span>
+          </label>
+          <div class="pv-help">
+            When <strong>ON</strong>, this person's name, ID, and role can be
+            looked up on the home page's "Verify a Member" widget — using
+            <em>exact-match</em> on their ID, email, phone, or full name.
+            Turn <strong>OFF</strong> to keep them private.
+          </div>
+        </div>
+      </div>`;
+
+    /* ---------- NEW: personal info block ---------- */
+    const photoPreviewHTML = u.photo
+      ? `<img src="${E.esc(u.photo)}" alt="">`
+      : (u.name ? E.initials(u.name) : 'No photo');
+
+    const personalBlock = `
+      <div class="full personal-block-label">Personal information</div>
+
+      <div class="full">
+        <label>Photo</label>
+        <div class="photo-field">
+          <div class="photo-preview" id="userPhotoPreview">${photoPreviewHTML}</div>
+          <div class="photo-actions">
+            <input type="file" id="userPhotoInput" accept="image/*" style="display:none">
+            <input type="hidden" name="photo" id="userPhotoHidden" value="${E.esc(u.photo || '')}">
+            <button type="button" class="btn secondary" id="userPhotoPickBtn">📷 Upload photo</button>
+            <button type="button" class="btn outline" id="userPhotoClearBtn"
+              ${u.photo ? '' : 'style="display:none"'}>✕ Remove photo</button>
+            <span class="help">Square · max 1 MB · PNG / JPG / WEBP / GIF</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label>Nationality</label>
+        <input name="nationality" value="${E.esc(u.nationality || '')}" placeholder="e.g. Liberian">
+      </div>
+
+      <div>
+        <label>County of origin</label>
+        <input name="countyOfOrigin" value="${E.esc(u.countyOfOrigin || '')}" placeholder="e.g. Montserrado">
+      </div>
+
+      <div>
+        <label>Ethnic group</label>
+        <input name="ethnicGroup" value="${E.esc(u.ethnicGroup || '')}" placeholder="e.g. Kpelle">
+      </div>
+
+      <div>
+        <label>Religion</label>
+        <input name="religion" value="${E.esc(u.religion || '')}" placeholder="e.g. Christian">
+      </div>
+
+      ${u.role === 'Student' ? `
+        <div class="full">
+          <label>Pass school (optional)</label>
+          <input name="passSchool" value="${E.esc(u.passSchool || '')}" placeholder="Previous school">
+          <span class="username-hint">Only for students who transferred in.</span>
+        </div>
+      ` : ''}
+    `;
 
     const html = `
       <input type="hidden" name="role" id="roleHiddenInput" value="${E.esc(u.role)}">
@@ -751,6 +1069,8 @@
         <input name="phone" value="${E.esc(u.phone||'')}">
       </div>
 
+      ${personalBlock}
+
       <div class="full">
         <label>Role <span style="color:#bd3b48">*</span></label>
         <div class="role-preset-row" id="rolePresetRow">
@@ -765,7 +1085,7 @@
         </div>
         <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5">
           Picking a role applies its recommended defaults. Every toggle below can still be
-          overridden — even features that are normally off for that role. The saved record wins.
+          overridden — even features that are normally off for that role.
         </div>
       </div>
 
@@ -805,6 +1125,8 @@
         </select>
       </div>
 
+      ${publicVerifyBlock}
+
       <div class="full">
         <label>Active account</label>
         <label class="toggle" style="display:inline-flex">
@@ -843,7 +1165,33 @@
       async d => submitUserModal({ d, u, isNew, users, students, teachers }),
       true);
 
-    /* ---------- USERNAME AUTO-FILL ---------- */
+    /* ---------- Photo uploader wiring ---------- */
+    const photoInput  = document.getElementById('userPhotoInput');
+    const photoHidden = document.getElementById('userPhotoHidden');
+    const photoPick   = document.getElementById('userPhotoPickBtn');
+    const photoClear  = document.getElementById('userPhotoClearBtn');
+    const photoPrev   = document.getElementById('userPhotoPreview');
+
+    photoPick?.addEventListener('click', () => photoInput.click());
+    photoInput?.addEventListener('change', async () => {
+      const file = photoInput.files[0];
+      if(!file) return;
+      const read = await E.readPhotoFile(file);
+      if(!read.ok){ E.toast(read.error); photoInput.value = ''; return; }
+      const small = await E.downscalePhoto(read.dataUrl, 256);
+      photoHidden.value = small;
+      photoPrev.innerHTML = `<img src="${small}" alt="">`;
+      photoClear.style.display = '';
+    });
+    photoClear?.addEventListener('click', () => {
+      photoHidden.value = '';
+      const nameNow = document.getElementById('userNameInput').value.trim();
+      photoPrev.innerHTML = nameNow ? E.initials(nameNow) : 'No photo';
+      photoClear.style.display = 'none';
+      photoInput.value = '';
+    });
+
+    /* ---------- Username auto-fill ---------- */
     const nameInput     = document.getElementById('userNameInput');
     const usernameInput = document.getElementById('userUsernameInput');
     const usernameHint  = document.getElementById('usernameHint');
@@ -855,6 +1203,11 @@
       }
 
       nameInput.addEventListener('input', () => {
+        /* Refresh the initials shown in the photo placeholder if empty */
+        if(!photoHidden.value && photoPrev && !photoPrev.querySelector('img')){
+          const n = nameInput.value.trim();
+          photoPrev.textContent = n ? E.initials(n) : 'No photo';
+        }
         if(!autoFillState.active) return;
         const slug = slugifyUsername(nameInput.value);
         const unique = uniqueUsername(slug, users, u.id || null);
@@ -875,7 +1228,7 @@
       });
     }
 
-    /* ---------- GENERATE PASSWORD ---------- */
+    /* ---------- Generate password ---------- */
     document.getElementById('genPassBtn')?.addEventListener('click', () => {
       const pw = strongPassword();
       const field = document.getElementById('userPasswordInput');
@@ -887,7 +1240,7 @@
       }
     });
 
-    /* ---------- PERMISSION HELPERS ---------- */
+    /* ---------- Permission helpers ---------- */
     function syncSubBlock(menuKey, menuOn){
       const block = document.querySelector(`[data-sub-block="${menuKey}"]`);
       const item = document.querySelector(`.perm-item[data-perm-key="${menuKey}"]`);
@@ -945,9 +1298,24 @@
       const ls = document.getElementById('linkedStudentField');
       const lp = document.getElementById('linkedParentField');
       const lt = document.getElementById('linkedTeacherField');
+      const pv = document.getElementById('publicVerifyField');
       if(ls) ls.style.display = role === 'Student' ? '' : 'none';
       if(lp) lp.style.display = role === 'Parent'  ? '' : 'none';
       if(lt) lt.style.display = role === 'Teacher' ? '' : 'none';
+      if(pv){
+        pv.style.display = (role === 'Student' || role === 'Teacher') ? '' : 'none';
+      }
+      const pvToggle = document.getElementById('pvToggle');
+      if(pvToggle && (role === 'Student' || role === 'Teacher') && !pvToggle.dataset.userSet){
+        pvToggle.checked = true;
+      }
+
+      /* Show/hide pass-school field if the role changes */
+      const passSchoolInput = document.querySelector('[name="passSchool"]');
+      if(passSchoolInput){
+        const wrapper = passSchoolInput.closest('.full');
+        if(wrapper) wrapper.style.display = (role === 'Student') ? '' : 'none';
+      }
 
       document.querySelectorAll('#rolePresetRow .role-preset-btn').forEach(b =>
         b.classList.toggle('active', b.dataset.role === role));
@@ -967,6 +1335,10 @@
         if(!confirm(`Apply the ${r} preset?\n\nThis resets every permission slider to the recommended defaults. Any overrides you've set will be lost.`)) return;
         applyRole(r, { mode: 'preset' });
       });
+    });
+
+    document.getElementById('pvToggle')?.addEventListener('change', e => {
+      e.target.dataset.userSet = '1';
     });
 
     if(u.role){
@@ -1044,8 +1416,7 @@
       const ok = confirm(
         `Generate a new temporary password for ${u.username}?\n\n` +
         `Password: ${np}\n\n` +
-        `It will be shown once so you can copy it. The user must change it on next sign-in.\n` +
-        `The login card will display this password until the user changes it.`
+        `It will be shown once so you can copy it. The user must change it on next sign-in.`
       );
       if(!ok) return;
       showCredentialsModal({ name: u.name, username: u.username, password: np });
@@ -1225,18 +1596,30 @@
     const parentIds = Array.from(document.querySelectorAll('[data-parent-student]:checked'))
       .map(x => x.dataset.parentStudent);
 
+    const pvToggle = document.getElementById('pvToggle');
+    const showInPublicVerify = (role === 'Student' || role === 'Teacher')
+      ? !!(pvToggle && pvToggle.checked)
+      : false;
+
     const proposed = {
       id: u.id,
       name: (d.name || '').trim(),
       username: (d.username || '').trim(),
       email: (d.email || '').trim(),
       phone: (d.phone || '').trim(),
+      photo: (d.photo || '').trim(),
+      nationality: (d.nationality || '').trim(),
+      countyOfOrigin: (d.countyOfOrigin || '').trim(),
+      ethnicGroup: (d.ethnicGroup || '').trim(),
+      religion: (d.religion || '').trim(),
+      passSchool: role === 'Student' ? (d.passSchool || '').trim() : '',
       role,
       active: !!d.active,
       linkedStudentId: role === 'Student' ? d.linkedStudentId : null,
       linkedStudentIds: role === 'Parent' ? parentIds : null,
       linkedTeacherId: role === 'Teacher' ? d.linkedTeacherId : null,
-      permissions: perms
+      permissions: perms,
+      showInPublicVerify
     };
 
     if(isNew){
@@ -1274,7 +1657,6 @@
       const enabledCount = Object.values(perms).filter(Boolean).length;
       E.audit('create', `User ${record.username}`, '',
         `${record.role} · ${enabledCount} of ${TOTAL_PERM_TOGGLES} permissions`);
-
       E.closeModal();
       showCredentialsModal({
         name: record.name,
@@ -1296,11 +1678,18 @@
         name: proposed.name,
         email: proposed.email,
         phone: proposed.phone,
+        photo: proposed.photo,
+        nationality: proposed.nationality,
+        countyOfOrigin: proposed.countyOfOrigin,
+        ethnicGroup: proposed.ethnicGroup,
+        religion: proposed.religion,
+        passSchool: proposed.passSchool,
         role: proposed.role,
         linkedStudentId: proposed.linkedStudentId,
         linkedStudentIds: proposed.linkedStudentIds,
         linkedTeacherId: proposed.linkedTeacherId,
         permissions: proposed.permissions,
+        showInPublicVerify: proposed.showInPublicVerify,
         active: proposed.active,
         updatedAt: new Date().toISOString(),
         updatedBy: user.username
@@ -1369,8 +1758,10 @@
   document.getElementById('addBtn').addEventListener('click', () => openUserModal(null));
 
   document.getElementById('tbody').addEventListener('click', e => {
+    const view = e.target.closest('[data-view]');
     const edit = e.target.closest('[data-edit]');
     const toggle = e.target.closest('[data-toggle]');
+    if(view) openViewModal(view.dataset.view);
     if(edit) openUserModal(edit.dataset.edit);
     if(toggle) toggleActive(toggle.dataset.toggle);
   });

@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enquiries | EduCore</title>
+<style>
+  :root{
+    --navy:#12315a;--blue:#3987ee;--line:#e8ebf2;--text:#23354d;--muted:#73849a;
+    --green:#14805e;--orange:#d88922;--red:#d64545;--gold:#c99a2e;--gold2:#fff4d6;
+    --shadow:0 8px 24px rgba(24,42,78,.06);
+    --shadow-lg:0 20px 60px rgba(24,42,78,.14);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:64px 16px 40px;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+  .page{width:100%;max-width:1240px;margin:0 auto}
+
+  .band{background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
+    border-radius:16px;padding:22px 28px;margin-bottom:20px;
+    box-shadow:0 18px 50px #16345417;display:flex;justify-content:space-between;
+    align-items:center;gap:16px;flex-wrap:wrap;border-top:5px solid #58a4ff}
+  .band-left{display:flex;align-items:center;gap:14px}
+  .band-logo{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;place-items:center;
+    overflow:hidden;color:var(--navy);font-weight:900;font-size:18px;border:3px solid #d8e8ff;flex:0 0 48px}
+  .band-logo img{width:100%;height:100%;object-fit:contain}
+  .band h1{margin:0;font-size:19px;letter-spacing:.3px;text-transform:uppercase}
+  .band p{margin:4px 0 0;font-size:11px;color:#cfdcf5}
+  .band-user{display:flex;align-items:center;gap:10px;font-size:11px;color:#cfdcf5;
+    background:#ffffff14;border:1px solid #ffffff36;padding:7px 12px;border-radius:20px}
+  .band-user strong{color:#fff}
+
+  .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:16px 18px;
+    box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--blue)}
+  .stat.green::before{background:var(--green)}
+  .stat.orange::before{background:var(--orange)}
+  .stat.red::before{background:var(--red)}
+  .stat small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.8px;
+    color:var(--muted);font-weight:800;margin-bottom:8px}
+  .stat strong{font-size:22px;color:var(--navy);font-weight:800}
+
+  .toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;
+    flex-wrap:wrap;margin-bottom:14px}
+  .toolbar-left{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .field,.pick{border:1px solid var(--line);border-radius:9px;padding:10px 12px;
+    background:#fff;color:var(--text);font-size:12px;outline:none}
+  .field{min-width:230px}
+  .field:focus,.pick:focus{border-color:var(--blue)}
+
+  .btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{filter:brightness(.96)}
+  .btn.secondary{background:#eef2fb;color:#34415c}
+  .btn.outline{background:#fff;color:#34415c;border:1px solid var(--line)}
+  .btn.danger{background:#fff0f1;color:var(--red)}
+  .btn.green{background:#e6f7f0;color:#16835f}
+  .btn.small{padding:7px 11px;font-size:11px}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  /* Two-pane layout */
+  .layout{display:grid;grid-template-columns:420px 1fr;gap:16px;align-items:start}
+
+  /* Left: list */
+  .list-pane{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);overflow:hidden;max-height:calc(100vh - 220px);
+    display:flex;flex-direction:column;position:sticky;top:12px}
+  .list-head{padding:14px 18px;border-bottom:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
+    background:#fafbfe;font-size:12px;font-weight:800;color:var(--navy)}
+  .list-head .count{padding:3px 8px;border-radius:20px;background:#edf2ff;
+    color:#3b5cc1;font-size:10px;font-weight:800}
+  .list-scroll{overflow-y:auto;flex:1;min-height:0}
+
+  .enq-item{padding:14px 18px;border-bottom:1px solid #f0f2f7;cursor:pointer;
+    position:relative;transition:background .15s}
+  .enq-item:hover{background:#fbfdff}
+  .enq-item.active{background:#eef5ff;border-left:4px solid var(--blue);
+    padding-left:14px}
+  .enq-item.unread{background:#f5f9ff}
+  .enq-item.unread .enq-name::before{content:"●";color:#d64545;
+    font-size:8px;margin-right:6px;vertical-align:middle}
+  .enq-item .row{display:flex;justify-content:space-between;align-items:baseline;
+    gap:8px;margin-bottom:4px}
+  .enq-name{font-size:12.5px;font-weight:800;color:var(--navy);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+  .enq-when{font-size:10px;color:var(--muted);white-space:nowrap;flex:0 0 auto}
+  .enq-preview{font-size:11.5px;color:#54637d;line-height:1.45;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+    overflow:hidden}
+  .enq-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+  .pill{display:inline-block;padding:3px 8px;border-radius:12px;font-size:9.5px;
+    font-weight:800;letter-spacing:.3px}
+  .pill.green{background:#e6f7f0;color:#16835f}
+  .pill.orange{background:#fff2dd;color:#a86414}
+  .pill.grey{background:#eef1f6;color:#59647c}
+
+  .list-empty{padding:40px 20px;text-align:center;color:var(--muted);font-size:12px}
+
+  /* Right: detail */
+  .detail-pane{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);overflow:hidden;min-height:400px}
+  .detail-head{padding:18px 22px;background:linear-gradient(120deg,#102949,#245d9c);
+    color:#fff;border-top:5px solid #d88922}
+  .detail-head h2{margin:0 0 4px;font-size:16px;letter-spacing:.2px}
+  .detail-head p{margin:0;font-size:11.5px;color:#cfdcf5}
+  .detail-head .meta-row{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;
+    font-size:11px;color:#cfdcf5}
+  .detail-head .meta-row a{color:#fff;text-decoration:underline}
+  .detail-body{padding:20px 22px}
+  .detail-block{margin-bottom:18px}
+  .detail-block:last-child{margin-bottom:0}
+  .detail-block label{display:block;font-size:10px;font-weight:800;
+    text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:6px}
+  .detail-block .content{font-size:13px;color:#3b4a63;line-height:1.7;
+    white-space:pre-wrap;background:#f8faff;border:1px solid var(--line);
+    border-radius:9px;padding:12px 14px}
+  .detail-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:16px;
+    padding-top:16px;border-top:1px solid var(--line)}
+
+  /* Replies thread */
+  .replies{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+  .reply{background:#eef5ff;border:1px solid #cfe3ff;border-radius:10px;
+    padding:10px 14px;font-size:12px;line-height:1.6;color:#1d4d82}
+  .reply .reply-head{font-size:10px;color:#3b5cc1;font-weight:800;
+    text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+  .reply .reply-body{white-space:pre-wrap}
+
+  .reply-form{margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+  .reply-form textarea{width:100%;border:1px solid #dfe4ee;border-radius:9px;
+    padding:11px 13px;font-size:12.5px;outline:none;min-height:90px;
+    resize:vertical;line-height:1.6;font-family:inherit;background:#f8faff}
+  .reply-form textarea:focus{border-color:var(--blue);background:#fff}
+  .reply-form .actions{margin-top:8px;display:flex;justify-content:flex-end;gap:6px}
+
+  .detail-empty{padding:80px 30px;text-align:center;color:var(--muted);font-size:13px}
+  .detail-empty .icon{font-size:44px;opacity:.4;margin-bottom:12px;display:block}
+
+  @media (max-width:900px){
+    .layout{grid-template-columns:1fr}
+    .list-pane{position:relative;top:0;max-height:360px}
+  }
+  @media (max-width:650px){
+    body{padding:64px 8px 24px}
+    .band{padding:18px 20px}
+    .band h1{font-size:15px}
+    .field,.pick{min-width:0;width:100%}
+    .toolbar{flex-direction:column;align-items:stretch}
+    .toolbar-left{width:100%}
+    .stats{grid-template-columns:1fr 1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="band">
+    <div class="band-left">
+      <div class="band-logo" id="bandLogo">EC</div>
+      <div>
+        <h1 id="bandSchool">Enquiries</h1>
+        <p id="bandSub">Visitor messages from the public contact form</p>
+      </div>
+    </div>
+    <div class="band-user">Signed in as <strong id="bandUser">—</strong></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><small>Total messages</small><strong id="kTotal">0</strong></div>
+    <div class="stat red"><small>Unread</small><strong id="kUnread">0</strong></div>
+    <div class="stat green"><small>Replied</small><strong id="kReplied">0</strong></div>
+    <div class="stat orange"><small>This week</small><strong id="kWeek">0</strong></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <input class="field" id="search" placeholder="Search name, email, message...">
+      <select class="pick" id="statusFilter">
+        <option value="">All messages</option>
+        <option value="unread">Unread only</option>
+        <option value="read">Read only</option>
+        <option value="replied">Replied</option>
+      </select>
+    </div>
+    <div class="toolbar-left">
+      <button class="btn secondary" id="exportBtn">↓ Export CSV</button>
+      <button class="btn danger" id="markAllReadBtn">✓ Mark all read</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="list-pane">
+      <div class="list-head">
+        <span>Inbox <span class="count" id="listCount">0</span></span>
+      </div>
+      <div class="list-scroll" id="listScroll"></div>
+    </div>
+    <div class="detail-pane" id="detailPane">
+      <div class="detail-empty">
+        <span class="icon">✉</span>
+        Select a message on the left to read it.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="educore-shared.js?v=12"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  /* ---------- GUARD ---------- */
+  const user = E.requirePerm('enquiries', 'Enquiries');
+  if(!user) return;
+
+  const canRead   = E.can('enquiries.read');
+  const canDelete = E.can('enquiries.delete');
+  const canExport = E.can('enquiries.export');
+  const canReply  = E.can('enquiries.reply');
+
+  /* ---------- STATE ---------- */
+  const state = {
+    query: '',
+    filter: '',
+    selectedId: ''
+  };
+
+  /* ---------- HEADER ---------- */
+  function paintHeader(){
+    const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const name = settings.name || 'EduCore High School';
+    if(settings.logo){
+      document.getElementById('bandLogo').innerHTML = `<img src="${settings.logo}" alt="">`;
+    } else {
+      document.getElementById('bandLogo').textContent =
+        name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
+    }
+    document.getElementById('bandSchool').textContent = name;
+    document.getElementById('bandUser').textContent = user.name || user.username;
+  }
+
+  /* ---------- HELPERS ---------- */
+  function shortWhen(iso){
+    if(!iso) return '';
+    const diff = Date.now() - new Date(iso).getTime();
+    const mins = Math.floor(diff / 60000);
+    if(mins < 1)   return 'just now';
+    if(mins < 60)  return mins + ' min ago';
+    const hrs = Math.floor(mins / 60);
+    if(hrs < 24)   return hrs + ' hr ago';
+    const days = Math.floor(hrs / 24);
+    if(days < 7)   return days + ' day' + (days === 1 ? '' : 's') + ' ago';
+    return E.fmtDate(iso);
+  }
+
+  function filteredEnquiries(){
+    const list = E.readEnquiries().slice();
+    const q = state.query.toLowerCase();
+    return list.filter(e => {
+      if(q){
+        const hay = `${e.name||''} ${e.email||''} ${e.phone||''} ${e.message||''} ${e.childClass||''}`.toLowerCase();
+        if(!hay.includes(q)) return false;
+      }
+      if(state.filter === 'unread' && e.read) return false;
+      if(state.filter === 'read' && !e.read) return false;
+      if(state.filter === 'replied' && !e.repliedAt) return false;
+      return true;
+    }).sort((a,b) => {
+      /* Unread first, then newest */
+      if(!!a.read !== !!b.read) return a.read ? 1 : -1;
+      return new Date(b.submittedAt || 0) - new Date(a.submittedAt || 0);
+    });
+  }
+
+  function paintStats(){
+    const list = E.readEnquiries();
+    const unread = list.filter(e => !e.read).length;
+    const replied = list.filter(e => e.repliedAt).length;
+    const weekAgo = Date.now() - 7 * 86400000;
+    const week = list.filter(e => new Date(e.submittedAt || 0).getTime() >= weekAgo).length;
+    document.getElementById('kTotal').textContent = list.length;
+    document.getElementById('kUnread').textContent = unread;
+    document.getElementById('kReplied').textContent = replied;
+    document.getElementById('kWeek').textContent = week;
+  }
+
+  /* ---------- LIST ---------- */
+  function paintList(){
+    paintStats();
+    const arr = filteredEnquiries();
+    document.getElementById('listCount').textContent = arr.length;
+
+    const scroll = document.getElementById('listScroll');
+    if(!arr.length){
+      scroll.innerHTML = `<div class="list-empty">
+        ${state.query || state.filter
+          ? 'No messages match your filters.'
+          : 'No enquiries yet. The contact form on the home page will populate this inbox.'}
+      </div>`;
+      return;
+    }
+
+    scroll.innerHTML = arr.map(e => {
+      const replied = !!e.repliedAt;
+      const cls = ['enq-item',
+        e.id === state.selectedId ? 'active' : '',
+        e.read ? '' : 'unread'].filter(Boolean).join(' ');
+      const preview = (e.message || '').slice(0, 100);
+      return `<div class="${cls}" data-id="${E.esc(e.id)}">
+        <div class="row">
+          <span class="enq-name">${E.esc(e.name || '—')}</span>
+          <span class="enq-when">${E.esc(shortWhen(e.submittedAt))}</span>
+        </div>
+        <div class="enq-preview">${E.esc(preview)}${(e.message||'').length > 100 ? '…' : ''}</div>
+        <div class="enq-tags">
+          ${replied
+            ? '<span class="pill green">✓ Replied</span>'
+            : e.read
+            ? '<span class="pill grey">Read</span>'
+            : '<span class="pill orange">Unread</span>'}
+          ${e.childClass ? `<span class="pill grey">${E.esc(e.childClass)}</span>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+
+    scroll.querySelectorAll('.enq-item').forEach(row => {
+      row.addEventListener('click', () => selectEnquiry(row.dataset.id));
+    });
+  }
+
+  /* ---------- DETAIL ---------- */
+  function selectEnquiry(id){
+    state.selectedId = id;
+    const list = E.readEnquiries();
+    const e = list.find(x => x.id === id);
+    if(!e){
+      paintList();
+      document.getElementById('detailPane').innerHTML = `
+        <div class="detail-empty">
+          <span class="icon">✉</span>
+          Message not found. It may have been deleted.
+        </div>`;
+      return;
+    }
+
+    /* Auto-mark as read the first time the admin opens it */
+    if(!e.read && canRead){
+      E.markEnquiryRead(id);
+      const fresh = E.readEnquiries().find(x => x.id === id) || e;
+      Object.assign(e, fresh);
+    }
+
+    paintList();
+    paintDetail(e);
+  }
+
+  function paintDetail(e){
+    const detail = document.getElementById('detailPane');
+    const replies = Array.isArray(e.replies) ? e.replies : [];
+
+    detail.innerHTML = `
+      <div class="detail-head">
+        <h2>${E.esc(e.name || '—')}</h2>
+        <p>Submitted ${E.fmtDateTime(e.submittedAt)}</p>
+        <div class="meta-row">
+          ${e.email ? `<span>✉ <a href="mailto:${E.esc(e.email)}">${E.esc(e.email)}</a></span>` : ''}
+          ${e.phone ? `<span>📞 ${E.esc(e.phone)}</span>` : ''}
+          ${e.childClass ? `<span>🎓 ${E.esc(e.childClass)}</span>` : ''}
+        </div>
+      </div>
+
+      <div class="detail-body">
+
+        <div class="detail-block">
+          <label>Message</label>
+          <div class="content">${E.esc(e.message || '')}</div>
+        </div>
+
+        ${replies.length ? `
+          <div class="detail-block">
+            <label>Replies sent (${replies.length})</label>
+            <div class="replies">
+              ${replies.map(r => `
+                <div class="reply">
+                  <div class="reply-head">${E.esc(r.by || 'admin')} · ${E.fmtDateTime(r.at)}</div>
+                  <div class="reply-body">${E.esc(r.text)}</div>
+                </div>`).join('')}
+            </div>
+          </div>` : ''}
+
+        ${canReply ? `
+          <div class="reply-form">
+            <label style="display:block;font-size:10px;font-weight:800;
+              text-transform:uppercase;letter-spacing:.7px;color:var(--muted);
+              margin-bottom:6px">Reply to ${E.esc(e.name || 'visitor')}</label>
+            <textarea id="replyInput" placeholder="Type your reply... This is stored in the audit trail for later reference."></textarea>
+            <div class="actions">
+              <button class="btn secondary" id="copyEmailBtn">📋 Copy email</button>
+              <button class="btn" id="sendReplyBtn">💾 Save reply</button>
+            </div>
+            <div style="font-size:10.5px;color:var(--muted);margin-top:6px;line-height:1.6">
+              Replies are stored locally in this demo. In production, wire this to your
+              email provider or an SMTP relay. The visitor does not receive an email
+              unless you send it manually.
+            </div>
+          </div>` : ''}
+
+        <div class="detail-actions">
+          ${canRead ? `<button class="btn outline small" id="toggleReadBtn">
+            ${e.read ? 'Mark unread' : 'Mark read'}
+          </button>` : ''}
+          ${canDelete ? `<button class="btn danger small" id="deleteEnqBtn">🗑 Delete</button>` : ''}
+        </div>
+
+      </div>
+    `;
+
+    /* ---------- Bind detail events ---------- */
+    document.getElementById('toggleReadBtn')?.addEventListener('click', () => {
+      if(e.read) E.markEnquiryUnread(e.id);
+      else E.markEnquiryRead(e.id);
+      selectEnquiry(e.id);
+    });
+
+    document.getElementById('deleteEnqBtn')?.addEventListener('click', async () => {
+      const ok = await E.confirmModal({
+        title: 'Delete this message?',
+        message: `<strong>${E.esc(e.name)}</strong><br><br>
+          This permanently removes the message and any replies. It cannot be undone.`,
+        submitText: 'Delete',
+        danger: true
+      });
+      if(!ok) return;
+      const res = E.deleteEnquiry(e.id);
+      if(!res.ok){ E.toast(res.error || 'Delete failed.'); return; }
+      state.selectedId = '';
+      paintList();
+      document.getElementById('detailPane').innerHTML = `
+        <div class="detail-empty">
+          <span class="icon">✉</span>
+          Message deleted.
+        </div>`;
+      E.toast('Message deleted.');
+    });
+
+    document.getElementById('copyEmailBtn')?.addEventListener('click', () => {
+      if(!e.email){ E.toast('No email on file.'); return; }
+      navigator.clipboard.writeText(e.email)
+        .then(() => E.toast('Email copied.'))
+        .catch(() => E.toast('Copy failed — select manually.'));
+    });
+
+    document.getElementById('sendReplyBtn')?.addEventListener('click', () => {
+      const text = document.getElementById('replyInput').value.trim();
+      if(!text){ E.toast('Type a reply first.'); return; }
+      const res = E.replyToEnquiry(e.id, text);
+      if(!res.ok){ E.toast(res.error || 'Reply failed.'); return; }
+      E.toast('Reply saved. It is visible in the thread above.');
+      selectEnquiry(e.id);
+    });
+  }
+
+  /* ---------- TOP ACTIONS ---------- */
+  document.getElementById('search').addEventListener('input', ev => {
+    state.query = ev.target.value.trim();
+    paintList();
+  });
+  document.getElementById('statusFilter').addEventListener('change', ev => {
+    state.filter = ev.target.value;
+    paintList();
+  });
+
+  document.getElementById('markAllReadBtn')?.addEventListener('click', async () => {
+    if(!canRead){ E.toast("You don't have permission."); return; }
+    const unread = E.readEnquiries().filter(e => !e.read).length;
+    if(!unread){ E.toast('No unread messages.'); return; }
+    const ok = await E.confirmModal({
+      title: 'Mark all as read?',
+      message: `This will mark <strong>${unread}</strong> message${unread === 1 ? '' : 's'} as read. Continue?`,
+      submitText: 'Mark read'
+    });
+    if(!ok) return;
+    const list = E.readEnquiries();
+    list.forEach(e => {
+      if(!e.read){
+        e.read = true;
+        e.readAt = new Date().toISOString();
+        e.readBy = user.username;
+      }
+    });
+    E.writeStore(E.STORE_KEYS.enquiries, list);
+    E.audit('update', 'Enquiries', '', `${unread} marked read`);
+    paintList();
+    E.toast(`${unread} message${unread === 1 ? '' : 's'} marked read.`);
+  });
+
+  document.getElementById('exportBtn')?.addEventListener('click', () => {
+    if(!canExport){ E.toast("You don't have permission to export."); return; }
+    const list = filteredEnquiries();
+    if(!list.length){ E.toast('Nothing to export.'); return; }
+    const rows = [['Submitted','Name','Email','Phone','Child Class','Message','Read','Replied','Replies']];
+    list.forEach(e => {
+      rows.push([
+        e.submittedAt || '',
+        e.name || '',
+        e.email || '',
+        e.phone || '',
+        e.childClass || '',
+        e.message || '',
+        e.read ? 'Yes' : 'No',
+        e.repliedAt ? 'Yes' : 'No',
+        Array.isArray(e.replies) ? e.replies.length : 0
+      ]);
+    });
+    const csv = rows.map(r => r.map(v => '"' + String(v ?? '').replace(/"/g, '""') + '"').join(',')).join('\r\n');
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = 'enquiries_' + E.todayISO() + '.csv'; a.click();
+    URL.revokeObjectURL(url);
+    E.toast(`Exported ${list.length} message${list.length === 1 ? '' : 's'}.`);
+  });
+
+  /* ---------- INIT ---------- */
+  paintHeader();
+  paintList();
+
+  /* Hide actions the user can't use */
+  if(!canExport) document.getElementById('exportBtn').style.display = 'none';
+  if(!canRead)   document.getElementById('markAllReadBtn').style.display = 'none';
+
+  /* Auto-select the first message so the detail pane isn't empty on load */
+  const first = filteredEnquiries()[0];
+  if(first) selectEnquiry(first.id);
+})();
+</script>
+</body>
+</html>

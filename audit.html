@@ -103,6 +103,36 @@
   .empty{padding:60px 20px;text-align:center;color:var(--muted);font-size:13px}
   .empty .icon{font-size:44px;opacity:.4;margin-bottom:12px;display:block}
 
+  /* Password confirmation modal */
+  .pw-modal-overlay{position:fixed;inset:0;background:rgba(14,24,44,.65);
+    z-index:9999;display:none;align-items:center;justify-content:center;padding:20px}
+  .pw-modal-overlay.show{display:flex}
+  .pw-modal{width:100%;max-width:440px;background:#fff;border-radius:16px;
+    box-shadow:0 30px 80px rgba(0,0,0,.4);overflow:hidden}
+  .pw-modal-head{padding:24px 26px 18px;background:linear-gradient(120deg,#7a1e28,#d64545);
+    color:#fff;border-top:5px solid #ff8a94}
+  .pw-modal-head h2{margin:0;font-size:17px;letter-spacing:.3px}
+  .pw-modal-head p{margin:6px 0 0;font-size:12px;color:#ffd9dd;line-height:1.6}
+  .pw-modal-body{padding:22px 26px}
+  .pw-modal-body label{display:block;font-size:11px;color:#657089;font-weight:800;
+    text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+  .pw-modal-body .pw-wrap{position:relative;margin-bottom:14px}
+  .pw-modal-body input{width:100%;border:1px solid #dfe4ee;border-radius:9px;
+    padding:12px 44px 12px 13px;font-size:14px;outline:none;background:#f8faff;transition:.15s}
+  .pw-modal-body input:focus{border-color:#d64545;background:#fff}
+  .pw-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);
+    border:0;background:transparent;color:#7a8498;padding:6px 8px;border-radius:6px;
+    font-size:14px;cursor:pointer;line-height:1}
+  .pw-toggle:hover{background:#eef2fb;color:#34415c}
+  .pw-modal-body .error{background:#fff0f1;color:#bd3b48;padding:10px 12px;
+    border-radius:8px;font-size:12px;margin-bottom:12px;display:none}
+  .pw-modal-body .error.show{display:block}
+  .pw-modal-body .warning{background:#fff8e6;border:1px solid #f3d999;color:#8a6a1a;
+    padding:12px 14px;border-radius:9px;font-size:11.5px;line-height:1.6;margin-bottom:16px}
+  .pw-modal-body .warning strong{color:#5a3a00}
+  .pw-modal-actions{display:flex;justify-content:flex-end;gap:8px}
+  .pw-modal-actions .btn{min-width:100px;justify-content:center}
+
   @media (max-width:850px){
     .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
   }
@@ -123,15 +153,13 @@
 
   <div class="band">
     <div class="band-left">
-      <div class="band-logo" id="bandLogo">DS</div>
+      <div class="band-logo" id="bandLogo">EC</div>
       <div>
         <h1 id="bandSchool">Audit Log</h1>
         <p id="bandSub">Every action taken in the system</p>
       </div>
     </div>
-    <div class="band-user">
-      Signed in as <strong id="bandUser">—</strong>
-    </div>
+    <div class="band-user">Signed in as <strong id="bandUser">—</strong></div>
   </div>
 
   <div class="stats">
@@ -156,9 +184,7 @@
         <option value="copy">Copy</option>
         <option value="signature">Signature</option>
       </select>
-      <select class="pick" id="actorFilter">
-        <option value="">All users</option>
-      </select>
+      <select class="pick" id="actorFilter"><option value="">All users</option></select>
       <select class="pick" id="rangeFilter">
         <option value="">All time</option>
         <option value="today">Today</option>
@@ -173,9 +199,7 @@
   </div>
 
   <div class="card">
-    <div class="card-head">
-      <h3>Activity <span class="count" id="count">0</span></h3>
-    </div>
+    <div class="card-head"><h3>Activity <span class="count" id="count">0</span></h3></div>
     <div class="table-wrap">
       <table>
         <thead>
@@ -194,70 +218,117 @@
 
 </div>
 
-<script src="educore-shared.js"></script>
+<!-- Password confirmation modal -->
+<div class="pw-modal-overlay" id="pwModalOverlay">
+  <div class="pw-modal">
+    <div class="pw-modal-head">
+      <h2>🔒 Confirm your password</h2>
+      <p>Clearing the audit log permanently deletes every recorded action. This cannot be undone.</p>
+    </div>
+    <div class="pw-modal-body">
+      <div class="warning">
+        <strong id="pwConfirmCount">0 entries</strong> will be permanently removed.
+        Sign in as <strong id="pwConfirmUser">—</strong> to authorise this.
+      </div>
+      <div class="error" id="pwError"></div>
+      <label for="pwConfirmInput">Password</label>
+      <div class="pw-wrap">
+        <input id="pwConfirmInput" type="password" autocomplete="current-password" placeholder="Enter your password">
+        <button type="button" class="pw-toggle" id="pwToggleBtn" aria-label="Show password">👁</button>
+      </div>
+      <div class="pw-modal-actions">
+        <button type="button" class="btn outline" id="pwCancelBtn">Cancel</button>
+        <button type="button" class="btn danger" id="pwConfirmBtn" disabled>Clear log</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="educore-shared.js?v=13"></script>
 <script>
 (function(){
   'use strict';
   const E = window.EduCore;
 
-  /* ---------- GUARD ---------- */
   const user = E.requirePerm('audit', 'Audit Log');
   if(!user) return;
 
-  /* ---------- SUB-FEATURE PERMISSIONS ---------- */
   const canView   = E.can('audit.view');
   const canClear  = E.can('audit.clear');
   const canExport = E.can('audit.export');
 
-  /* If the user has "audit" menu access but NOT audit.view, block the page */
   if(!canView){
     E.showDenied('Audit Log (view)');
     return;
   }
 
-  /* ---------- HEADER ---------- */
+  /* ============================================================
+     PASSWORD HASH — must match index.html exactly
+     ============================================================ */
+  async function hashPassword(plain){
+    try{
+      const enc = new TextEncoder().encode('educore::' + plain);
+      const buf = await crypto.subtle.digest('SHA-256', enc);
+      return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+    }catch(e){
+      let h = 0;
+      for(let i = 0; i < plain.length; i++){ h = (h * 31 + plain.charCodeAt(i)) >>> 0; }
+      return 'fb' + h.toString(16);
+    }
+  }
+
+  async function verifyPassword(plain){
+    const hash = await hashPassword(plain);
+    return hash === user.passwordHash;
+  }
+
+  /* ============================================================
+     HEADER
+     ============================================================ */
   function paintHeader(){
     const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
     const name = settings.name || 'EduCore High School';
     if(settings.logo){
-      document.getElementById('bandLogo').innerHTML = `<img src="${settings.logo}" alt="">`;
+      document.getElementById('bandLogo').innerHTML = '<img src="' + settings.logo + '" alt="">';
     } else {
       document.getElementById('bandLogo').textContent =
-        name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
+        name.split(/\s+/).filter(Boolean).slice(0,2).map(function(w){ return w[0]; }).join('').toUpperCase() || 'EC';
     }
     document.getElementById('bandSchool').textContent = name;
-    document.getElementById('bandSub').textContent = 'Every action taken in the system';
     document.getElementById('bandUser').textContent = user.name || user.username;
   }
 
-  /* ---------- ACTOR OPTIONS ---------- */
+  /* ============================================================
+     FILTERS
+     ============================================================ */
   function fillActors(){
     const list = E.readAudit();
-    const set = new Set(list.map(e => e.actor).filter(Boolean));
+    const set = new Set(list.map(function(e){ return e.actor; }).filter(Boolean));
     const sel = document.getElementById('actorFilter');
     sel.innerHTML = '<option value="">All users</option>' +
-      Array.from(set).sort().map(a => `<option>${E.esc(a)}</option>`).join('');
+      Array.from(set).sort().map(function(a){ return '<option>' + E.esc(a) + '</option>'; }).join('');
   }
 
-  /* ---------- ACTION PILL ---------- */
+  /* ============================================================
+     PILLS AND TIME
+     ============================================================ */
   function actionPill(a){
     const key = (a || '').toLowerCase();
     const known = ['login','logout','create','update','delete','lock','unlock','copy','signature'];
-    const cls = known.includes(key) ? key : 'update';
-    return `<span class="action-pill ${cls}">${E.esc(a || '—')}</span>`;
+    const cls = known.indexOf(key) >= 0 ? key : 'update';
+    return '<span class="action-pill ' + cls + '">' + E.esc(a || '—') + '</span>';
   }
 
-  /* ---------- RELATIVE TIME ---------- */
   function relativeTime(iso){
-    try {
+    try{
       const d = new Date(iso);
       const diff = Date.now() - d.getTime();
-      if(diff < 60_000) return 'just now';
-      if(diff < 3_600_000) return Math.floor(diff / 60_000) + ' min ago';
-      if(diff < 86_400_000) return Math.floor(diff / 3_600_000) + ' hr ago';
-      if(diff < 604_800_000) return Math.floor(diff / 86_400_000) + ' day' + (Math.floor(diff / 86_400_000) === 1 ? '' : 's') + ' ago';
+      if(diff < 60000) return 'just now';
+      if(diff < 3600000) return Math.floor(diff / 60000) + ' min ago';
+      if(diff < 86400000) return Math.floor(diff / 3600000) + ' hr ago';
+      if(diff < 604800000) return Math.floor(diff / 86400000) + ' day' + (Math.floor(diff / 86400000) === 1 ? '' : 's') + ' ago';
       return d.toLocaleDateString();
-    } catch(e){ return iso; }
+    }catch(e){ return iso; }
   }
 
   function startOfDay(ts){
@@ -266,7 +337,9 @@
     return d.getTime();
   }
 
-  /* ---------- RENDER ---------- */
+  /* ============================================================
+     RENDER
+     ============================================================ */
   function paintTable(){
     const list = E.readAudit();
     const q = document.getElementById('search').value.toLowerCase();
@@ -276,25 +349,24 @@
 
     const now = Date.now();
     const cutoff = range === 'today' ? startOfDay(now)
-                 : range === 'week'  ? now - 7 * 86_400_000
-                 : range === 'month' ? now - 30 * 86_400_000
+                 : range === 'week'  ? now - 7 * 86400000
+                 : range === 'month' ? now - 30 * 86400000
                  : 0;
 
-    const arr = list.filter(e => {
+    const arr = list.filter(function(e){
       if(action && (e.action || '').toLowerCase() !== action) return false;
       if(actor && e.actor !== actor) return false;
       if(cutoff && new Date(e.at).getTime() < cutoff) return false;
       if(q){
-        const hay = `${e.actor} ${e.target} ${e.action} ${e.from} ${e.to} ${e.meta}`.toLowerCase();
-        if(!hay.includes(q)) return false;
+        const hay = [e.actor, e.target, e.action, e.from, e.to, e.meta].join(' ').toLowerCase();
+        if(hay.indexOf(q) < 0) return false;
       }
       return true;
     });
 
-    /* KPIs */
-    const today = list.filter(e => new Date(e.at).getTime() >= startOfDay(now)).length;
-    const week = list.filter(e => new Date(e.at).getTime() >= now - 7 * 86_400_000).length;
-    const critical = list.filter(e => ['delete','lock'].includes((e.action||'').toLowerCase())).length;
+    const today = list.filter(function(e){ return new Date(e.at).getTime() >= startOfDay(now); }).length;
+    const week = list.filter(function(e){ return new Date(e.at).getTime() >= now - 7 * 86400000; }).length;
+    const critical = list.filter(function(e){ return ['delete','lock'].indexOf((e.action||'').toLowerCase()) >= 0; }).length;
 
     document.getElementById('kTotal').textContent = list.length;
     document.getElementById('kToday').textContent = today;
@@ -306,77 +378,184 @@
 
     const tb = document.getElementById('tbody');
     if(!arr.length){
-      tb.innerHTML = `<tr><td colspan="5" class="empty">
-        <span class="icon">🗒</span>
-        No entries match your filters.
-      </td></tr>`;
+      tb.innerHTML = '<tr><td colspan="5" class="empty">' +
+        '<span class="icon">🗒</span>' +
+        'No entries match your filters.' +
+      '</td></tr>';
       document.getElementById('count').textContent = '0';
       return;
     }
 
     const shown = arr.slice(0, 500);
 
-    tb.innerHTML = shown.map(e => {
-      const change = (e.from !== '' || e.to !== '' || e.meta)
-        ? `${e.from !== '' ? `<span class="old">${E.esc(e.from)}</span> → ` : ''}<span class="new">${E.esc(e.to || e.meta || '')}</span>`
-        : '<span style="color:#aab6c8">—</span>';
+    tb.innerHTML = shown.map(function(e){
+      let change;
+      if(e.from !== '' || e.to !== '' || e.meta){
+        const oldPart = e.from !== '' ? '<span class="old">' + E.esc(e.from) + '</span> → ' : '';
+        const newPart = '<span class="new">' + E.esc(e.to || e.meta || '') + '</span>';
+        change = oldPart + newPart;
+      } else {
+        change = '<span style="color:#aab6c8">—</span>';
+      }
 
-      return `<tr>
-        <td class="when-cell" title="${E.esc(e.at)}">${E.esc(relativeTime(e.at))}</td>
-        <td>${actionPill(e.action)}</td>
-        <td class="actor">${E.esc(e.actor || '—')}</td>
-        <td class="target">${E.esc(e.target || '—')}</td>
-        <td class="change-cell">${change}</td>
-      </tr>`;
+      return '<tr>' +
+        '<td class="when-cell" title="' + E.esc(e.at) + '">' + E.esc(relativeTime(e.at)) + '</td>' +
+        '<td>' + actionPill(e.action) + '</td>' +
+        '<td class="actor">' + E.esc(e.actor || '—') + '</td>' +
+        '<td class="target">' + E.esc(e.target || '—') + '</td>' +
+        '<td class="change-cell">' + change + '</td>' +
+      '</tr>';
     }).join('');
 
-    document.getElementById('count').textContent = arr.length + (arr.length > 500 ? ' (showing 500)' : '');
+    document.getElementById('count').textContent =
+      arr.length + (arr.length > 500 ? ' (showing 500)' : '');
   }
 
-  /* ---------- EXPORT ---------- */
-  document.getElementById('exportBtn').addEventListener('click', () => {
+  /* ============================================================
+     EXPORT
+     ============================================================ */
+  document.getElementById('exportBtn').addEventListener('click', function(){
     if(!canExport){ E.toast("You don't have permission to export the audit log."); return; }
     const list = E.readAudit();
     if(!list.length){ E.toast('Nothing to export.'); return; }
-    const rows = [
-      ['When','Action','Actor','Target','From','To','Meta'],
-      ...list.map(e => [e.at, e.action, e.actor, e.target, e.from, e.to, e.meta])
-    ];
-    const csv = rows.map(r => r.map(v => '"' + String(v ?? '').replace(/"/g,'""') + '"').join(',')).join('\r\n');
+    const rows = [['When','Action','Actor','Target','From','To','Meta']];
+    list.forEach(function(e){
+      rows.push([e.at, e.action, e.actor, e.target, e.from, e.to, e.meta]);
+    });
+    const csv = rows.map(function(r){
+      return r.map(function(v){
+        return '"' + String(v == null ? '' : v).replace(/"/g,'""') + '"';
+      }).join(',');
+    }).join('\r\n');
     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob), a = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
     a.href = url; a.download = 'audit-log.csv'; a.click();
     URL.revokeObjectURL(url);
     E.toast('Audit log exported.');
   });
 
-  /* ---------- CLEAR ---------- */
-  document.getElementById('clearBtn').addEventListener('click', () => {
+  /* ============================================================
+     CLEAR LOG — password modal
+     ============================================================ */
+  function openPasswordModal(){
     if(!canClear){ E.toast("You don't have permission to clear the audit log."); return; }
     const list = E.readAudit();
     if(!list.length){ E.toast('Audit log is already empty.'); return; }
-    if(!confirm(`Clear the entire audit log?\n\nThis will permanently delete ${list.length} entries.\n\nThis cannot be undone.`)) return;
-    const typed = prompt('Type CLEAR to confirm:');
-    if(typed !== 'CLEAR'){ E.toast('Confirmation did not match.'); return; }
-    E.writeAudit([]);
-    E.audit('delete', 'Audit log', `${list.length} entries`, 'cleared');
-    fillActors();
-    paintTable();
-    E.toast('Audit log cleared.');
+
+    /* Reset modal */
+    document.getElementById('pwConfirmCount').textContent =
+      list.length + ' entr' + (list.length === 1 ? 'y' : 'ies');
+    document.getElementById('pwConfirmUser').textContent = user.username;
+    document.getElementById('pwConfirmInput').value = '';
+    document.getElementById('pwError').classList.remove('show');
+    document.getElementById('pwConfirmBtn').disabled = true;
+
+    document.getElementById('pwModalOverlay').classList.add('show');
+    setTimeout(function(){
+      document.getElementById('pwConfirmInput').focus();
+    }, 50);
+  }
+
+  function closePasswordModal(){
+    document.getElementById('pwModalOverlay').classList.remove('show');
+    document.getElementById('pwConfirmInput').value = '';
+    document.getElementById('pwError').classList.remove('show');
+    document.getElementById('pwConfirmBtn').disabled = true;
+  }
+
+  async function doClearLog(){
+    const pw = document.getElementById('pwConfirmInput').value;
+    const err = document.getElementById('pwError');
+    const btn = document.getElementById('pwConfirmBtn');
+
+    if(!pw){
+      err.textContent = 'Enter your password.';
+      err.classList.add('show');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Verifying…';
+
+    try{
+      const ok = await verifyPassword(pw);
+      if(!ok){
+        err.textContent = 'Incorrect password.';
+        err.classList.add('show');
+        btn.disabled = false;
+        btn.textContent = 'Clear log';
+        document.getElementById('pwConfirmInput').select();
+        return;
+      }
+
+      /* Password verified — proceed with clearing */
+      const list = E.readAudit();
+      E.writeAudit([]);
+      E.audit('delete', 'Audit log', list.length + ' entries', 'cleared with password confirmation');
+
+      closePasswordModal();
+      fillActors();
+      paintTable();
+      E.toast('Audit log cleared.');
+    }catch(ex){
+      err.textContent = 'Could not verify password. Try again.';
+      err.classList.add('show');
+      btn.disabled = false;
+      btn.textContent = 'Clear log';
+    }
+  }
+
+  /* Bind modal controls */
+  document.getElementById('clearBtn').addEventListener('click', openPasswordModal);
+  document.getElementById('pwCancelBtn').addEventListener('click', closePasswordModal);
+  document.getElementById('pwConfirmBtn').addEventListener('click', doClearLog);
+
+  document.getElementById('pwConfirmInput').addEventListener('input', function(e){
+    document.getElementById('pwConfirmBtn').disabled = e.target.value.length === 0;
   });
 
-  /* ---------- EVENTS ---------- */
+  document.getElementById('pwConfirmInput').addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      if(!document.getElementById('pwConfirmBtn').disabled){
+        doClearLog();
+      }
+    }
+  });
+
+  document.getElementById('pwToggleBtn').addEventListener('click', function(){
+    const inp = document.getElementById('pwConfirmInput');
+    const showing = inp.type === 'text';
+    inp.type = showing ? 'password' : 'text';
+    this.textContent = showing ? '👁' : '🙈';
+  });
+
+  document.getElementById('pwModalOverlay').addEventListener('click', function(e){
+    if(e.target.id === 'pwModalOverlay') closePasswordModal();
+  });
+
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && document.getElementById('pwModalOverlay').classList.contains('show')){
+      closePasswordModal();
+    }
+  });
+
+  /* ============================================================
+     FILTER EVENTS
+     ============================================================ */
   document.getElementById('search').addEventListener('input', paintTable);
   document.getElementById('actionFilter').addEventListener('change', paintTable);
   document.getElementById('actorFilter').addEventListener('change', paintTable);
   document.getElementById('rangeFilter').addEventListener('change', paintTable);
 
-  /* ---------- INIT ---------- */
+  /* ============================================================
+     INIT
+     ============================================================ */
   paintHeader();
   fillActors();
   paintTable();
 
-  /* Hide buttons the user can't use */
   if(!canClear) document.getElementById('clearBtn').style.display = 'none';
   if(!canExport) document.getElementById('exportBtn').style.display = 'none';
   if(!canClear && !canExport){
@@ -386,4 +565,4 @@
 })();
 </script>
 </body>
-</html>4r
+</html>

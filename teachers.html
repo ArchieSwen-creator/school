@@ -77,7 +77,8 @@
 
   .person{display:flex;align-items:center;gap:10px}
   .mini-avatar{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;
-    background:#edf2ff;color:#3859b7;font-size:10px;font-weight:700}
+    background:#edf2ff;color:#3859b7;font-size:10px;font-weight:700;overflow:hidden}
+  .mini-avatar img{width:100%;height:100%;object-fit:cover}
   .person strong{display:block;font-size:12px}
   .person small{display:block;color:var(--muted);font-size:10px;margin-top:4px}
 
@@ -116,6 +117,65 @@
     align-items:center;gap:12px;margin-bottom:12px}
   .sponsor-row .info strong{display:block;font-size:13px;color:#8a6a1a}
   .sponsor-row .info small{display:block;font-size:11px;color:#8a6a1a;margin-top:3px;opacity:.75}
+
+  /* ===== View modal styles ===== */
+  .view-head{
+    display:flex;align-items:center;gap:16px;
+    padding-bottom:16px;border-bottom:1px solid #e8ebf2;margin-bottom:6px;
+  }
+  .view-avatar{
+    width:72px;height:72px;border-radius:18px;background:#edf2ff;
+    color:#3859b7;display:grid;place-items:center;font-weight:800;font-size:20px;
+    overflow:hidden;flex:0 0 72px;border:2px solid #d8e8ff;
+  }
+  .view-avatar img{width:100%;height:100%;object-fit:cover}
+  .view-name{margin:0;font-size:18px;color:#14213d}
+  .view-sub{font-size:12px;color:#73849a;margin-top:4px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .view-pill{
+    display:inline-flex;align-items:center;gap:5px;padding:3px 9px;
+    border-radius:20px;font-size:10px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;
+  }
+  .view-pill.green{background:#e6f7f0;color:#16835f}
+  .view-pill.orange{background:#fff2dd;color:#a86414}
+  .view-pill.red{background:#ffeaec;color:#bd3b48}
+  .view-pill.blue{background:#edf2ff;color:#3b5cc1}
+  .view-pill.grey{background:#eef1f6;color:#59647c}
+
+  .view-section{margin-top:16px}
+  .view-section-head{
+    font-size:10px;font-weight:800;color:#73849a;
+    text-transform:uppercase;letter-spacing:1px;
+    padding-bottom:6px;border-bottom:1px solid #e8ebf2;margin-bottom:8px;
+  }
+  .view-row{
+    display:flex;justify-content:space-between;gap:14px;
+    padding:7px 0;font-size:12.5px;border-bottom:1px dotted #f0f2f7;
+  }
+  .view-row:last-child{border-bottom:0}
+  .view-row .label{
+    color:#73849a;font-weight:700;font-size:10px;
+    text-transform:uppercase;letter-spacing:.5px;flex:0 0 42%;
+  }
+  .view-row .value{
+    color:#14213d;text-align:right;word-break:break-word;font-weight:700;
+  }
+
+  /* ===== Edit modal — profile block ===== */
+  .personal-block-label{
+    font-size:12px;color:#34415c;letter-spacing:.5px;text-transform:uppercase;
+    padding-top:6px;border-top:1px dashed #e8ebf2;margin-top:6px;
+  }
+  .photo-field{display:flex;gap:14px;align-items:flex-start;margin-top:6px}
+  .photo-preview{
+    width:88px;height:88px;flex:0 0 88px;border-radius:14px;
+    border:2px dashed #c9d1e0;background:#f8faff;
+    display:grid;place-items:center;overflow:hidden;
+    color:#7a8498;font-size:11px;text-align:center;position:relative;
+    font-weight:800;
+  }
+  .photo-preview img{width:100%;height:100%;object-fit:cover}
+  .photo-actions{display:flex;flex-direction:column;gap:6px;flex:1}
+  .photo-actions .help{font-size:10.5px;color:#73849a;line-height:1.5}
 
   @media (max-width:650px){
     body{padding:64px 8px 24px}
@@ -186,7 +246,7 @@
 
 </div>
 
-<script src="educore-shared.js"></script>
+<script src="educore-shared.js?v=15"></script>
 <script>
 (function(){
   'use strict';
@@ -253,7 +313,6 @@
     return `<span class="pill ${t}">${E.esc(s||'Full-time')}</span>`;
   }
 
-  /* Small badge showing how many days a teacher is available */
   function availabilityBadge(teacherId){
     const avail = E.getTeacherAvailability(teacherId);
     const days = avail.availableDays || [];
@@ -267,6 +326,18 @@
     }
     const label = days.join(' · ');
     return `<span class="avail-indicator partial" title="${label}">🗓 ${days.length}/${allDays.length}</span>`;
+  }
+
+  function linkedUserForTeacher(teacherId){
+    const users = E.readStore(E.STORE_KEYS.users, []) || [];
+    return users.find(u => u.role === 'Teacher' && u.linkedTeacherId === teacherId) || null;
+  }
+
+  function teacherPhoto(teacher){
+    if(!teacher) return '';
+    const u = linkedUserForTeacher(teacher.id);
+    if(u && u.photo) return u.photo;
+    return '';
   }
 
   function paintTable(){
@@ -296,18 +367,20 @@
         : '<span style="color:var(--muted);font-size:11px">—</span>';
 
       const actionBits = [];
+      actionBits.push(`<button class="btn outline" data-view="${E.esc(t.id)}">View</button>`);
       if(canEdit) actionBits.push(`<button class="btn secondary" data-edit="${E.esc(t.id)}">Edit</button>`);
       if(canAssignments || canSponsorship) actionBits.push(`<button class="btn" data-assign="${E.esc(t.id)}">Assignments</button>`);
       if(canDelete) actionBits.push(`<button class="btn danger" data-delete="${E.esc(t.id)}">Delete</button>`);
 
-      const actionCell = actionBits.length
-        ? `<td><div class="row-actions">${actionBits.join(' ')}</div></td>`
-        : `<td style="color:#c5cee0">—</td>`;
+      const photo = teacherPhoto(t);
+      const avatar = photo
+        ? `<img src="${E.esc(photo)}" alt="">`
+        : E.initials(t.name);
 
       return `<tr>
         <td>
           <div class="person">
-            <div class="mini-avatar">${E.initials(t.name)}</div>
+            <div class="mini-avatar">${avatar}</div>
             <div><strong>${E.esc(t.name)}</strong><small>${E.esc(t.id)}</small></div>
           </div>
         </td>
@@ -317,7 +390,7 @@
         <td>${scheduleCell}</td>
         <td>${E.esc(t.phone||'—')}</td>
         <td>${statusPill(t.status)}</td>
-        ${actionCell}
+        <td><div class="row-actions">${actionBits.join(' ')}</div></td>
       </tr>`;
     }).join('') || `<tr><td colspan="8" class="empty">${
       canSeeAll ? 'No teachers found.' : 'Your teacher record could not be located. Ask the admin to link your account.'
@@ -327,14 +400,131 @@
   }
 
   /* ============================================================
-     ADD / EDIT TEACHER
+     VIEW MODAL — teacher basic information
+     ============================================================ */
+  function openViewModal(teacherId){
+    const teachers = E.readStore(E.STORE_KEYS.teachers, []) || [];
+    const t = teachers.find(x => x.id === teacherId);
+    if(!t) return;
+
+    const linkedUser = linkedUserForTeacher(t.id);
+    const photo = teacherPhoto(t);
+
+    const assignments = E.assignmentsForTeacher(t.id);
+    const sponsorClass = E.sponsorClassOf(t.id);
+    const avail = E.getTeacherAvailability(t.id);
+
+    const asnText = assignments.length
+      ? assignments.map(a => `${E.subjectName(a.subject)} · ${a.className}`).join('\n')
+      : '—';
+
+    const availText = (avail.availableDays && avail.availableDays.length)
+      ? avail.availableDays.join(', ')
+      : '—';
+
+    function renderSection(title, rows){
+      const filled = rows.filter(([, v]) => v && String(v).trim() && String(v).trim() !== '—');
+      if(!filled.length) return '';
+      return `<div class="view-section">
+        <div class="view-section-head">${E.esc(title)}</div>
+        ${filled.map(([label, value]) => {
+          const multiline = String(value).indexOf('\n') >= 0;
+          return `<div class="view-row">
+            <span class="label">${E.esc(label)}</span>
+            <strong class="value" ${multiline ? 'style="white-space:pre-line"' : ''}>${E.esc(String(value))}</strong>
+          </div>`;
+        }).join('')}
+      </div>`;
+    }
+
+    const statusClass = t.status === 'Full-time' ? 'green'
+                      : t.status === 'Part-time' ? 'orange'
+                      : 'blue';
+
+    const personalHTML = renderSection('Personal & identity', [
+      ['Full name', t.name],
+      ['Teacher ID', t.id],
+      ['Department', t.department || '—'],
+      ['Employment status', t.status || 'Full-time'],
+      ['Phone', t.phone || '—'],
+      ['Nationality', linkedUser?.nationality || ''],
+      ['County of origin', linkedUser?.countyOfOrigin || ''],
+      ['Ethnic group', linkedUser?.ethnicGroup || ''],
+      ['Religion', linkedUser?.religion || ''],
+      ['Qualification', linkedUser?.qualification || '']
+    ]);
+
+    const teachingHTML = renderSection('Teaching', [
+      ['Teaching assignments', asnText],
+      ['Class sponsor of', sponsorClass || '—'],
+      ['Available days', availText]
+    ]);
+
+    const accountHTML = linkedUser
+      ? renderSection('Account', [
+          ['Username', linkedUser.username],
+          ['Email', linkedUser.email || '—'],
+          ['Account status', linkedUser.active ? 'Active' : 'Disabled'],
+          ['Public verify', linkedUser.showInPublicVerify ? '✓ Shown' : 'Hidden'],
+          ['Last login', linkedUser.lastLogin ? E.fmtDateTime(linkedUser.lastLogin) : 'Never']
+        ])
+      : '';
+
+    const avatarHTML = photo
+      ? `<img src="${E.esc(photo)}" alt="">`
+      : E.initials(t.name);
+
+    const html = `
+      <div class="full view-head">
+        <div class="view-avatar">${avatarHTML}</div>
+        <div>
+          <h3 class="view-name">${E.esc(t.name)}</h3>
+          <div class="view-sub">
+            <span class="view-pill ${statusClass}">${E.esc(t.status || 'Full-time')}</span>
+            <span>${E.esc(t.department || 'Unassigned')}</span>
+            <span style="color:#c5cee0">·</span>
+            <span>${E.esc(t.id)}</span>
+          </div>
+        </div>
+      </div>
+
+      ${personalHTML}
+      ${teachingHTML}
+      ${accountHTML}
+    `;
+
+    E.openModal('Teacher profile', html, 'Edit teacher', () => {
+      E.closeModal();
+      const target = (E.readStore(E.STORE_KEYS.teachers, []) || []).find(x => x.id === t.id);
+      if(target) openTeacherModal(target);
+    }, true);
+  }
+
+  /* ============================================================
+     ADD / EDIT TEACHER (extended with profile fields)
      ============================================================ */
   function openTeacherModal(existing){
     if(!canSeeAll){ E.toast("You don't have permission to edit teacher records."); return; }
     const t = existing || {};
+
+    /* Resolve linked user profile fields */
+    const linkedUser = existing ? linkedUserForTeacher(existing.id) : null;
+    const profile = {
+      photo: linkedUser?.photo || '',
+      nationality: linkedUser?.nationality || '',
+      countyOfOrigin: linkedUser?.countyOfOrigin || '',
+      ethnicGroup: linkedUser?.ethnicGroup || '',
+      religion: linkedUser?.religion || '',
+      qualification: linkedUser?.qualification || ''
+    };
+
+    const photoPreviewHTML = profile.photo
+      ? `<img src="${E.esc(profile.photo)}" alt="">`
+      : (t.name ? E.initials(t.name) : 'No photo');
+
     const html = `
       <div class="full"><label>Full name <span style="color:#bd3b48">*</span></label>
-        <input name="name" required value="${E.esc(t.name||'')}">
+        <input name="name" id="teacherNameInput" required value="${E.esc(t.name||'')}">
       </div>
       <div><label>Department</label>
         <input name="department" value="${E.esc(t.department||'')}">
@@ -353,40 +543,138 @@
           Change their available days from the <strong>Timetable → Teacher availability</strong> tab,
           or click <strong>Manage</strong> in the Schedule column.
         </small>
+      </div>
+
+      <div class="full personal-block-label">Personal information</div>
+
+      <div class="full">
+        <label>Photo</label>
+        <div class="photo-field">
+          <div class="photo-preview" id="teacherPhotoPreview">${photoPreviewHTML}</div>
+          <div class="photo-actions">
+            <input type="file" id="teacherPhotoInput" accept="image/*" style="display:none">
+            <input type="hidden" name="photo" id="teacherPhotoHidden" value="${E.esc(profile.photo)}">
+            <button type="button" class="btn secondary" id="teacherPhotoPickBtn">📷 Upload photo</button>
+            <button type="button" class="btn outline" id="teacherPhotoClearBtn"
+              ${profile.photo ? '' : 'style="display:none"'}>✕ Remove photo</button>
+            <span class="help">Square · max 1 MB · PNG / JPG / WEBP / GIF</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label>Nationality</label>
+        <input name="nationality" value="${E.esc(profile.nationality)}" placeholder="e.g. Liberian">
+      </div>
+
+      <div>
+        <label>County of origin</label>
+        <input name="countyOfOrigin" value="${E.esc(profile.countyOfOrigin)}" placeholder="e.g. Montserrado">
+      </div>
+
+      <div>
+        <label>Ethnic group</label>
+        <input name="ethnicGroup" value="${E.esc(profile.ethnicGroup)}" placeholder="e.g. Kpelle">
+      </div>
+
+      <div>
+        <label>Religion</label>
+        <input name="religion" value="${E.esc(profile.religion)}" placeholder="e.g. Christian">
+      </div>
+
+      <div class="full">
+        <label>Qualification</label>
+        <input name="qualification" value="${E.esc(profile.qualification)}"
+          placeholder="e.g. BSc Biology, Teaching Certificate">
       </div>`;
 
     E.openModal(existing ? `Edit teacher · ${t.name}` : 'Add teacher', html, 'Save teacher', d => {
       const teachers = E.readStore(E.STORE_KEYS.teachers, []) || [];
+      let teacherRecord;
       if(existing){
         const target = teachers.find(x => x.id === existing.id);
         if(!target) return;
-
-        /* Preserve scheduling fields managed by the timetable page */
         const savedAvailableDays = target.availableDays;
         const savedUnavailablePeriods = target.unavailablePeriods;
-
-        Object.assign(target, d);
-
+        Object.assign(target, {
+          name: d.name,
+          department: d.department || '',
+          phone: d.phone || '',
+          status: d.status || 'Full-time'
+        });
         if(savedAvailableDays !== undefined) target.availableDays = savedAvailableDays;
         if(savedUnavailablePeriods !== undefined) target.unavailablePeriods = savedUnavailablePeriods;
-
+        teacherRecord = target;
         E.audit('update', `Teacher ${target.id}`, '', d.name);
       } else {
-        teachers.push({
+        teacherRecord = {
           id: 'TCH-' + String(teachers.length + 21).padStart(3, '0'),
-          ...d
-        });
+          name: d.name,
+          department: d.department || '',
+          phone: d.phone || '',
+          status: d.status || 'Full-time'
+        };
+        teachers.push(teacherRecord);
         E.audit('create', `Teacher ${d.name}`, '', d.department || '');
       }
       E.writeStore(E.STORE_KEYS.teachers, teachers);
+
+      /* Write profile fields to the linked teacher user account */
+      const profilePatch = {
+        photo: d.photo || '',
+        nationality: d.nationality || '',
+        countyOfOrigin: d.countyOfOrigin || '',
+        ethnicGroup: d.ethnicGroup || '',
+        religion: d.religion || '',
+        qualification: d.qualification || ''
+      };
+      const res = E.updateLinkedUserProfile('Teacher', teacherRecord.id, profilePatch);
+      if(!res.ok){
+        E.toast('Teacher saved. Note: no linked user account to store profile fields.');
+      } else {
+        E.toast(existing ? 'Teacher updated.' : 'Teacher saved.');
+      }
+
       E.closeModal();
       paintTable();
-      E.toast('Teacher saved.');
+    }, true);
+
+    /* Photo picker */
+    const photoInput  = document.getElementById('teacherPhotoInput');
+    const photoHidden = document.getElementById('teacherPhotoHidden');
+    const photoPick   = document.getElementById('teacherPhotoPickBtn');
+    const photoClear  = document.getElementById('teacherPhotoClearBtn');
+    const photoPrev   = document.getElementById('teacherPhotoPreview');
+    const nameInput   = document.getElementById('teacherNameInput');
+
+    photoPick?.addEventListener('click', () => photoInput.click());
+    photoInput?.addEventListener('change', async () => {
+      const file = photoInput.files[0];
+      if(!file) return;
+      const read = await E.readPhotoFile(file);
+      if(!read.ok){ E.toast(read.error); photoInput.value = ''; return; }
+      const small = await E.downscalePhoto(read.dataUrl, 256);
+      photoHidden.value = small;
+      photoPrev.innerHTML = `<img src="${small}" alt="">`;
+      photoClear.style.display = '';
+    });
+    photoClear?.addEventListener('click', () => {
+      photoHidden.value = '';
+      const n = nameInput.value.trim();
+      photoPrev.innerHTML = n ? E.initials(n) : 'No photo';
+      photoClear.style.display = 'none';
+      photoInput.value = '';
+    });
+    nameInput?.addEventListener('input', () => {
+      if(!photoHidden.value && photoPrev && !photoPrev.querySelector('img')){
+        const n = nameInput.value.trim();
+        photoPrev.textContent = n ? E.initials(n) : 'No photo';
+      }
     });
   }
 
   /* ============================================================
-     DELETE
+     DELETE (unchanged)
      ============================================================ */
   function deleteTeacher(teacherId){
     if(!canDelete){ E.toast("You don't have permission to delete teachers."); return; }
@@ -419,7 +707,6 @@
 
     E.clearSponsor(teacherId);
 
-    /* Remove this teacher's scheduled lessons so the timetable stays consistent */
     if(lessons){
       const tt = E.getTimetable();
       tt.lessons = (tt.lessons || []).filter(l => l.teacherId !== teacherId);
@@ -438,7 +725,7 @@
   }
 
   /* ============================================================
-     ASSIGNMENTS + SPONSOR MODAL
+     ASSIGNMENTS + SPONSOR MODAL (unchanged)
      ============================================================ */
   function openAssignmentsModal(teacherId){
     if(!canAssignments && !canSponsorship){
@@ -608,11 +895,13 @@
   });
 
   document.getElementById('tbody').addEventListener('click', e => {
+    const view     = e.target.closest('[data-view]');
     const edit     = e.target.closest('[data-edit]');
     const del      = e.target.closest('[data-delete]');
     const assign   = e.target.closest('[data-assign]');
     const schedule = e.target.closest('[data-schedule]');
 
+    if(view) openViewModal(view.dataset.view);
     if(edit){
       const t = (E.readStore(E.STORE_KEYS.teachers, []) || []).find(x => x.id === edit.dataset.edit);
       if(t) openTeacherModal(t);
@@ -621,7 +910,6 @@
     if(assign) openAssignmentsModal(assign.dataset.assign);
 
     if(schedule){
-      /* Jump straight to Timetable → Teacher availability tab, pre-filtered */
       sessionStorage.setItem('educoreTimetableTeacher', schedule.dataset.schedule);
       sessionStorage.setItem('educoreTimetableOpenTab', 'avail');
       window.location.href = 'timetable.html';

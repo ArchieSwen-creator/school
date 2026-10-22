@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home Page Editor | EduCore</title>
+<style>
+  :root{
+    --navy:#12315a;--blue:#3987ee;--line:#e8ebf2;--text:#23354d;--muted:#73849a;
+    --green:#14805e;--orange:#d88922;--red:#d64545;--gold:#c99a2e;--gold2:#fff4d6;
+    --shadow:0 8px 24px rgba(24,42,78,.06);
+    --shadow-lg:0 20px 60px rgba(24,42,78,.14);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:64px 16px 40px;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+  .page{width:100%;max-width:1500px;margin:0 auto}
+
+  .band{background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
+    border-radius:16px;padding:22px 28px;margin-bottom:20px;
+    box-shadow:0 18px 50px #16345417;display:flex;justify-content:space-between;
+    align-items:center;gap:16px;flex-wrap:wrap;border-top:5px solid #58a4ff}
+  .band-left{display:flex;align-items:center;gap:14px}
+  .band-logo{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;place-items:center;
+    overflow:hidden;color:var(--navy);font-weight:900;font-size:18px;border:3px solid #d8e8ff;flex:0 0 48px}
+  .band-logo img{width:100%;height:100%;object-fit:contain}
+  .band h1{margin:0;font-size:19px;letter-spacing:.3px;text-transform:uppercase}
+  .band p{margin:4px 0 0;font-size:11px;color:#cfdcf5}
+  .band-user{display:flex;align-items:center;gap:10px;font-size:11px;color:#cfdcf5;
+    background:#ffffff14;border:1px solid #ffffff36;padding:7px 12px;border-radius:20px}
+  .band-user strong{color:#fff}
+
+  .btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{filter:brightness(.96)}
+  .btn.secondary{background:#eef2fb;color:#34415c}
+  .btn.outline{background:#fff;color:#34415c;border:1px solid var(--line)}
+  .btn.danger{background:#fff0f1;color:var(--red)}
+  .btn.green{background:#e6f7f0;color:#16835f}
+  .btn.gold{background:linear-gradient(135deg,#f7d97a,#c99a2e);color:#5a3a00}
+  .btn.small{padding:7px 11px;font-size:11px}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  /* ---------- STATUS BAR ---------- */
+  .status-bar{
+    background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);padding:14px 20px;margin-bottom:16px;
+    display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;
+    font-size:12px;
+  }
+  .status-bar .left{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .status-pill{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:5px 11px;border-radius:20px;font-size:10.5px;font-weight:800;
+    letter-spacing:.5px;text-transform:uppercase;
+  }
+  .status-pill.draft{background:#fff2dd;color:#a86414}
+  .status-pill.live{background:#e6f7f0;color:#16835f}
+  .status-pill.warn{background:#fff8e6;color:#8a6a1a}
+  .status-bar .right{display:flex;gap:8px;flex-wrap:wrap}
+
+  /* ---------- LAYOUT ---------- */
+  .editor-layout{
+    display:grid;grid-template-columns:520px 1fr;gap:20px;align-items:start;
+  }
+
+  /* ---------- TABS ---------- */
+  .tabs-wrap{
+    background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);padding:10px;margin-bottom:14px;
+    display:flex;gap:4px;flex-wrap:wrap;position:sticky;top:12px;z-index:5;
+  }
+  .tab-btn{
+    border:0;background:transparent;padding:9px 13px;border-radius:8px;
+    font-size:11.5px;font-weight:800;color:#54637d;cursor:pointer;
+    display:inline-flex;align-items:center;gap:6px;transition:.15s;
+  }
+  .tab-btn:hover{background:#f3f6fd}
+  .tab-btn.active{background:#14213d;color:#fff}
+  .tab-btn .dot{
+    display:inline-block;width:6px;height:6px;border-radius:50%;
+    background:#94a3b8;margin-right:2px;
+  }
+  .tab-btn.active .dot{background:#58a4ff}
+
+  /* ---------- EDITOR PANELS ---------- */
+  .panel{
+    background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px;
+  }
+  .panel-head{
+    padding:16px 20px;border-bottom:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+  }
+  .panel-head h3{margin:0;font-size:14px;color:var(--navy)}
+  .panel-head p{margin:4px 0 0;font-size:11px;color:var(--muted)}
+  .panel-body{padding:20px}
+
+  .field{
+    display:flex;flex-direction:column;gap:6px;margin-bottom:16px;
+  }
+  .field:last-child{margin-bottom:0}
+  .field label{
+    font-size:10.5px;font-weight:800;color:#657089;
+    text-transform:uppercase;letter-spacing:.7px;
+  }
+  .field .help{
+    font-size:10.5px;color:var(--muted);line-height:1.5;margin-top:2px;
+  }
+  .field input,.field select,.field textarea{
+    width:100%;border:1px solid #dfe4ee;border-radius:8px;
+    padding:10px 12px;font-size:12.5px;outline:none;background:#f8faff;
+    font-family:inherit;transition:.15s;
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{
+    border-color:var(--blue);background:#fff;
+    box-shadow:0 0 0 3px rgba(65,105,225,.1);
+  }
+  .field textarea{min-height:90px;resize:vertical;line-height:1.6}
+  .field input[type="number"]{max-width:140px}
+  .field input[type="checkbox"]{width:auto;margin:0}
+
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .field-row.cols-3{grid-template-columns:1fr 1fr 1fr}
+
+  .toggle-row{
+    display:flex;align-items:center;gap:10px;padding:11px 14px;
+    background:#f8faff;border:1px solid var(--line);border-radius:9px;
+    font-size:12.5px;margin-bottom:14px;
+  }
+  .toggle-row input[type="checkbox"]{
+    width:18px;height:18px;cursor:pointer;margin:0;
+  }
+  .toggle-row label{font-weight:700;cursor:pointer;color:#34415c;flex:1}
+
+  /* ---------- IMAGE UPLOAD ---------- */
+  .img-field{
+    display:flex;gap:12px;align-items:flex-start;
+  }
+  .img-preview{
+    width:120px;height:120px;flex:0 0 120px;border:1px dashed #c9d1e0;
+    border-radius:10px;background:#f8faff;
+    display:grid;place-items:center;overflow:hidden;
+    color:var(--muted);font-size:11px;text-align:center;
+    position:relative;
+  }
+  .img-preview.wide{width:220px;height:124px;flex-basis:220px}
+  .img-preview img{width:100%;height:100%;object-fit:cover}
+  .img-preview .rm{
+    position:absolute;top:4px;right:4px;background:#fff0f1;color:var(--red);
+    border:0;border-radius:6px;padding:3px 7px;font-size:10px;font-weight:800;
+    cursor:pointer;
+  }
+  .img-actions{display:flex;flex-direction:column;gap:8px;flex:1}
+
+  /* ---------- REPEATER ITEMS ---------- */
+  .repeater-item{
+    background:#fbfdff;border:1px solid var(--line);border-radius:10px;
+    padding:14px;margin-bottom:10px;position:relative;
+  }
+  .repeater-item .item-head{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:10px;padding-bottom:10px;border-bottom:1px dashed var(--line);
+    font-size:11px;color:var(--muted);font-weight:800;
+    text-transform:uppercase;letter-spacing:.5px;
+  }
+  .repeater-item .item-head strong{color:var(--navy);font-size:12px}
+  .repeater-item .item-actions{display:flex;gap:4px;flex-wrap:wrap}
+  .repeater-item .item-actions button{
+    border:0;border-radius:6px;padding:4px 8px;font-size:10px;
+    font-weight:800;cursor:pointer;background:#eef2fb;color:#34415c;
+  }
+  .repeater-item .item-actions button:hover{background:#dde7f7}
+  .repeater-item .item-actions button.danger{background:#fff0f1;color:#bd3b48}
+
+  .add-item-btn{
+    border:1px dashed #b9c8e8;background:#f8faff;border-radius:9px;
+    padding:11px 16px;font-size:11.5px;font-weight:800;color:#2f4d8a;
+    width:100%;cursor:pointer;text-align:center;
+  }
+  .add-item-btn:hover{background:#eef2fb}
+
+  /* ---------- PREVIEW PANE ---------- */
+  .preview-pane{
+    background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow-lg);overflow:hidden;
+    position:sticky;top:12px;
+  }
+  .preview-pane .pane-head{
+    padding:12px 18px;border-bottom:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
+    background:#fafbfe;font-size:11.5px;font-weight:700;
+  }
+  .preview-pane .pane-head span{color:var(--muted);font-weight:600}
+  .preview-pane .frame-wrap{
+    position:relative;width:100%;height:780px;overflow:hidden;
+    background:#f5f7fb;
+  }
+  .preview-pane iframe{
+    position:absolute;top:0;left:0;
+    width:1400px;height:2000px;border:0;
+    transform-origin:0 0;
+  }
+  .preview-pane .refresh-btn{
+    border:1px solid var(--line);background:#fff;color:#34415c;
+    border-radius:6px;padding:4px 9px;font-size:11px;font-weight:800;cursor:pointer;
+  }
+  .preview-pane .refresh-btn:hover{background:#eef2fb}
+
+  /* ---------- FOOTER BAR ---------- */
+  .save-footer{
+    position:fixed;bottom:0;left:0;right:0;
+    background:#fff;border-top:1px solid var(--line);
+    box-shadow:0 -6px 20px rgba(24,42,78,.06);
+    padding:14px 24px;z-index:100;
+    display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+  }
+  .save-footer .note{
+    font-size:11.5px;color:var(--muted);line-height:1.5;
+  }
+  .save-footer .note strong{color:var(--orange)}
+  .save-footer .actions{display:flex;gap:8px;flex-wrap:wrap}
+  body{padding-bottom:80px}
+
+  /* ---------- DIAGNOSTIC BANNER ---------- */
+  .diagnostic-banner{
+    flex-basis:100%;margin-top:8px;padding:10px 14px;
+    border-radius:9px;font-size:11.5px;line-height:1.7;
+  }
+  .diagnostic-banner.warn{background:#fff8e6;border:1px solid #f3d999;color:#8a6a1a}
+  .diagnostic-banner.danger{background:#fff0f1;border:1px solid #f6c9ce;color:#bd3b48}
+  .diagnostic-banner.info{background:#eef5ff;border:1px solid #cfe3ff;color:#1d4d82}
+  .diagnostic-banner strong{display:block;margin-bottom:4px;font-size:12px}
+  .diagnostic-banner ul{margin:6px 0 0;padding-left:20px}
+  .diagnostic-banner li{margin-bottom:3px}
+
+  /* ---------- MOBILE ---------- */
+  @media (max-width:1100px){
+    .editor-layout{grid-template-columns:1fr}
+    .preview-pane{display:none}
+    .tab-btn{padding:8px 11px;font-size:11px}
+    /* PATCH: preview toggle button appears on tablet/mobile */
+    .preview-toggle-btn{display:inline-flex !important}
+  }
+  @media (max-width:650px){
+    body{padding:64px 8px 80px}
+    .band{padding:18px 20px}
+    .band h1{font-size:15px}
+    .field-row,.field-row.cols-3{grid-template-columns:1fr}
+    .img-preview{width:80px;height:80px;flex-basis:80px}
+    .img-preview.wide{width:140px;height:80px;flex-basis:140px}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="band">
+    <div class="band-left">
+      <div class="band-logo" id="bandLogo">EC</div>
+      <div>
+        <h1 id="bandSchool">Home Page Editor</h1>
+        <p id="bandSub">Manage the public landing page — content, sections, and publishing</p>
+      </div>
+    </div>
+    <div class="band-user">Signed in as <strong id="bandUser">—</strong></div>
+  </div>
+
+  <div class="status-bar" id="statusBar"></div>
+
+  <div class="editor-layout">
+    <div>
+      <div class="tabs-wrap" id="tabsWrap"></div>
+      <div id="panelsWrap"></div>
+    </div>
+
+    <div class="preview-pane">
+      <div class="pane-head">
+        <span>🖥 Live Preview</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span id="previewStatus">Loading…</span>
+          <button class="refresh-btn" id="manualRefreshBtn" title="Refresh preview">↻</button>
+        </div>
+      </div>
+      <div class="frame-wrap" id="frameWrap">
+        <iframe id="previewFrame" src="about:blank" title="Home page preview"></iframe>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="save-footer">
+  <div class="note" id="footerNote">Changes are saved locally. Click Publish to make them live.</div>
+  <div class="actions">
+    <button class="btn outline" id="discardBtn">↺ Discard changes</button>
+    <button class="btn secondary preview-toggle-btn" id="previewBtn2" style="display:none">👁 Preview</button>
+    <button class="btn secondary" id="previewBtn">👁 Preview in new tab</button>
+    <button class="btn green" id="saveBtn">💾 Save draft</button>
+    <button class="btn gold" id="publishBtn">🚀 Publish live</button>
+  </div>
+</div>
+
+<script src="educore-shared.js?v=12"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  /* ---------- GUARD ---------- */
+  const user = E.requirePerm('homepage', 'Home Page Editor');
+  if(!user) return;
+
+  const canEdit = E.can('homepage.edit');
+  const canPublish = E.can('homepage.publish');
+  const canReset = E.can('homepage.reset');
+
+  /* ---------- HEADER ---------- */
+  function paintHeader(){
+    const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const name = settings.name || 'EduCore High School';
+    if(settings.logo){
+      document.getElementById('bandLogo').innerHTML = `<img src="${settings.logo}" alt="">`;
+    } else {
+      document.getElementById('bandLogo').textContent =
+        name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
+    }
+    document.getElementById('bandSchool').textContent = name;
+    document.getElementById('bandUser').textContent = user.name || user.username;
+  }
+
+  /* ---------- STATE ---------- */
+  const liveConfig = E.getHomepageLive();
+  const draftConfig = E.getHomepageDraft();
+  const state = {
+    config: JSON.parse(JSON.stringify(draftConfig || liveConfig || E.DEFAULT_HOMEPAGE)),
+    hasChanges: false,
+    activeTab: 'hero'
+  };
+
+  function markChanged(){
+    state.hasChanges = true;
+    paintFooterNote();
+    /* Save draft on every change (silent auto-save) */
+    E.saveHomepageDraft(state.config);
+  }
+
+  function paintFooterNote(){
+    const note = document.getElementById('footerNote');
+    if(!state.hasChanges){
+      note.innerHTML = 'No unsaved changes.';
+      return;
+    }
+    note.innerHTML = `<strong>● Unsaved changes</strong> — save draft or publish live.`;
+  }
+
+  /* ---------- STATUS BAR (PATCH: unpublished + config warnings) ---------- */
+  function paintStatusBar(){
+    const live = E.getHomepageLive();
+    const draft = E.getHomepageDraft();
+    const liveTime = live?.updatedAt ? E.fmtDateTime(live.updatedAt) : 'never';
+    const draftTime = draft?.updatedAt ? E.fmtDateTime(draft.updatedAt) : 'never';
+    const draftIsDifferent = draft && live && JSON.stringify(draft) !== JSON.stringify(live);
+    const hasLive = !!live;
+    const hasDraft = !!draft;
+
+    const bar = document.getElementById('statusBar');
+    bar.innerHTML = `
+      <div class="left">
+        <span class="status-pill ${hasLive ? 'live' : 'draft'}">
+          ${hasLive ? '● Live' : '○ Not published'}
+        </span>
+        <span style="color:var(--muted)">
+          Live updated: <strong>${E.esc(liveTime)}</strong>
+        </span>
+        <span style="color:var(--muted)">
+          Draft updated: <strong>${E.esc(draftTime)}</strong>
+        </span>
+        ${draftIsDifferent ? `<span class="status-pill warn">⚠ Draft differs from live</span>` : ''}
+      </div>
+      <div class="right">
+        <a href="home.html?preview=1" target="_blank" class="btn outline small">↗ Open draft preview</a>
+        <a href="home.html" target="_blank" class="btn outline small">↗ Open live page</a>
+      </div>
+    `;
+
+    /* PATCH: never-published warning */
+    if(!hasLive){
+      bar.insertAdjacentHTML('beforeend', `
+        <div class="diagnostic-banner danger">
+          <strong>⚠ This home page has never been published.</strong>
+          Visitors currently see the default EduCore content. Click
+          <strong>🚀 Publish live</strong> below to make your edits visible to the public.
+        </div>`);
+    } else if(draftIsDifferent){
+      bar.insertAdjacentHTML('beforeend', `
+        <div class="diagnostic-banner warn">
+          <strong>● You have unpublished changes.</strong>
+          The live page shows the last-published version. Click
+          <strong>🚀 Publish live</strong> below to update the public page.
+        </div>`);
+    }
+
+    /* PATCH: config diagnostics */
+    const diagnostics = [];
+    if(state.config.carousel && state.config.carousel.enabled
+       && (!Array.isArray(state.config.carousel.slides) || !state.config.carousel.slides.length)){
+      diagnostics.push('Carousel is enabled but has no slides — it will be skipped. Add slides in the Carousel tab.');
+    }
+    if(state.config.welcome && state.config.welcome.enabled
+       && !state.config.welcome.message && !state.config.welcome.headName){
+      diagnostics.push('Welcome section is enabled but has no message or name — it will not render.');
+    }
+    if(state.config.programs && state.config.programs.enabled
+       && (!Array.isArray(state.config.programs.tiers) || !state.config.programs.tiers.length)){
+      diagnostics.push('Programs section is enabled but has no cards.');
+    }
+    if(state.config.contact && state.config.contact.enabled
+       && state.config.contact.showEnquiryForm !== false
+       && !state.config.contact.email && !(E.readStore(E.STORE_KEYS.settings, {}) || {}).email){
+      diagnostics.push('Contact section has no email set and the school settings have none either — visitors will see the default.');
+    }
+    if(diagnostics.length){
+      bar.insertAdjacentHTML('beforeend', `
+        <div class="diagnostic-banner warn">
+          <strong>⚠ ${diagnostics.length} config warning${diagnostics.length===1?'':'s'}:</strong>
+          <ul>${diagnostics.map(d => `<li>${E.esc(d)}</li>`).join('')}</ul>
+        </div>`);
+    }
+  }
+
+  /* ---------- TABS ---------- */
+  const TABS = [
+    { key:'hero',        label:'🎯 Hero',        panel: paintHeroPanel },
+    { key:'carousel',    label:'🎞 Carousel',    panel: paintCarouselPanel },
+    { key:'ticker',      label:'📢 Ticker',      panel: paintTickerPanel },
+    { key:'welcome',     label:'👋 Welcome',     panel: paintWelcomePanel },
+    { key:'quickFacts',  label:'📊 Quick Facts', panel: paintQuickFactsPanel },
+    { key:'programs',    label:'📚 Programs',    panel: paintProgramsPanel },
+    { key:'whyChooseUs', label:'✨ Why Us',      panel: paintWhyChooseUsPanel },
+    { key:'gallery',     label:'🖼 Gallery',     panel: paintGalleryPanel },
+    { key:'leadership',  label:'👥 Leadership',  panel: paintLeadershipPanel },
+    { key:'verify',      label:'🔍 Verify',      panel: paintVerifyPanel },
+    { key:'hiring',      label:'💼 Hiring',      panel: paintHiringPanel },
+    { key:'contact',     label:'✉ Contact',     panel: paintContactPanel },
+    { key:'footer',      label:'🦶 Footer',      panel: paintFooterPanel }
+  ];
+
+  function paintTabs(){
+    const wrap = document.getElementById('tabsWrap');
+    wrap.innerHTML = TABS.map(t => {
+      const cfg = state.config[t.key];
+      const enabled = !cfg || cfg.enabled !== false;
+      return `<button class="tab-btn ${state.activeTab === t.key ? 'active' : ''}"
+        data-tab="${t.key}">
+        <span class="dot" style="background:${enabled ? '#58a4ff' : '#94a3b8'}"></span>
+        ${t.label}
+      </button>`;
+    }).join('');
+
+    wrap.querySelectorAll('[data-tab]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.activeTab = btn.dataset.tab;
+        paintTabs();
+        paintPanels();
+      });
+    });
+  }
+
+  function paintPanels(){
+    const wrap = document.getElementById('panelsWrap');
+    const tab = TABS.find(t => t.key === state.activeTab);
+    if(!tab){ wrap.innerHTML = ''; return; }
+    wrap.innerHTML = tab.panel();
+    bindPanelEvents();
+    refreshPreview();
+  }
+
+  /* ---------- HELPERS ---------- */
+  function esc(s){ return E.esc(s); }
+  function val(s){ return s == null ? '' : String(s); }
+
+  function setDeep(path, value){
+    const parts = path.split('.');
+    let obj = state.config;
+    for(let i = 0; i < parts.length - 1; i++){
+      if(!obj[parts[i]]) obj[parts[i]] = {};
+      obj = obj[parts[i]];
+    }
+    obj[parts[parts.length - 1]] = value;
+    markChanged();
+  }
+
+  function getDeep(path){
+    const parts = path.split('.');
+    let obj = state.config;
+    for(const p of parts){
+      if(obj == null) return undefined;
+      obj = obj[p];
+    }
+    return obj;
+  }
+
+  function toggleRow(path, label){
+    const cur = getDeep(path) !== false;
+    return `<div class="toggle-row">
+      <input type="checkbox" data-path="${path}" ${cur ? 'checked' : ''} id="tgl-${path.replace(/\./g,'-')}">
+      <label for="tgl-${path.replace(/\./g,'-')}">${label}</label>
+    </div>`;
+  }
+
+  function fieldText(path, label, opts){
+    opts = opts || {};
+    const v = val(getDeep(path));
+    const help = opts.help ? `<span class="help">${opts.help}</span>` : '';
+    if(opts.textarea){
+      return `<div class="field">
+        <label>${label}</label>
+        <textarea data-path="${path}" rows="${opts.rows || 4}"
+          placeholder="${esc(opts.placeholder || '')}">${esc(v)}</textarea>
+        ${help}
+      </div>`;
+    }
+    return `<div class="field">
+      <label>${label}</label>
+      <input type="${opts.type || 'text'}" data-path="${path}"
+        value="${esc(v)}" placeholder="${esc(opts.placeholder || '')}"
+        ${opts.min != null ? 'min="' + opts.min + '"' : ''}
+        ${opts.max != null ? 'max="' + opts.max + '"' : ''}>
+      ${help}
+    </div>`;
+  }
+
+  function fieldImage(path, label, wide){
+    const v = getDeep(path);
+    return `<div class="field">
+      <label>${label}</label>
+      <div class="img-field">
+        <div class="img-preview ${wide ? 'wide' : ''}">
+          ${v ? `<img src="${esc(v)}" alt=""><button class="rm" data-rm-img="${path}">✕</button>` : 'No image'}
+        </div>
+        <div class="img-actions">
+          <input type="file" accept="image/*" data-upload="${path}" style="display:none">
+          <button class="btn secondary small" data-pick-img="${path}">📷 Upload image</button>
+          <span class="help">${wide ? 'Recommended 1920×1080 · max 2 MB' : 'Recommended 400×400 · max 1 MB'}</span>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  /* ---------- HERO PANEL ---------- */
+  function paintHeroPanel(){
+    const h = state.config.hero || {};
+    return `
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Hero section</h3><p>The main banner at the top of the page</p></div>
+        </div>
+        <div class="panel-body">
+          ${fieldText('hero.kickerText', 'Kicker text', { help:'Small badge above the headline' })}
+          ${fieldText('hero.title', 'Headline', { textarea:true, rows:2 })}
+          ${fieldText('hero.subtitle', 'Subheadline', { textarea:true, rows:3 })}
+          <div class="field-row">
+            ${fieldText('hero.primaryCtaText', 'Primary button label')}
+            ${fieldText('hero.primaryCtaLink', 'Primary button link', { placeholder:'#contact or https://...' })}
+          </div>
+          <div class="field-row">
+            ${fieldText('hero.secondaryCtaText', 'Secondary button label')}
+            ${fieldText('hero.secondaryCtaLink', 'Secondary button link', { placeholder:'index.html' })}
+          </div>
+
+          ${toggleRow('hero.showStats', 'Show stats card')}
+
+          <div class="field">
+            <label>Stats source</label>
+            <select data-path="hero.statsSource">
+              <option value="auto" ${h.statsSource === 'auto' ? 'selected' : ''}>Auto — count from stores</option>
+              <option value="manual" ${h.statsSource === 'manual' ? 'selected' : ''}>Manual — custom values below</option>
+            </select>
+          </div>
+
+          ${h.statsSource === 'manual' ? `
+            <div class="field">
+              <label>Custom stats</label>
+              ${(h.customStats || []).map((s, i) => `
+                <div class="repeater-item">
+                  <div class="item-head"><strong>Stat ${i+1}</strong>
+                    <div class="item-actions"><button data-rm-stat="${i}" class="danger">Remove</button></div>
+                  </div>
+                  <div class="field-row cols-3">
+                    <input type="text" value="${esc(s.icon || '')}" placeholder="Icon (emoji)" data-stat="${i}.icon">
+                    <input type="text" value="${esc(s.label || '')}" placeholder="Label" data-stat="${i}.label">
+                    <input type="text" value="${esc(s.value || '')}" placeholder="Value" data-stat="${i}.value">
+                  </div>
+                  <div style="margin-top:8px">
+                    <input type="text" value="${esc(s.sub || '')}" placeholder="Subtext (optional)" data-stat="${i}.sub" style="width:100%">
+                  </div>
+                </div>`).join('')}
+              <button class="add-item-btn" data-add-stat>＋ Add stat</button>
+            </div>` : ''}
+        </div>
+      </div>`;
+  }
+
+  /* ---------- CAROUSEL PANEL ---------- */
+  function paintCarouselPanel(){
+    const c = state.config.carousel || {};
+    const slides = Array.isArray(c.slides) ? c.slides : [];
+    return `
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Hero carousel</h3><p>Replaces the hero image with a rotating slider</p></div>
+        </div>
+        <div class="panel-body">
+          ${toggleRow('carousel.enabled', 'Enable carousel')}
+
+          ${c.enabled && slides.length === 0 ? `
+            <div class="diagnostic-banner warn" style="margin-bottom:14px">
+              <strong>⚠ Carousel is on but has no slides.</strong>
+              The hero will show instead until you add at least one slide below.
+            </div>` : ''}
+
+          <div class="field-row">
+            ${fieldText('carousel.intervalMs', 'Interval (ms)', { type:'number', min:2000, max:20000, help:'How long each slide shows' })}
+            <div class="field">
+              <label>Auto-play</label>
+              <select data-path="carousel.autoPlay">
+                <option value="true" ${c.autoPlay !== false ? 'selected' : ''}>Yes</option>
+                <option value="false" ${c.autoPlay === false ? 'selected' : ''}>No — manual only</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Slides</label>
+            ${slides.map((s, i) => `
+              <div class="repeater-item">
+                <div class="item-head">
+                  <strong>Slide ${i+1}</strong>
+                  <div class="item-actions">
+                    <button data-move-slide="${i}:-1" ${i === 0 ? 'disabled' : ''}>↑</button>
+                    <button data-move-slide="${i}:1" ${i === slides.length - 1 ? 'disabled' : ''}>↓</button>
+                    <button data-rm-slide="${i}" class="danger">Remove</button>
+                  </div>
+                </div>
+                ${fieldImage(`carousel.slides.${i}.image`, 'Image', true)}
+                ${fieldText(`carousel.slides.${i}.title`, 'Title')}
+                ${fieldText(`carousel.slides.${i}.caption`, 'Caption', { textarea:true, rows:2 })}
+                <div class="field-row cols-3">
+                  <div class="field">
+                    <label>Overlay</label>
+                    <select data-path="carousel.slides.${i}.overlay">
+                      <option value="dark" ${s.overlay === 'dark' ? 'selected' : ''}>Dark</option>
+                      <option value="light" ${s.overlay === 'light' ? 'selected' : ''}>Light</option>
+                      <option value="none" ${!s.overlay || s.overlay === 'none' ? 'selected' : ''}>None</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label>CTA label</label>
+                    <input type="text" value="${esc(s.ctaText || '')}" data-path="carousel.slides.${i}.ctaText" placeholder="Learn more">
+                  </div>
+                  <div class="field">
+                    <label>CTA link</label>
+                    <input type="text" value="${esc(s.ctaLink || '')}" data-path="carousel.slides.${i}.ctaLink" placeholder="#contact">
+                  </div>
+                </div>
+              </div>`).join('')}
+            <button class="add-item-btn" data-add-slide>＋ Add slide</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  /* ---------- TICKER PANEL ---------- */
+  function paintTickerPanel(){
+    return `
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Announcement ticker</h3><p>Rolling strip below the hero — pulls from live announcements</p></div>
+        </div>
+        <div class="panel-body">
+          ${toggleRow('ticker.enabled', 'Enable ticker')}
+          <div class="field help">
+            <label style="text-transform:none;letter-spacing:0;color:var(--muted);font-weight:500;font-size:11.5px;line-height:1.6">
+              The ticker shows the latest <strong>public</strong> announcements (audience "All").
+              To add or edit them, go to <a href="announcements.html" style="color:var(--blue)">Announcements</a>.
+            </label>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  /* ---------- WELCOME PANEL ---------- */
+  function paintWelcomePanel(){
+    return `
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Welcome message</h3><p>Personal note from the head of school</p></div>
+        </div>
+        <div class="panel-body">
+          ${toggleRow('welcome.enabled', 'Enable welcome section')}
+          <div class="field-row">
+            ${fieldText('welcome.headName', "Head's name")}
+            ${fieldText('welcome.headTitle', 'Title', { placeholder:'Principal' })}
+          </div>
+          ${fieldImage('welcome.headPhoto', 'Photo (square)')}
+          ${fieldText('welcome.message', 'Message', { textarea:true, rows:6 })}
+          <div class="field-row">
+            ${fieldText('welcome.ctaText', 'CTA label (optional)')}
+            ${fieldText('welcome.ctaLink', 'CTA link (optional)')}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  /* ---------- QUICK FACTS PANEL ---------- */
+  function paintQuickFactsPanel(){
+    const q = state.config.quickFacts || {};
+    const items = Array.isArray(q.items) ? q.items : [];
+    return `
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Quick facts</h3><p>4-tile stat strip</p></div>
+        </div>
+        <div class="panel-body">
+          ${toggleRow('quickFacts.enabled', 'Enable quick facts')}
+          <div class="field">
+            <label>Stats source</label>
+            <select data-path="quickFacts.statsSource">
+              <option value="auto" ${q.statsSource === 'auto' ? 'selected' : ''}>Auto — from stores</option>
+              <option value="manual" ${q.statsSource === 'manual' ? 'selected' : ''}>Manual — custom values</option>
+            </select>
+          </div>
+          ${q.statsSource === 'manual' ? `
+            <div class="field">
+              <label>Custom stats</label>
+              ${items.map((s, i) => `
+                <div class="repeater-item">
+                  <div class="item-head"><strong>Stat ${i+1}</strong>
+                    <div class="item-actions"><button data-rm-qf="${i}" class="danger">Remove</button></div>
+                  </div>
+                  <div class="field-row cols-3">
+                    <input type="text" value="${esc(s.icon || '')}" placeholder="Icon" data-qf="${i}.icon">
+                    <input type="text" value="${esc(s.label || '')}" placeholder="Label" data-qf="${i}.label">
+                    <input type="text" value="${esc(s.value || '')}" placeholder="Value" data-qf="${i}.value">
+                  </div>
+                  <div style="margin-top:8px">
+                    <input type="text" value="${esc(s.sub || '')}" placeholder="Subtext" data-qf="${i}.sub" style="width:100%">
+                  </div>
+                </div>`).join('')}
+              <button class="add-item-btn" data-add-qf>＋ Add stat</button>
+            </div>` : ''}
+        </div>
+      </div>`;
+  }
+
+  /* ---------- PROGRAMS PANEL ---------- */
+  function paintProgramsPanel(){
+    const p = state.config.programs || {};
+    const tiers = Array.isArray(p.tiers) ? p.tiers : [];
+    return `
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Programs / Academics</h3><p>3-tier curriculum showcase</p></div>
+        </div>
+        <div class="panel-body">
+          ${toggleRow('programs.enabled', 'Enable programs section')}
+          ${fieldText('programs.heading', 'Heading')}
+          ${fieldText('programs.subheading', 'Subheading', { textarea:true, rows:2 })}
+
+          <div class="field">
+            <label>Program cards</label>
+            ${tiers.map((t, i) => `
+              <div class="repeater-item">
+                <div class="item-head">
+                  <strong>Card ${i+1}</strong>
+                  <div class="item-actions">
+                    <button data-move-tier="${i}:-1" ${i === 0 ? 'disabled' : ''}>↑</button>
+                    <button data-move-tier="${i}:1" ${i === tiers.length - 1 ? 'disabled' : ''}>↓</button>
+                    <button data-rm-tier="${i}" class="danger">Remove</button>
+                  </div>
+                </div>
+                <div class="field-row cols-3">
+                  <div class="field"><label>Icon</label><input type="text" value="${esc(t.icon || '')}" data-path="programs.tiers.${i}.icon" placeholder="📚"></div>
+                  <div class="field"><label>Name</label><input type="text" value="${esc(t.name || '')}" data-path="programs.tiers.${i}.name"></div>
+                  <div class="field"><label>Pill label</label><input type="text" value="${esc(t.pillLabel || '')}" data-path="programs.tiers.${i}.pillLabel"></div>
+                </div>
+                <div class="field"><label>Range</label><input type="text" value="${esc(t.range || '')}" data-path="programs.tiers.${i}.range"></div>
+                <div class="field">
+                  <label>Pill color</label>
+                  <select data-path="programs.tiers.${i}.pillColor">
+                    <option value="nursery" ${t.pillColor === 'nursery' ? 'selected' : ''}>Nursery (pink)</option>
+                    <option value="primary" ${t.pillColor === 'primary' ? 'selected' : ''}>Primary (blue)</option>
+                    <option value="secondary" ${t.pillColor === 'secondary' ? 'selected' : ''}>Secondary (green)</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Bullets (one per line)</label>
+                  <textarea data-path="programs.tiers.${i}.bullets" data-bullets="${i}" rows="4">${esc((t.bullets || []).join('\n'))}</textarea>
+                </div>
+              </div>`).join('')}
+            <button class="add-item-btn" data-add-tier>＋ Add card</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  /* ---------- WHY CHOOSE US PANEL ---------- */
+  function paintWhyChooseUsPanel(){
+    const w = state.config.whyChooseUs || {};
+    const tiles = Array.isArray(w.tiles) ? w.tiles : [];
+    return `
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Why choose us</h3><p>4–6 feature tiles</p></div>
+        </div>
+        <div class="panel-body">
+          ${toggleRow('whyChooseUs.enabled', 'Enable why choose us')}
+          ${fieldText('whyChooseUs.heading', 'Heading')}
+          <div class="field">
+            <label>Feature tiles</label>
+            ${tiles.map((t, i) => `
+              <div class="repeater-item">
+                <div class="item-head">
+                  <strong>Tile ${i+1}</strong>
+                  <div class="item-actions">
+                    <button data-move-why="${i}:-1" ${i === 0 ? 'disabled' : ''}>↑</button>
+                    <button data-move-why="${i}:1" ${i === tiles.length - 1 ? 'disabled' : ''}>↓</button>
+                    <button data-rm-why="${i}" class="danger">Remove</button>
+                  </div>
+                </div>
+                <div class="field-row">
+                  <div class="field"><label>Icon</label><input type="text" value="${esc(t.icon || '')}" data-path="whyChooseUs.tiles.${i}.icon" placeholder="🎓"></div>
+                  <div class="field"><label>Title</label><input type="text" value="${esc(t.title || '')}" data-path="whyChooseUs.tiles.${i}.title"></div>
+                </div>
+                <div class="field"><label>Description</label><textarea data-path="whyChooseUs.tiles.${i}.text" rows="2">${esc(t.text || '')}</textarea></div>
+              </div>`).join('')}
+            <button class="add-item-btn" data-add-why>＋ Add tile</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  /* ---------- GALLERY PANEL ---------- */
+  function paintGalleryPanel(){
+    const g = state.config.gallery || {};
+    const photos = Array.isArray(g.photos) ? g.photos : [];
+    return `
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Photo gallery</h3><p>Life at school carousel</p></div>
+        </div>
+        <div class="panel-body">
+          ${toggleRow('gallery.enabled', 'Enable gallery')}
+          ${fieldText('gallery.heading', 'Heading')}
+          ${fieldText('gallery.subheading', 'Subheading')}
+          <div class="field">
+            <label>Photos</label>
+            ${photos.map((p, i) => `
+              <div class="repeater-item">
+                <div class="item-head">
+                  <strong>Photo ${i+1}</strong>
+                  <div class="item-actions">
+                    <button data-move-gal="${i}:-1" ${i === 0 ? 'disabled' : ''}>↑</button>
+                    <button data-move-gal="${i}:1" ${i === photos.length - 1 ? 'disabled' : ''}>↓</button>
+                    <button data-rm-gal="${i}" class="danger">Remove</button>
+                  </div>
+                </div>
+                ${fieldImage(`gallery.photos.${i}.image`, 'Photo', true)}
+                <div class="field"><label>Caption</label><input type="text" value="${esc(p.caption || '')}" data-path="gallery.photos.${i}.caption"></div>
+              </div>`).join('')}
+            <button class="add-item-btn" data-add-gal>＋ Add photo</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  /* ---------- LEADERSHIP PANEL ---------- */
+  function paintLeadershipPanel(){
+    const l = state.config.leadership || {};
+    const members = Array.isArray(l.members) ? l.members : [];
+    return `
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Leadership team</h3><p>Leave empty to auto-pull from user records (Principal + Registrar)</p></div>
+        </div>
+        <div class="panel-body">
+          ${toggleRow('leadership.enabled', 'Enable leadership section')}
+          ${fieldText('leadership.heading', 'Heading')}
+          <div class="field">
+            <label>Team members</label>
+            ${members.map((m, i) => `
+              <div class="repeater-item">
+                <div class="item-head">
+                  <strong>Member ${i+1}</strong>
+                  <div class="item-actions">
+                    <button data-move-lead="${i}:-1" ${i === 0 ? 'disabled' : ''}>↑</button>
+                    <button data-move-lead="${i}:1" ${i === members.length - 1 ? 'disabled' : ''}>↓</button>
+                    <button data-rm-lead="${i}" class="danger">Remove</button>
+                  </div>
+                </div>
+                <div class="field-row">
+                  <div class="field"><label>Name</label><input type="text" value="${esc(m.name || '')}" data-path="leadership.members.${i}.name"></div>
+                  <div class="field"><label>Role</label><input type="text" value="${esc(m.role || '')}" data-path="leadership.members.${i}.role" placeholder="Principal"></div>
+                </div>
+                ${fieldImage(`leadership.members.${i}.photo`, 'Photo')}
+                <div class="field"><label>Short bio (optional)</label><textarea data-path="leadership.members.${i}.bio" rows="2">${esc(m.bio || '')}</textarea></div>
+              </div>`).join('')}
+            <button class="add-item-btn" data-add-lead>＋ Add member</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  /* ---------- VERIFY PANEL ---------- */
+  function paintVerifyPanel(){
+    return `
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Verify member widget</h3><p>Public-safe lookup — no sensitive data shown</p></div>
+        </div>
+        <div class="panel-body">
+          ${toggleRow('verify.enabled', 'Enable verify section')}
+          ${fieldText('verify.heading', 'Heading')}
+          ${fieldText('verify.subheading', 'Subheading', { textarea:true, rows:2 })}
+          ${fieldText('verify.note', 'Note', { textarea:true, rows:3, help:'Shown below the search box' })}
+          <div class="field help" style="background:#f0fdf7;border:1px solid #b8e9d3;border-radius:9px;padding:12px 14px">
+            <label style="text-transform:none;letter-spacing:0;color:#0e6b4a;font-weight:800;font-size:11.5px;margin-bottom:6px">
+              🔒 Safe data only
+            </label>
+            <div style="font-size:11.5px;color:#0e6b4a;line-height:1.6">
+              The verify widget returns <strong>only</strong>: name, role, class (for students), department (for teachers), and status.
+              It <strong>never</strong> shows fees, grades, phone numbers, email addresses, or any internal IDs.
+              Lookups are <strong>exact-match only</strong> and rate-limited to one per 3 seconds.
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  /* ---------- HIRING PANEL ---------- */
+  function paintHiringPanel(){
+    return `
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Hiring section</h3><p>Open positions from the Hiring page</p></div>
+        </div>
+        <div class="panel-body">
+          ${toggleRow('hiring.enabled', 'Show hiring section on home page')}
+          ${fieldText('hiring.heading', 'Heading')}
+          ${fieldText('hiring.subheading', 'Subheading')}
+          <div class="field help" style="background:#eef5ff;border:1px solid #cfe3ff;border-radius:9px;padding:12px 14px;color:#1d4d82">
+            <label style="text-transform:none;letter-spacing:0;color:#0e3b6b;font-weight:800;font-size:11.5px;margin-bottom:6px">
+              💼 How hiring works
+            </label>
+            <div style="font-size:11.5px;line-height:1.7">
+              This section lists positions that are currently <strong>open</strong>. To create a new position,
+              set its schedule, and review applications, go to
+              <a href="hiring-admin.html" style="color:var(--blue);font-weight:700">Hiring →</a>.
+              The status check widget (below the positions list) is built into the home page automatically.
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  /* ---------- CONTACT PANEL ---------- */
+  function paintContactPanel(){
+    return `
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Contact &amp; enquiry</h3><p>Contact info shown to visitors</p></div>
+        </div>
+        <div class="panel-body">
+          ${toggleRow('contact.enabled', 'Enable contact section')}
+          ${fieldText('contact.heading', 'Heading')}
+          ${fieldText('contact.subheading', 'Subheading', { textarea:true, rows:2 })}
+          <div class="field-row">
+            ${fieldText('contact.phone', 'Phone', { placeholder:'+231 77 000 0000' })}
+            ${fieldText('contact.email', 'Email', { type:'email' })}
+          </div>
+          ${fieldText('contact.address', 'Address')}
+          ${fieldText('contact.hours', 'Office hours', { textarea:true, rows:2 })}
+          <div class="field help" style="background:#f8faff;border:1px solid var(--line);border-radius:9px;padding:10px 14px;color:var(--muted);font-size:11px;line-height:1.6">
+            If any of these are blank, the page falls back to the values from <strong>School Settings</strong>.
+          </div>
+        </div>
+      </div>`;
+  }
+
+  /* ---------- FOOTER PANEL ---------- */
+  function paintFooterPanel(){
+    const f = state.config.footer || {};
+    const socials = Array.isArray(f.socials) ? f.socials : [];
+    const quickLinks = Array.isArray(f.quickLinks) ? f.quickLinks : [];
+    return `
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Footer</h3><p>Tagline, socials, and quick links</p></div>
+        </div>
+        <div class="panel-body">
+          ${fieldText('footer.tagline', 'Tagline', { textarea:true, rows:2 })}
+
+          <div class="field">
+            <label>Social links</label>
+            ${socials.map((s, i) => `
+              <div class="repeater-item">
+                <div class="item-head">
+                  <strong>Social ${i+1}</strong>
+                  <div class="item-actions"><button data-rm-soc="${i}" class="danger">Remove</button></div>
+                </div>
+                <div class="field-row cols-3">
+                  <div class="field"><label>Icon</label><input type="text" value="${esc(s.icon || '')}" data-path="footer.socials.${i}.icon" placeholder="📘"></div>
+                  <div class="field"><label>Platform</label><input type="text" value="${esc(s.platform || '')}" data-path="footer.socials.${i}.platform"></div>
+                  <div class="field"><label>URL</label><input type="text" value="${esc(s.url || '')}" data-path="footer.socials.${i}.url"></div>
+                </div>
+              </div>`).join('')}
+            <button class="add-item-btn" data-add-soc>＋ Add social</button>
+          </div>
+
+          <div class="field">
+            <label>Quick links</label>
+            ${quickLinks.map((l, i) => `
+              <div class="repeater-item">
+                <div class="item-head">
+                  <strong>Link ${i+1}</strong>
+                  <div class="item-actions"><button data-rm-lnk="${i}" class="danger">Remove</button></div>
+                </div>
+                <div class="field-row">
+                  <div class="field"><label>Label</label><input type="text" value="${esc(l.label || '')}" data-path="footer.quickLinks.${i}.label"></div>
+                  <div class="field"><label>Href</label><input type="text" value="${esc(l.href || '')}" data-path="footer.quickLinks.${i}.href" placeholder="#about"></div>
+                </div>
+              </div>`).join('')}
+            <button class="add-item-btn" data-add-lnk>＋ Add link</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  /* ---------- EVENT BINDING ---------- */
+  function bindPanelEvents(){
+    const wrap = document.getElementById('panelsWrap');
+
+    /* Text inputs */
+    wrap.querySelectorAll('[data-path]').forEach(el => {
+      if(el.tagName === 'SELECT'){
+        el.addEventListener('change', () => {
+          const path = el.dataset.path;
+          let v = el.value;
+          if(v === 'true') v = true;
+          else if(v === 'false') v = false;
+          else if(el.type === 'number') v = Number(v);
+          setDeep(path, v);
+          /* Re-render if this toggles conditional sections */
+          if(path === 'hero.statsSource' || path === 'quickFacts.statsSource'){
+            paintPanels();
+          } else {
+            refreshPreview();
+            paintStatusBar();
+          }
+        });
+      } else if(el.type === 'checkbox'){
+        el.addEventListener('change', () => {
+          setDeep(el.dataset.path, el.checked);
+          if(el.dataset.path.endsWith('.enabled')){
+            paintTabs();
+            refreshPreview();
+            paintStatusBar();
+          } else {
+            refreshPreview();
+          }
+        });
+      } else if(el.type === 'file'){
+        /* Handled separately */
+      } else {
+        el.addEventListener('input', () => {
+          const path = el.dataset.path;
+          let v = el.value;
+          if(el.type === 'number') v = Number(v);
+          setDeep(path, v);
+          refreshPreview();
+        });
+      }
+    });
+
+    /* Bullets textarea (converts newlines to array) */
+    wrap.querySelectorAll('[data-bullets]').forEach(el => {
+      el.addEventListener('input', () => {
+        const i = Number(el.dataset.bullets);
+        const lines = el.value.split('\n').map(l => l.trim()).filter(Boolean);
+        if(!state.config.programs.tiers[i]) return;
+        state.config.programs.tiers[i].bullets = lines;
+        markChanged();
+        refreshPreview();
+      });
+    });
+
+    /* Image upload */
+    wrap.querySelectorAll('[data-pick-img]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const inp = wrap.querySelector(`[data-upload="${btn.dataset.pickImg}"]`);
+        if(inp) inp.click();
+      });
+    });
+    wrap.querySelectorAll('[data-upload]').forEach(inp => {
+      inp.addEventListener('change', () => {
+        const file = inp.files[0];
+        if(!file) return;
+        if(!file.type.startsWith('image/')){ E.toast('Please pick an image.'); return; }
+        if(file.size > 2 * 1024 * 1024){ E.toast('Max 2 MB.'); return; }
+        const reader = new FileReader();
+        reader.onload = ev => {
+          setDeep(inp.dataset.upload, ev.target.result);
+          paintPanels();
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+    wrap.querySelectorAll('[data-rm-img]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        setDeep(btn.dataset.rmImg, '');
+        paintPanels();
+      });
+    });
+
+    /* Add / remove repeaters */
+    wrap.querySelectorAll('[data-add-stat]').forEach(btn => btn.addEventListener('click', () => {
+      if(!state.config.hero.customStats) state.config.hero.customStats = [];
+      state.config.hero.customStats.push({ icon:'🎯', label:'', value:'', sub:'' });
+      markChanged(); paintPanels();
+    }));
+    wrap.querySelectorAll('[data-rm-stat]').forEach(btn => btn.addEventListener('click', () => {
+      state.config.hero.customStats.splice(Number(btn.dataset.rmStat), 1);
+      markChanged(); paintPanels();
+    }));
+
+    wrap.querySelectorAll('[data-add-qf]').forEach(btn => btn.addEventListener('click', () => {
+      if(!state.config.quickFacts.items) state.config.quickFacts.items = [];
+      state.config.quickFacts.items.push({ icon:'📊', label:'', value:'', sub:'' });
+      markChanged(); paintPanels();
+    }));
+    wrap.querySelectorAll('[data-rm-qf]').forEach(btn => btn.addEventListener('click', () => {
+      state.config.quickFacts.items.splice(Number(btn.dataset.rmQf), 1);
+      markChanged(); paintPanels();
+    }));
+
+    wrap.querySelectorAll('[data-add-slide]').forEach(btn => btn.addEventListener('click', () => {
+      if(!state.config.carousel.slides) state.config.carousel.slides = [];
+      state.config.carousel.slides.push({
+        id:'slide-' + Date.now(), image:'', title:'', caption:'',
+        overlay:'dark', ctaText:'', ctaLink:'', order: state.config.carousel.slides.length + 1
+      });
+      markChanged(); paintPanels();
+    }));
+    wrap.querySelectorAll('[data-rm-slide]').forEach(btn => btn.addEventListener('click', () => {
+      state.config.carousel.slides.splice(Number(btn.dataset.rmSlide), 1);
+      markChanged(); paintPanels();
+    }));
+    wrap.querySelectorAll('[data-move-slide]').forEach(btn => btn.addEventListener('click', () => {
+      const [i, dir] = btn.dataset.moveSlide.split(':').map(Number);
+      const arr = state.config.carousel.slides;
+      const j = i + dir;
+      if(j < 0 || j >= arr.length) return;
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+      markChanged(); paintPanels();
+    }));
+
+    wrap.querySelectorAll('[data-add-tier]').forEach(btn => btn.addEventListener('click', () => {
+      if(!state.config.programs.tiers) state.config.programs.tiers = [];
+      state.config.programs.tiers.push({ icon:'📖', name:'New program', range:'', pillLabel:'', pillColor:'primary', bullets:[] });
+      markChanged(); paintPanels();
+    }));
+    wrap.querySelectorAll('[data-rm-tier]').forEach(btn => btn.addEventListener('click', () => {
+      state.config.programs.tiers.splice(Number(btn.dataset.rmTier), 1);
+      markChanged(); paintPanels();
+    }));
+    wrap.querySelectorAll('[data-move-tier]').forEach(btn => btn.addEventListener('click', () => {
+      const [i, dir] = btn.dataset.moveTier.split(':').map(Number);
+      const arr = state.config.programs.tiers;
+      const j = i + dir;
+      if(j < 0 || j >= arr.length) return;
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+      markChanged(); paintPanels();
+    }));
+
+    wrap.querySelectorAll('[data-add-why]').forEach(btn => btn.addEventListener('click', () => {
+      if(!state.config.whyChooseUs.tiles) state.config.whyChooseUs.tiles = [];
+      state.config.whyChooseUs.tiles.push({ icon:'✨', title:'', text:'' });
+      markChanged(); paintPanels();
+    }));
+    wrap.querySelectorAll('[data-rm-why]').forEach(btn => btn.addEventListener('click', () => {
+      state.config.whyChooseUs.tiles.splice(Number(btn.dataset.rmWhy), 1);
+      markChanged(); paintPanels();
+    }));
+    wrap.querySelectorAll('[data-move-why]').forEach(btn => btn.addEventListener('click', () => {
+      const [i, dir] = btn.dataset.moveWhy.split(':').map(Number);
+      const arr = state.config.whyChooseUs.tiles;
+      const j = i + dir;
+      if(j < 0 || j >= arr.length) return;
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+      markChanged(); paintPanels();
+    }));
+
+    wrap.querySelectorAll('[data-add-gal]').forEach(btn => btn.addEventListener('click', () => {
+      if(!state.config.gallery.photos) state.config.gallery.photos = [];
+      state.config.gallery.photos.push({ image:'', caption:'', order: state.config.gallery.photos.length + 1 });
+      markChanged(); paintPanels();
+    }));
+    wrap.querySelectorAll('[data-rm-gal]').forEach(btn => btn.addEventListener('click', () => {
+      state.config.gallery.photos.splice(Number(btn.dataset.rmGal), 1);
+      markChanged(); paintPanels();
+    }));
+    wrap.querySelectorAll('[data-move-gal]').forEach(btn => btn.addEventListener('click', () => {
+      const [i, dir] = btn.dataset.moveGal.split(':').map(Number);
+      const arr = state.config.gallery.photos;
+      const j = i + dir;
+      if(j < 0 || j >= arr.length) return;
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+      markChanged(); paintPanels();
+    }));
+
+    wrap.querySelectorAll('[data-add-lead]').forEach(btn => btn.addEventListener('click', () => {
+      if(!state.config.leadership.members) state.config.leadership.members = [];
+      state.config.leadership.members.push({ name:'', role:'', photo:'', bio:'' });
+      markChanged(); paintPanels();
+    }));
+    wrap.querySelectorAll('[data-rm-lead]').forEach(btn => btn.addEventListener('click', () => {
+      state.config.leadership.members.splice(Number(btn.dataset.rmLead), 1);
+      markChanged(); paintPanels();
+    }));
+    wrap.querySelectorAll('[data-move-lead]').forEach(btn => btn.addEventListener('click', () => {
+      const [i, dir] = btn.dataset.moveLead.split(':').map(Number);
+      const arr = state.config.leadership.members;
+      const j = i + dir;
+      if(j < 0 || j >= arr.length) return;
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+      markChanged(); paintPanels();
+    }));
+
+    wrap.querySelectorAll('[data-add-soc]').forEach(btn => btn.addEventListener('click', () => {
+      if(!state.config.footer.socials) state.config.footer.socials = [];
+      state.config.footer.socials.push({ icon:'🔗', platform:'', url:'' });
+      markChanged(); paintPanels();
+    }));
+    wrap.querySelectorAll('[data-rm-soc]').forEach(btn => btn.addEventListener('click', () => {
+      state.config.footer.socials.splice(Number(btn.dataset.rmSoc), 1);
+      markChanged(); paintPanels();
+    }));
+
+    wrap.querySelectorAll('[data-add-lnk]').forEach(btn => btn.addEventListener('click', () => {
+      if(!state.config.footer.quickLinks) state.config.footer.quickLinks = [];
+      state.config.footer.quickLinks.push({ label:'', href:'' });
+      markChanged(); paintPanels();
+    }));
+    wrap.querySelectorAll('[data-rm-lnk]').forEach(btn => btn.addEventListener('click', () => {
+      state.config.footer.quickLinks.splice(Number(btn.dataset.rmLnk), 1);
+      markChanged(); paintPanels();
+    }));
+  }
+
+  /* ---------- PATCH: debounced preview refresh + manual button ---------- */
+  let __previewTimer = null;
+  function refreshPreview(){
+    clearTimeout(__previewTimer);
+    __previewTimer = setTimeout(doRefreshPreview, 600);
+  }
+  function doRefreshPreview(){
+    const frame = document.getElementById('previewFrame');
+    const wrap = document.getElementById('frameWrap');
+    const status = document.getElementById('previewStatus');
+    if(!frame) return;
+    try{
+      E.saveHomepageDraft(state.config);
+      frame.src = 'home.html?preview=1&_t=' + Date.now();
+      const w = wrap.clientWidth;
+      const scale = w / 1400;
+      frame.style.transform = `scale(${scale})`;
+      frame.style.height = (wrap.clientHeight / scale) + 'px';
+      status.textContent = 'Updated ' + new Date().toLocaleTimeString();
+    }catch(err){
+      status.textContent = 'Preview failed: ' + (err.message || 'unknown');
+      console.error('Preview refresh failed', err);
+    }
+  }
+
+  /* ---------- PATCH: preview modal for tablet/mobile ---------- */
+  function openPreviewModal(){
+    E.openModal('Live preview', `
+      <div class="full" style="height:70vh;border:1px solid #e8ebf2;border-radius:10px;overflow:hidden">
+        <iframe src="home.html?preview=1&_t=${Date.now()}" style="width:100%;height:100%;border:0" title="Home page preview"></iframe>
+      </div>`, null, null, true);
+  }
+
+  /* ---------- TOP ACTIONS ---------- */
+  document.getElementById('saveBtn').addEventListener('click', () => {
+    if(!canEdit){ E.toast("You don't have permission to edit."); return; }
+    const res = E.saveHomepageDraft(state.config);
+    if(!res.ok){ E.toast('Save failed.'); return; }
+    state.hasChanges = false;
+    paintStatusBar();
+    paintFooterNote();
+    E.toast('Draft saved.');
+  });
+
+  document.getElementById('publishBtn').addEventListener('click', async () => {
+    if(!canPublish){ E.toast("You don't have permission to publish."); return; }
+    const ok = await E.confirmModal({
+      title: 'Publish to live?',
+      message: 'This will make the current draft visible to everyone visiting the home page. Continue?',
+      submitText: 'Publish'
+    });
+    if(!ok) return;
+    const res = E.publishHomepage(state.config);
+    if(!res.ok){ E.toast('Publish failed.'); return; }
+    state.hasChanges = false;
+    paintStatusBar();
+    paintFooterNote();
+    E.toast('Published to live.');
+  });
+
+  document.getElementById('discardBtn').addEventListener('click', async () => {
+    const ok = await E.confirmModal({
+      title: 'Discard changes?',
+      message: 'This will reload the last saved draft. Any unsaved changes will be lost.',
+      submitText: 'Discard',
+      danger: true
+    });
+    if(!ok) return;
+    const fresh = E.getHomepageDraft() || E.getHomepageLive() || E.DEFAULT_HOMEPAGE;
+    state.config = JSON.parse(JSON.stringify(fresh));
+    state.hasChanges = false;
+    paintTabs();
+    paintPanels();
+    paintStatusBar();
+    paintFooterNote();
+    E.toast('Discarded.');
+  });
+
+  document.getElementById('previewBtn').addEventListener('click', () => {
+    window.open('home.html?preview=1', '_blank');
+  });
+  document.getElementById('previewBtn2').addEventListener('click', openPreviewModal);
+  document.getElementById('manualRefreshBtn')?.addEventListener('click', doRefreshPreview);
+
+  /* ---------- INIT ---------- */
+  paintHeader();
+  paintStatusBar();
+  paintTabs();
+  paintPanels();
+  paintFooterNote();
+})();
+</script>
+</body>
+</html>

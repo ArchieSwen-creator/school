@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apply | EduCore</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+  :root{
+    --navy:#14213d;--navy2:#1d3158;--blue:#4169e1;--line:#e8ebf2;--text:#202a3b;--muted:#7a8498;
+    --green:#1c9b72;--orange:#d88922;--red:#d64545;--gold:#c99a2e;--gold2:#fff4d6;
+    --shadow:0 8px 24px rgba(24,42,78,.06);
+    --shadow-lg:0 20px 60px rgba(24,42,78,.14);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px 16px 60px;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh;
+    -webkit-font-smoothing:antialiased;line-height:1.6}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+  a{color:inherit;text-decoration:none}
+
+  .page{width:100%;max-width:820px;margin:0 auto}
+
+  /* ---------- TOP BAR ---------- */
+  .top-bar{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:8px 4px 18px;gap:12px;flex-wrap:wrap;
+    font-size:12px;color:var(--muted)
+  }
+  .top-bar a{
+    display:inline-flex;align-items:center;gap:6px;
+    font-weight:700;color:var(--navy)
+  }
+  .top-bar a:hover{color:var(--blue)}
+  .top-bar .brand{
+    display:flex;align-items:center;gap:10px;
+    font-weight:800;color:var(--navy);font-size:13px
+  }
+  .top-bar .brand-mark{
+    width:32px;height:32px;border-radius:9px;
+    background:linear-gradient(135deg,var(--navy),var(--navy2));
+    color:#fff;display:grid;place-items:center;
+    font-weight:900;font-size:14px
+  }
+  .top-bar .brand-mark img{width:100%;height:100%;object-fit:contain;border-radius:9px}
+
+  /* ---------- HEADER CARD ---------- */
+  .form-header{
+    background:#fff;border-radius:16px;overflow:hidden;
+    box-shadow:var(--shadow-lg);margin-bottom:16px;
+    border-top:6px solid var(--gold)
+  }
+  .form-header-inner{
+    padding:28px 34px;background:linear-gradient(120deg,#0d1e3a,#245d9c);
+    color:#fff;border-bottom:1px solid rgba(255,255,255,.1)
+  }
+  .form-header-inner h1{margin:0 0 8px;font-size:26px;letter-spacing:-.3px;line-height:1.2}
+  .form-header-inner p{margin:0;font-size:13px;color:#cfdcf5;line-height:1.6}
+  .form-header-meta{
+    padding:16px 34px;background:#f8faff;display:flex;gap:24px;flex-wrap:wrap;
+    font-size:12px;color:#3b4a63
+  }
+  .form-header-meta span{
+    display:inline-flex;align-items:center;gap:6px;font-weight:600
+  }
+  .form-header-meta span strong{color:var(--navy)}
+
+  /* ---------- FORM ---------- */
+  .form-card{
+    background:#fff;border-radius:16px;box-shadow:var(--shadow-lg);
+    padding:30px 34px 34px;margin-bottom:16px
+  }
+
+  .q-block{
+    padding:22px 0;border-bottom:1px solid var(--line)
+  }
+  .q-block:first-child{padding-top:0}
+  .q-block:last-of-type{border-bottom:0}
+  .q-block .q-label{
+    font-size:14px;color:var(--navy);font-weight:700;
+    margin:0 0 4px;display:flex;gap:4px;align-items:flex-start
+  }
+  .q-block .q-label .req{color:var(--red);font-weight:900}
+  .q-block .q-help{
+    font-size:11.5px;color:var(--muted);margin:0 0 12px;line-height:1.5
+  }
+  .q-block .q-input{
+    width:100%;border:1px solid #dfe4ee;border-radius:9px;
+    padding:13px 15px;font-size:14px;outline:none;background:#f8faff;
+    font-family:inherit;transition:.15s
+  }
+  .q-block textarea.q-input{min-height:110px;resize:vertical;line-height:1.6}
+  .q-block .q-input:focus{
+    border-color:var(--blue);background:#fff;
+    box-shadow:0 0 0 3px rgba(65,105,225,.1)
+  }
+  .q-block .q-input.invalid{border-color:var(--red);background:#fff5f6}
+  .q-block .q-input.invalid:focus{
+    box-shadow:0 0 0 3px rgba(214,69,69,.1)
+  }
+  .q-block .q-error{
+    font-size:11px;color:var(--red);font-weight:700;
+    margin-top:6px;display:none
+  }
+  .q-block .q-error.show{display:block}
+
+  .q-options{display:flex;flex-direction:column;gap:8px}
+  .q-option{
+    display:flex;align-items:center;gap:10px;
+    padding:11px 14px;border:1px solid var(--line);border-radius:9px;
+    background:#fbfdff;cursor:pointer;transition:.15s
+  }
+  .q-option:hover{background:#f3f6fd;border-color:#c9d1e0}
+  .q-option.checked{background:#eef5ff;border-color:#b9d1f6}
+  .q-option input{width:16px;height:16px;cursor:pointer;margin:0;flex-shrink:0;accent-color:var(--blue)}
+  .q-option span{font-size:13px;color:var(--text)}
+
+  .q-file{
+    border:2px dashed #c9d1e0;border-radius:10px;padding:22px 24px;
+    text-align:center;background:#f8faff;cursor:pointer;
+    transition:.15s;position:relative
+  }
+  .q-file:hover{background:#eef5ff;border-color:var(--blue)}
+  .q-file.filled{background:#e6f7f0;border-color:var(--green);border-style:solid}
+  .q-file input{position:absolute;left:-9999px;width:1px;height:1px}
+  .q-file .q-file-icon{font-size:26px;display:block;margin-bottom:8px;opacity:.6}
+  .q-file .q-file-label{font-size:12.5px;color:var(--navy);font-weight:700;margin:0 0 4px}
+  .q-file .q-file-help{font-size:11px;color:var(--muted);margin:0}
+  .q-file .q-file-name{
+    display:inline-flex;align-items:center;gap:6px;
+    background:#fff;border:1px solid var(--green);border-radius:8px;
+    padding:6px 12px;margin-top:10px;font-size:11.5px;font-weight:700;color:var(--green)
+  }
+  .q-file .q-file-name button{
+    border:0;background:transparent;color:var(--red);cursor:pointer;
+    padding:0 4px;font-size:14px;font-weight:900
+  }
+  .q-file .q-file-reading{
+    display:none;font-size:11px;color:var(--muted);margin-top:8px;font-weight:600
+  }
+  .q-file .q-file-reading.show{display:block}
+
+  .q-section-heading{
+    font-size:12px;color:var(--navy);font-weight:800;
+    text-transform:uppercase;letter-spacing:.8px;
+    padding:16px 0 4px;border-bottom:2px solid var(--gold);margin-bottom:8px;
+    display:flex;align-items:center;gap:8px
+  }
+  .q-section-heading::before{
+    content:"";display:inline-block;width:4px;height:16px;
+    background:var(--gold);border-radius:2px
+  }
+
+  /* ---------- SUBMIT ROW ---------- */
+  .submit-row{
+    display:flex;justify-content:space-between;align-items:center;gap:14px;
+    flex-wrap:wrap;padding-top:20px;margin-top:20px;
+    border-top:2px solid var(--line)
+  }
+  .submit-row .note{
+    font-size:11.5px;color:var(--muted);line-height:1.5;
+    max-width:340px
+  }
+  .submit-row .actions{display:flex;gap:8px;flex-wrap:wrap}
+  .btn-primary{
+    border:0;border-radius:10px;padding:14px 26px;
+    background:linear-gradient(135deg,#245d9c,#1d4d82);color:#fff;
+    font-size:13px;font-weight:800;letter-spacing:.3px;
+    display:inline-flex;align-items:center;gap:8px;
+    transition:filter .15s
+  }
+  .btn-primary:hover{filter:brightness(1.1)}
+  .btn-primary:disabled{opacity:.6;cursor:not-allowed;filter:none}
+  .btn-outline{
+    border:1px solid var(--line);border-radius:10px;padding:13px 22px;
+    background:#fff;color:#34415c;font-size:12.5px;font-weight:700
+  }
+  .btn-outline:hover{background:#f3f6fd}
+
+  .form-error-banner{
+    background:#fff0f1;border:1px solid #f6c9ce;color:#bd3b48;
+    padding:12px 16px;border-radius:10px;font-size:12.5px;line-height:1.6;
+    margin-bottom:16px;display:none
+  }
+  .form-error-banner.show{display:block}
+  .form-error-banner strong{color:#8a1e28}
+
+  /* ---------- SUCCESS SCREEN ---------- */
+  .success-card{
+    background:#fff;border-radius:16px;box-shadow:var(--shadow-lg);
+    overflow:hidden;max-width:640px;margin:0 auto
+  }
+  .success-head{
+    padding:36px 34px 28px;background:linear-gradient(120deg,#0e6b4a,#14805e);
+    color:#fff;text-align:center;border-top:6px solid #58d6a4
+  }
+  .success-head .icon{
+    width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.2);
+    display:grid;place-items:center;font-size:32px;margin:0 auto 16px
+  }
+  .success-head h1{margin:0 0 8px;font-size:22px}
+  .success-head p{margin:0;font-size:13px;color:#d4f0e3;line-height:1.6}
+  .success-body{padding:28px 34px}
+  .success-body .label{
+    font-size:10.5px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.8px;font-weight:800;margin-bottom:6px;display:block
+  }
+  .success-body .code-box{
+    background:#f0fdf7;border:2px dashed #b8e9d3;border-radius:12px;
+    padding:18px 20px;text-align:center;margin-bottom:20px;position:relative
+  }
+  .success-body .code-box .code{
+    font-family:monospace;font-size:22px;font-weight:900;color:#0e6b4a;
+    letter-spacing:2px;display:block;margin-bottom:8px;word-break:break-all
+  }
+  .success-body .code-box .copy-btn{
+    border:0;background:#0e6b4a;color:#fff;border-radius:7px;
+    padding:7px 14px;font-size:11px;font-weight:800;cursor:pointer
+  }
+  .success-body .code-box .copy-btn:hover{filter:brightness(1.1)}
+  .success-body .notice{
+    background:#fff8e6;border:1px solid #f3d999;border-radius:10px;
+    padding:14px 16px;font-size:12px;color:#8a6a1a;line-height:1.6;
+    margin-bottom:22px
+  }
+  .success-body .notice strong{color:#5a3a00}
+  .success-body .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  .success-body .actions a,.success-body .actions button{
+    text-decoration:none;border-radius:9px;padding:12px 20px;
+    font-size:12.5px;font-weight:800;display:inline-flex;
+    align-items:center;gap:8px
+  }
+  .success-body .actions .home{
+    background:#eef2fb;color:#34415c;border:0
+  }
+  .success-body .actions .print{
+    background:#245d9c;color:#fff;border:0
+  }
+
+  /* ---------- STATUS MESSAGES ---------- */
+  .message-card{
+    background:#fff;border-radius:16px;box-shadow:var(--shadow-lg);
+    overflow:hidden;max-width:560px;margin:40px auto
+  }
+  .message-head{
+    padding:28px 30px;color:#fff;text-align:center;border-top:6px solid var(--gold)
+  }
+  .message-head.not-yet{background:linear-gradient(120deg,#a86414,#c99a2e)}
+  .message-head.closed{background:linear-gradient(120deg,#59647c,#7a8498)}
+  .message-head.not-found{background:linear-gradient(120deg,#0d1e3a,#1d3158)}
+  .message-head .icon{
+    font-size:44px;display:block;margin-bottom:12px;opacity:.9
+  }
+  .message-head h1{margin:0 0 8px;font-size:20px}
+  .message-head p{margin:0;font-size:13px;color:rgba(255,255,255,.85);line-height:1.6}
+  .message-body{padding:28px 30px;text-align:center}
+  .message-body .detail{
+    background:#f8faff;border:1px solid var(--line);border-radius:10px;
+    padding:16px 18px;font-size:12.5px;color:#3b4a63;line-height:1.7;margin-bottom:20px
+  }
+  .message-body .detail strong{color:var(--navy)}
+  .message-body .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  .message-body .actions a,.message-body .actions button{
+    text-decoration:none;border-radius:9px;padding:12px 22px;
+    font-size:12.5px;font-weight:800
+  }
+  .message-body .actions .primary{background:#245d9c;color:#fff}
+  .message-body .actions .ghost{background:#eef2fb;color:#34415c}
+
+  /* ---------- PREVIEW BANNER ---------- */
+  .preview-banner{
+    background:#c99a2e;color:#5a3a00;padding:9px 16px;
+    font-size:11px;font-weight:800;text-align:center;
+    letter-spacing:.6px;text-transform:uppercase;
+    position:sticky;top:0;z-index:100;margin:-24px -16px 20px;
+    border-bottom:3px solid #a86414
+  }
+
+  /* ---------- FOOTER NOTE ---------- */
+  .footer-note{
+    text-align:center;font-size:11px;color:var(--muted);
+    margin-top:22px;line-height:1.7
+  }
+  .footer-note a{color:var(--blue);font-weight:700}
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:650px){
+    body{padding:14px 8px 40px}
+    .form-header-inner{padding:22px 20px}
+    .form-header-inner h1{font-size:20px}
+    .form-header-meta{padding:14px 20px;gap:14px}
+    .form-card{padding:22px 20px 26px}
+    .q-block{padding:18px 0}
+    .q-label{font-size:13px}
+    .submit-row{flex-direction:column;align-items:stretch}
+    .submit-row .note{max-width:none;text-align:center}
+    .submit-row .actions{justify-content:stretch}
+    .btn-primary{justify-content:center;width:100%}
+    .success-body,.message-body{padding:22px 20px}
+    .success-body .code-box .code{font-size:18px}
+  }
+</style>
+</head>
+<body>
+
+<noscript>
+  <div style="max-width:640px;margin:60px auto;padding:30px;background:#fff;
+    border-radius:14px;box-shadow:0 12px 40px rgba(24,42,78,.12);text-align:center;
+    font-family:Arial,Helvetica,sans-serif;color:#23354d">
+    <h1 style="color:#12315a;font-size:20px;margin:0 0 10px">JavaScript required</h1>
+    <p style="font-size:13px;color:#73849a;line-height:1.7">
+      This application form needs JavaScript to work. Please enable JavaScript
+      in your browser, or call the school office to apply by phone.
+    </p>
+    <a href="home.html" style="display:inline-block;margin-top:14px;background:#245d9c;
+      color:#fff;padding:11px 20px;border-radius:9px;text-decoration:none;
+      font-weight:700;font-size:13px">← Back to home</a>
+  </div>
+</noscript>
+
+<div class="preview-banner" id="previewBanner" style="display:none">
+  ● Preview Mode — Submissions are disabled
+</div>
+
+<div class="page">
+
+  <div class="top-bar" id="topBar"></div>
+
+  <div id="pageBody"></div>
+
+  <div class="footer-note" id="footerNote"></div>
+
+</div>
+
+<script src="educore-shared.js?v=12"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+  if(!E) return;
+
+  /* ---------- PARAMS ---------- */
+  const params = new URLSearchParams(location.search);
+  const formId = params.get('id');
+  const isPreview = params.has('preview');
+
+  const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+  const schoolName = settings.name || 'EduCore High School';
+
+  /* ---------- PREVIEW BANNER ---------- */
+  if(isPreview){
+    document.getElementById('previewBanner').style.display = 'block';
+    document.body.style.paddingTop = '14px';
+  }
+
+  /* ---------- TOP BAR ---------- */
+  function paintTopBar(){
+    const logoHTML = settings.logo
+      ? `<img src="${settings.logo}" alt="">`
+      : schoolName.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase();
+    document.getElementById('topBar').innerHTML = `
+      <a href="home.html">← Back to home</a>
+      <div class="brand">
+        <div class="brand-mark">${logoHTML}</div>
+        <span>${E.esc(schoolName)}</span>
+      </div>
+    `;
+    document.title = 'Apply · ' + schoolName;
+  }
+
+  /* ---------- FOOTER NOTE ---------- */
+  function paintFooterNote(){
+    document.getElementById('footerNote').innerHTML = `
+      Powered by <strong>EduCore</strong> · <a href="home.html">Home</a> ·
+      Your data is stored securely and only used to process your application.
+    `;
+  }
+
+  /* ---------- MESSAGE VIEWS ---------- */
+  function paintMessage(kind, title, subtitle, detailHTML, actions){
+    const iconMap = {
+      'not-yet': '⏰',
+      'closed': '🔒',
+      'not-found': '🔍',
+      'already': '✓',
+      'error': '⚠'
+    };
+    document.getElementById('pageBody').innerHTML = `
+      <div class="message-card">
+        <div class="message-head ${kind}">
+          <span class="icon">${iconMap[kind] || '•'}</span>
+          <h1>${E.esc(title)}</h1>
+          <p>${E.esc(subtitle)}</p>
+        </div>
+        <div class="message-body">
+          ${detailHTML ? `<div class="detail">${detailHTML}</div>` : ''}
+          <div class="actions">
+            ${(actions || []).map(a =>
+              a.href
+                ? `<a href="${E.esc(a.href)}" class="${a.kind || 'ghost'}">${E.esc(a.label)}</a>`
+                : `<button class="${a.kind || 'ghost'}" ${a.onclick ? `onclick="${a.onclick}"` : ''}>${E.esc(a.label)}</button>`
+            ).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  /* ---------- GUARD: no ID ---------- */
+  if(!formId){
+    paintTopBar();
+    paintFooterNote();
+    paintMessage('not-found', 'No position selected',
+      'This page needs a position ID to know which form to show.',
+      'Please return to the home page and click "Apply now" on an open position.',
+      [{ href:'home.html', label:'← Back to home', kind:'primary' }]
+    );
+    return;
+  }
+
+  /* ---------- LOAD FORM ---------- */
+  const form = E.getHiringForm(formId);
+  paintTopBar();
+  paintFooterNote();
+
+  if(!form){
+    paintMessage('not-found', 'Position not found',
+      'We could not find this job posting.',
+      'It may have been removed or the link was typed incorrectly.',
+      [{ href:'home.html', label:'← Back to home', kind:'primary' }]
+    );
+    return;
+  }
+
+  /* ---------- STATUS GATE ---------- */
+  const status = E.computeHiringStatus(form);
+
+  /* Preview mode bypasses the status gate so admins can see the form */
+  if(!isPreview){
+    if(status === 'draft'){
+      paintMessage('not-yet', 'Not yet available',
+        'This position has not been published.',
+        'Please check back later.',
+        [{ href:'home.html', label:'← Back to home', kind:'primary' }]
+      );
+      return;
+    }
+    if(status === 'scheduled'){
+      paintMessage('not-yet', 'Applications not yet open',
+        'This position will open for applications soon.',
+        `<strong>${E.esc(form.title)}</strong><br><br>
+         Opens on <strong>${E.esc(E.fmtDateTime(form.publishAt))}</strong>.`,
+        [{ href:'home.html', label:'← Back to home', kind:'primary' }]
+      );
+      return;
+    }
+    if(status === 'closed'){
+      paintMessage('closed', 'Applications closed',
+        'This position is no longer accepting applications.',
+        `<strong>${E.esc(form.title)}</strong><br><br>
+         Closed on <strong>${E.esc(E.fmtDateTime(form.closeAt))}</strong>.`,
+        [{ href:'home.html', label:'← Back to home', kind:'primary' }]
+      );
+      return;
+    }
+    if(status === 'archived'){
+      paintMessage('closed', 'Position archived',
+        'This job posting is no longer active.',
+        'Please browse other open positions on our careers page.',
+        [{ href:'home.html#hiring', label:'← See all positions', kind:'primary' }]
+      );
+      return;
+    }
+  }
+
+  /* ---------- RENDER FORM ---------- */
+  function renderForm(){
+    const questions = (form.questions || []).slice().sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
+
+    document.getElementById('pageBody').innerHTML = `
+      <div class="form-header">
+        <div class="form-header-inner">
+          <h1>${E.esc(form.title || 'Untitled position')}</h1>
+          ${form.description ? `<p>${E.esc(form.description)}</p>` : `<p>Apply for this position at ${E.esc(schoolName)}.</p>`}
+        </div>
+        <div class="form-header-meta">
+          ${form.position ? `<span>💼 <strong>${E.esc(form.position)}</strong></span>` : ''}
+          ${form.department ? `<span>🏫 <strong>${E.esc(form.department)}</strong></span>` : ''}
+          ${form.location ? `<span>📍 <strong>${E.esc(form.location)}</strong></span>` : ''}
+          ${form.employmentType ? `<span>⏱ <strong>${E.esc(form.employmentType)}</strong></span>` : ''}
+          ${form.closeAt ? `<span>📅 Closes <strong>${E.esc(E.fmtDate(form.closeAt))}</strong></span>` : ''}
+        </div>
+      </div>
+
+      <form class="form-card" id="applyForm" novalidate>
+        <div class="form-error-banner" id="formError" role="alert"></div>
+        ${isPreview ? `
+          <div style="background:#fff8e6;border:1px solid #f3d999;border-radius:10px;
+            padding:12px 16px;font-size:12px;color:#8a6a1a;line-height:1.6;margin-bottom:16px">
+            <strong>Preview mode.</strong> You can fill this out to test the form,
+            but submissions are disabled. Publish the position to accept applications.
+          </div>` : ''}
+        ${questions.map((q, i) => renderQuestion(q, i)).join('')}
+
+        <div class="submit-row">
+          <div class="note">
+            Your application is saved securely. You'll receive a <strong>verify code</strong>
+            after submitting — keep it safe to check your status later.
+          </div>
+          <div class="actions">
+            <a href="home.html" class="btn-outline">Cancel</a>
+            <button type="submit" class="btn-primary" id="submitBtn" ${isPreview ? 'disabled' : ''}>
+              ${isPreview ? 'Preview — submission disabled' : 'Submit application →'}
+            </button>
+          </div>
+        </div>
+      </form>
+    `;
+
+    bindForm(questions);
+  }
+
+  function renderQuestion(q, idx){
+    const req = q.required ? ' <span class="req">*</span>' : '';
+    const helpHTML = q.help ? `<p class="q-help">${E.esc(q.help)}</p>` : '';
+    const numLabel = String(idx + 1).padStart(2, '0');
+
+    /* Section heading — no input, just visual separator */
+    if(q.type === 'section'){
+      return `<div class="q-block" style="padding:8px 0 0;border:0">
+        <div class="q-section-heading">${E.esc(q.label)}</div>
+      </div>`;
+    }
+
+    let inputHTML = '';
+    switch(q.type){
+      case 'short-text':
+        inputHTML = `<input type="text" class="q-input" data-qid="${E.esc(q.id)}" data-type="short-text"
+          placeholder="Your answer" autocomplete="off">`;
+        break;
+      case 'long-text':
+        inputHTML = `<textarea class="q-input" data-qid="${E.esc(q.id)}" data-type="long-text"
+          placeholder="Your answer" rows="4"></textarea>`;
+        break;
+      case 'email':
+        inputHTML = `<input type="email" class="q-input" data-qid="${E.esc(q.id)}" data-type="email"
+          placeholder="you@example.com" autocomplete="email">`;
+        break;
+      case 'phone':
+        inputHTML = `<input type="tel" class="q-input" data-qid="${E.esc(q.id)}" data-type="phone"
+          placeholder="+231 77 000 0000" autocomplete="tel">`;
+        break;
+      case 'number':
+        inputHTML = `<input type="number" class="q-input" data-qid="${E.esc(q.id)}" data-type="number"
+          placeholder="0" step="any">`;
+        break;
+      case 'date':
+        inputHTML = `<input type="date" class="q-input" data-qid="${E.esc(q.id)}" data-type="date">`;
+        break;
+      case 'select':
+        inputHTML = `<select class="q-input" data-qid="${E.esc(q.id)}" data-type="select">
+          <option value="">— Choose an option —</option>
+          ${(q.options || []).map(o => `<option value="${E.esc(o)}">${E.esc(o)}</option>`).join('')}
+        </select>`;
+        break;
+      case 'radio':
+        inputHTML = `<div class="q-options">
+          ${(q.options || []).map((o, i) => `
+            <label class="q-option">
+              <input type="radio" name="q_${E.esc(q.id)}" value="${E.esc(o)}" data-qid="${E.esc(q.id)}" data-type="radio">
+              <span>${E.esc(o)}</span>
+            </label>
+          `).join('')}
+        </div>`;
+        break;
+      case 'checkbox':
+        inputHTML = `<div class="q-options">
+          ${(q.options || []).map((o, i) => `
+            <label class="q-option">
+              <input type="checkbox" name="q_${E.esc(q.id)}_${i}" value="${E.esc(o)}" data-qid="${E.esc(q.id)}" data-type="checkbox">
+              <span>${E.esc(o)}</span>
+            </label>
+          `).join('')}
+        </div>`;
+        break;
+      case 'file':
+        const accept = fileAcceptTypes(q.fileTypes);
+        inputHTML = `<div class="q-file" data-file-wrap="${E.esc(q.id)}">
+          <input type="file" data-qid="${E.esc(q.id)}" data-type="file" accept="${accept}">
+          <span class="q-file-icon">📎</span>
+          <p class="q-file-label">Click to upload a file</p>
+          <p class="q-file-help">${E.esc(q.fileTypes || 'PDF, DOC, DOCX')} · Max 2 MB</p>
+          <div class="q-file-reading" data-file-reading="${E.esc(q.id)}">Reading file…</div>
+          <div class="q-file-name" style="display:none"></div>
+        </div>`;
+        break;
+      default:
+        inputHTML = `<input type="text" class="q-input" data-qid="${E.esc(q.id)}" data-type="short-text"
+          placeholder="Your answer">`;
+    }
+
+    return `<div class="q-block" data-block="${E.esc(q.id)}">
+      <p class="q-label"><span style="color:var(--muted);font-family:monospace;font-size:11.5px;font-weight:700;margin-right:4px">${numLabel}</span>${E.esc(q.label)}${req}</p>
+      ${helpHTML}
+      ${inputHTML}
+      <div class="q-error" data-error="${E.esc(q.id)}">This question is required.</div>
+    </div>`;
+  }
+
+  function fileAcceptTypes(csv){
+    if(!csv) return '.pdf,.doc,.docx';
+    const map = {
+      'pdf': '.pdf',
+      'doc': '.doc',
+      'docx': '.docx',
+      'jpg': '.jpg,.jpeg',
+      'jpeg': '.jpg,.jpeg',
+      'png': '.png',
+      'xls': '.xls',
+      'xlsx': '.xlsx'
+    };
+    return String(csv).split(',').map(t => map[t.trim().toLowerCase()] || '.' + t.trim().toLowerCase()).join(',');
+  }
+
+  /* ---------- FORM BINDING ---------- */
+  function bindForm(questions){
+    const formEl = document.getElementById('applyForm');
+    const errorBanner = document.getElementById('formError');
+
+    /* Pre-compute file data as we go */
+    const fileData = {};
+
+    /* PATCH: dirty guard — warn before navigation with typed content */
+    let __dirty = false;
+    function markDirty(){ __dirty = true; }
+    formEl.addEventListener('input', markDirty);
+    formEl.addEventListener('change', markDirty);
+    window.addEventListener('beforeunload', e => {
+      if(__dirty){
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
+    });
+
+    /* Option visual feedback */
+    formEl.querySelectorAll('.q-option input').forEach(inp => {
+      inp.addEventListener('change', () => {
+        const block = inp.closest('.q-block');
+        const qid = inp.dataset.qid;
+        if(inp.type === 'radio'){
+          block.querySelectorAll(`input[type="radio"][data-qid="${qid}"]`).forEach(r =>
+            r.closest('.q-option').classList.toggle('checked', r.checked));
+        } else {
+          inp.closest('.q-option').classList.toggle('checked', inp.checked);
+        }
+        clearError(qid);
+      });
+    });
+
+    /* PATCH: hardened file picker — extension + magic-byte + encoded-size */
+    formEl.querySelectorAll('.q-file').forEach(wrap => {
+      const inp = wrap.querySelector('input[type="file"]');
+      const qid = inp.dataset.qid;
+      const fileLabel = wrap.querySelector('.q-file-name');
+      const readingEl = wrap.querySelector(`[data-file-reading="${qid}"]`);
+      const question = questions.find(q => q.id === qid);
+      const declared = String(question?.fileTypes || 'pdf,doc,docx')
+        .split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+
+      wrap.addEventListener('click', e => {
+        if(e.target.tagName === 'BUTTON') return;
+        inp.click();
+      });
+
+      inp.addEventListener('change', async () => {
+        const file = inp.files[0];
+        if(!file){
+          delete fileData[qid];
+          wrap.classList.remove('filled');
+          fileLabel.style.display = 'none';
+          return;
+        }
+
+        /* Hard cap: 2 MB is the safe ceiling for base64 in localStorage */
+        const MAX_BYTES = 2 * 1024 * 1024;
+        if(file.size > MAX_BYTES){
+          showError(qid, 'File is too large (max 2 MB for browser uploads).');
+          inp.value = '';
+          delete fileData[qid];
+          return;
+        }
+
+        /* Extension allow-list */
+        const ext = (file.name.split('.').pop() || '').toLowerCase();
+        if(declared.length && !declared.includes(ext)){
+          showError(qid, `Only ${declared.join(', ').toUpperCase()} files are accepted.`);
+          inp.value = '';
+          delete fileData[qid];
+          return;
+        }
+
+        /* Magic-byte sanity for PDF */
+        if(ext === 'pdf'){
+          try{
+            const head = await file.slice(0, 5).text();
+            if(head !== '%PDF-'){
+              showError(qid, 'That file is not a valid PDF.');
+              inp.value = '';
+              delete fileData[qid];
+              return;
+            }
+          }catch(err){
+            showError(qid, 'Could not validate file contents.');
+            inp.value = '';
+            delete fileData[qid];
+            return;
+          }
+        }
+
+        /* Show reading indicator while base64 is generated */
+        if(readingEl) readingEl.classList.add('show');
+
+        const reader = new FileReader();
+        reader.onload = ev => {
+          if(readingEl) readingEl.classList.remove('show');
+          const dataUrl = ev.target.result;
+
+          /* Base64 is ~33% larger than raw bytes; re-check encoded size */
+          if(dataUrl.length > 3 * 1024 * 1024){
+            showError(qid, 'That file is too large after encoding. Try a smaller file.');
+            inp.value = '';
+            delete fileData[qid];
+            return;
+          }
+
+          fileData[qid] = {
+            filename: file.name,
+            size: file.size,
+            mimeType: file.type,
+            dataUrl
+          };
+          wrap.classList.add('filled');
+          fileLabel.style.display = 'inline-flex';
+          fileLabel.innerHTML = `📎 ${E.esc(file.name)} <button type="button" data-remove-file="${E.esc(qid)}">✕</button>`;
+          fileLabel.querySelector('[data-remove-file]').addEventListener('click', e => {
+            e.stopPropagation();
+            inp.value = '';
+            delete fileData[qid];
+            wrap.classList.remove('filled');
+            fileLabel.style.display = 'none';
+          });
+          clearError(qid);
+        };
+        reader.onerror = () => {
+          if(readingEl) readingEl.classList.remove('show');
+          showError(qid, 'Could not read that file.');
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
+    /* Clear error on input */
+    formEl.querySelectorAll('.q-input').forEach(inp => {
+      inp.addEventListener('input', () => clearError(inp.dataset.qid));
+      inp.addEventListener('change', () => clearError(inp.dataset.qid));
+    });
+
+    function showError(qid, msg){
+      const err = formEl.querySelector(`[data-error="${qid}"]`);
+      if(err){
+        err.textContent = msg || 'This question is required.';
+        err.classList.add('show');
+      }
+      const inp = formEl.querySelector(`[data-qid="${qid}"]`);
+      if(inp) inp.classList.add('invalid');
+      const block = formEl.querySelector(`[data-block="${qid}"]`);
+      if(block) block.scrollIntoView({ behavior:'smooth', block:'center' });
+    }
+    function clearError(qid){
+      const err = formEl.querySelector(`[data-error="${qid}"]`);
+      if(err) err.classList.remove('show');
+      formEl.querySelectorAll(`[data-qid="${qid}"]`).forEach(el => el.classList.remove('invalid'));
+    }
+
+    /* Submit */
+    formEl.addEventListener('submit', e => {
+      e.preventDefault();
+      errorBanner.classList.remove('show');
+
+      /* PATCH: block submissions in preview mode */
+      if(isPreview){
+        errorBanner.textContent = 'This is a preview. Submissions are disabled — publish the position to accept applications.';
+        errorBanner.classList.add('show');
+        window.scrollTo({ top:0, behavior:'smooth' });
+        return;
+      }
+
+      /* Collect answers */
+      const answers = {};
+      let firstErrorQid = null;
+
+      for(const q of questions){
+        if(q.type === 'section') continue;
+
+        let value = null;
+        let isEmpty = true;
+
+        if(q.type === 'radio'){
+          const checked = formEl.querySelector(`input[type="radio"][data-qid="${q.id}"]:checked`);
+          value = checked ? checked.value : '';
+          isEmpty = !checked;
+        } else if(q.type === 'checkbox'){
+          const checked = Array.from(formEl.querySelectorAll(`input[type="checkbox"][data-qid="${q.id}"]:checked`))
+            .map(c => c.value);
+          value = checked;
+          isEmpty = checked.length === 0;
+        } else if(q.type === 'file'){
+          value = fileData[q.id] || null;
+          isEmpty = !value;
+        } else {
+          const inp = formEl.querySelector(`[data-qid="${q.id}"]`);
+          value = inp ? inp.value.trim() : '';
+          isEmpty = !value;
+          if(q.type === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)){
+            showError(q.id, 'Enter a valid email address.');
+            if(!firstErrorQid) firstErrorQid = q.id;
+            continue;
+          }
+        }
+
+        if(q.required && isEmpty){
+          showError(q.id, 'This question is required.');
+          if(!firstErrorQid) firstErrorQid = q.id;
+          continue;
+        }
+
+        answers[q.id] = value;
+      }
+
+      if(firstErrorQid){
+        errorBanner.textContent = 'Please fix the highlighted questions before submitting.';
+        errorBanner.classList.add('show');
+        return;
+      }
+
+      /* Extract applicant name + email */
+      let applicantName = '';
+      let applicantEmail = '';
+      for(const q of questions){
+        if(!applicantEmail && q.type === 'email' && answers[q.id]){
+          applicantEmail = String(answers[q.id]);
+        }
+        if(!applicantName && /name/i.test(q.label || '') && answers[q.id] && typeof answers[q.id] === 'string'){
+          applicantName = answers[q.id];
+        }
+      }
+      if(!applicantName){
+        for(const q of questions){
+          if(q.type === 'short-text' && answers[q.id]){
+            applicantName = String(answers[q.id]);
+            break;
+          }
+        }
+      }
+
+      /* Submit */
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting…';
+
+      setTimeout(() => {
+        /* PATCH: pass isPreview through so shared helper blocks too */
+        const res = E.submitHiringApplication({
+          formId: form.id,
+          answers,
+          applicantName,
+          applicantEmail,
+          isPreview
+        });
+
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit application →';
+
+        if(!res.ok){
+          errorBanner.textContent = res.error || 'Submission failed. Please try again.';
+          errorBanner.classList.add('show');
+          window.scrollTo({ top:0, behavior:'smooth' });
+          return;
+        }
+
+        __dirty = false;
+        paintSuccess(res.application);
+      }, 200);
+    });
+  }
+
+  /* ---------- SUCCESS SCREEN ---------- */
+  function paintSuccess(application){
+    document.getElementById('pageBody').innerHTML = `
+      <div class="success-card">
+        <div class="success-head">
+          <div class="icon">✓</div>
+          <h1>Application received</h1>
+          <p>Thank you, ${E.esc(application.applicantName || 'candidate')}.<br>
+            Your application for <strong>${E.esc(form.title)}</strong> has been submitted.</p>
+        </div>
+        <div class="success-body">
+          <span class="label">Your verification code</span>
+          <div class="code-box">
+            <span class="code" id="verifyCodeText">${E.esc(application.verifyCode)}</span>
+            <button class="copy-btn" id="copyCodeBtn">📋 Copy code</button>
+          </div>
+
+          <div class="notice">
+            <strong>Important:</strong> Save this verify code.
+            You'll need it to check the status of your application on our home page
+            once the school publishes the results. If you lose it, you cannot recover
+            your status — the school does not display applications publicly.
+          </div>
+
+          <div class="actions">
+            <a href="home.html" class="home">← Back to home</a>
+            <button class="print" onclick="window.print()">🖶 Save as PDF</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('copyCodeBtn').addEventListener('click', () => {
+      const code = document.getElementById('verifyCodeText').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.getElementById('copyCodeBtn');
+        btn.textContent = '✓ Copied!';
+        setTimeout(() => { btn.textContent = '📋 Copy code'; }, 1500);
+      }).catch(() => {
+        E.toast('Copy failed — select the code manually.');
+      });
+    });
+
+    window.scrollTo({ top:0, behavior:'smooth' });
+  }
+
+  /* ---------- INIT ---------- */
+  renderForm();
+})();
+</script>
+</body>
+</html>

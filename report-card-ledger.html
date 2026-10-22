@@ -60,8 +60,8 @@
   .meta-chip.cat-nursery .dot{background:#9c2a63}
   .meta-chip.cat-numeric .dot{background:#0f6b4b}
   .meta-chip.edit{background:#eef5ff;border-color:#cfe3ff;color:#1d4d82}
+  .meta-chip.approved-only{background:#e6f7f0;border-color:#b8e9d3;color:#0e6b4a}
 
-  /* Student selector */
   .student-bar{padding:14px 20px;background:#fff;border:1px solid var(--line);border-radius:13px;
     box-shadow:var(--shadow);margin-bottom:18px;
     display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
@@ -70,7 +70,6 @@
     text-transform:uppercase;letter-spacing:.8px}
   .student-bar select{min-width:280px}
 
-  /* Year cards */
   .year-card{background:#fff;border:1px solid var(--line);border-radius:14px;
     box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden;
     transition:box-shadow .2s}
@@ -113,8 +112,9 @@
   .edit-note{padding:12px 22px;background:#eef5ff;border-bottom:1px solid #cfe3ff;
     font-size:11.5px;color:#1d4d82;line-height:1.6}
   .edit-note strong{color:#0e3b6b}
+  .edit-note.approval-gate{background:#f0fdf7;border-color:#b8e9d3;color:#0e6b4a}
+  .edit-note.approval-gate strong{color:#0e6b4a}
 
-  /* Table */
   .table-wrap{overflow-x:auto}
   table{width:100%;border-collapse:collapse;white-space:nowrap;font-size:11.5px}
   thead th{background:#eaf0fb;color:#263b61;font-size:10px;text-transform:uppercase;
@@ -140,7 +140,6 @@
   .missing{color:#c5cee0}
   .empty-cell{color:#c5cee0}
 
-  /* Editable score inputs */
   .arch-input{
     width:60px;border:1px solid #dfe4ee;border-radius:6px;padding:6px 7px;
     font-family:monospace;font-weight:700;font-size:11.5px;text-align:center;
@@ -152,7 +151,6 @@
   tr.editable-row td{background:#fffdf7}
   tr.editable-row:hover td{background:#fffbf0}
 
-  /* Save bar */
   .save-bar{padding:14px 22px;background:#f8faff;border-top:1px solid var(--line);
     display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
   .save-bar .note{font-size:11.5px;color:var(--muted)}
@@ -218,7 +216,7 @@
 
 </div>
 
-<script src="educore-shared.js"></script>
+<script src="educore-shared.js?v=10"></script>
 <script>
 (function(){
   'use strict';
@@ -238,6 +236,9 @@
   const isTeacher = user.role === 'Teacher';
   const canEditArchive = E.canEditArchive();
 
+  const isViewerGated = isStudent || isParent;
+  const viewOpts = isViewerGated ? { approvedOnly: true } : {};
+
   const params = new URLSearchParams(location.search);
   const preOpenYear = params.get('year') || sessionStorage.getItem('educoreArchiveEditYear') || '';
   if(sessionStorage.getItem('educoreArchiveEditYear')){
@@ -252,7 +253,6 @@
     yearOpened: {}
   };
 
-  /* editState[year][studentId|subject|semester|period] = { value, original } */
   const editState = {};
 
   /* ---------- HEADER ---------- */
@@ -267,6 +267,9 @@
     }
     document.getElementById('bandSchool').textContent = name;
     document.getElementById('bandUser').textContent = user.name || user.username;
+    document.getElementById('bandSub').textContent = isViewerGated
+      ? 'Your grades — approved scores only'
+      : 'Full ledger — approved, submitted, and draft scores';
   }
 
   /* ---------- SCOPED STUDENTS ---------- */
@@ -306,15 +309,26 @@
     const cls = E.classByName(state.className);
     let subjects = [];
     if(cls && Array.isArray(cls.subjects) && cls.subjects.length){
-      subjects = cls.subjects.map(code => E.subjectName(code));
+      subjects = cls.subjects.map(code => ({ code, name: E.subjectName(code) }));
     } else {
       const set = new Set();
-      (E.readStore(E.STORE_KEYS.results, []) || []).filter(r => r.class === state.className)
+      (E.readStore(E.STORE_KEYS.results, []) || [])
+        .filter(r => r.class === state.className)
         .forEach(r => set.add(r.subject));
-      subjects = Array.from(set).sort();
+      subjects = Array.from(set).sort().map(s => ({ code: s, name: E.subjectName(s) }));
     }
+
+    /* Deduplicate by canonical name */
+    const seen = new Set();
+    subjects = subjects.filter(s => {
+      const key = E.normSubject(s.name);
+      if(seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
     sel.innerHTML = '<option value="">All subjects</option>' +
-      subjects.map(s => `<option>${E.esc(s)}</option>`).join('');
+      subjects.map(s => `<option value="${E.esc(s.code)}">${E.esc(s.name)}</option>`).join('');
     state.subjectFilter = '';
   }
 
@@ -330,6 +344,7 @@
       <span class="meta-chip">Class: <strong>${E.esc(state.className)}</strong></span>
       <span class="meta-chip">Current: <strong>${E.esc(E.currentAcademicYear())}</strong></span>
       <span class="meta-chip">Archived years: <strong>${archives.length}</strong></span>
+      ${isViewerGated ? `<span class="meta-chip approved-only">✓ Approved scores only</span>` : ''}
       ${editable ? `<span class="meta-chip edit">✎ Editable archives: <strong>${editable}</strong></span>` : ''}
     `;
   }
@@ -347,14 +362,28 @@
     const cls = E.classByName(state.className);
     let list = [];
     if(cls && Array.isArray(cls.subjects) && cls.subjects.length){
-      list = cls.subjects.map(code => E.subjectName(code));
+      list = cls.subjects.map(code => ({ code, name: E.subjectName(code) }));
     } else {
       const set = new Set();
-      (E.readStore(E.STORE_KEYS.results, []) || []).filter(r => r.class === state.className)
+      (E.readStore(E.STORE_KEYS.results, []) || [])
+        .filter(r => r.class === state.className)
         .forEach(r => set.add(r.subject));
-      list = Array.from(set).sort();
+      list = Array.from(set).sort().map(s => ({ code: s, name: E.subjectName(s) }));
     }
-    if(state.subjectFilter) list = list.filter(s => s === state.subjectFilter);
+
+    /* Deduplicate by canonical name */
+    const seen = new Set();
+    list = list.filter(s => {
+      const key = E.normSubject(s.name);
+      if(seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    if(state.subjectFilter){
+      const target = E.normSubject(state.subjectFilter);
+      list = list.filter(s => E.normSubject(s.code) === target || E.normSubject(s.name) === target);
+    }
     return list;
   }
 
@@ -416,9 +445,10 @@
 
     /* Current year card */
     const currentRows = subjects.map(sub => {
-      const row = E.subjectLedgerRow(student.name, student.class, sub, currentYear);
-      return { subject: sub, ...row };
-    });
+      const row = E.subjectLedgerRow(student.name, student.class, sub.name, currentYear, viewOpts);
+      if(!row) return null;
+      return { ...row, subject: sub.name };
+    }).filter(Boolean);
 
     const currentCard = buildYearCard({
       year: currentYear,
@@ -435,21 +465,29 @@
       .filter(a => a.year !== currentYear);
 
     const archivedCards = archived.map(ar => {
-      /* Only full-year archives are editable */
       const arRecord = E.getArchive(ar.year);
       const isFullYear = arRecord && arRecord.kind === 'full-year';
       const editable = canEditArchive && isFullYear;
 
-      const rows = subjects.map(sub =>
-        E.archivedLedgerRow(ar.year, student, sub)
-      ).filter(Boolean);
+      const rows = subjects.map(sub => {
+        const r = E.archivedLedgerRow(ar.year, student, sub.name);
+        if(!r) return null;
+        return { ...r, subject: sub.name };
+      }).filter(Boolean);
+
+      const filteredRows = isViewerGated
+        ? rows.map(r => {
+            const subCode = subjects.find(s => s.name === r.subject)?.code || r.subject;
+            return filterArchivedRowByApproval(r, ar.year, student, subCode);
+          })
+        : rows;
 
       return buildYearCard({
         year: ar.year,
         kind: editable ? 'editable' : 'archive',
         label: editable ? 'Editable archive' : 'Archived',
         closedAt: ar.closedAt,
-        rows,
+        rows: filteredRows,
         expanded: false,
         student,
         subjects,
@@ -480,7 +518,6 @@
       }
     }
 
-    /* Auto-open the archive year if ?year= was passed */
     if(preOpenYear){
       const target = wrap.querySelector(`.year-card[data-year="${CSS.escape(preOpenYear)}"]`);
       if(target){
@@ -491,6 +528,66 @@
 
     bindArchiveEditor(student);
     bindYearToggles();
+  }
+
+  /* The archived row is built by E.archivedLedgerRow, which already normalizes
+     the subject and computes the correct averages. For viewer-gated access we
+     need to strip unapproved scores and recompute — done here so the current
+     and archived cards stay in sync with the shared helper's rules. */
+  function filterArchivedRowByApproval(row, year, student, subjectNameValue){
+    const ar = E.getArchive(year);
+    if(!ar) return row;
+    const target = E.normSubject(subjectNameValue);
+    const results = (ar.snapshot && ar.snapshot.results) || [];
+    const cat = E.classCategoryFor(student.class);
+    const w = E.weightConfig();
+
+    const getScore = (semester, period) => {
+      const r = results.find(x =>
+        x.student === student.name &&
+        x.class === student.class &&
+        E.normSubject(x.subject) === target &&
+        Number(x.semester) === Number(semester) &&
+        String(x.period) === String(period)
+      );
+      if(!r) return '';
+      if(r.status && r.status !== 'approved') return '';
+      return r.score;
+    };
+
+    const p1 = getScore(1,1), p2 = getScore(1,2), p3 = getScore(1,3), e1 = getScore(1,'e1');
+    const p4 = getScore(2,4), p5 = getScore(2,5), p6 = getScore(2,6), e2 = getScore(2,'e2');
+
+    const calcAvg = (periodVals, examVal) => {
+      const nonEmpty = periodVals.filter(v => v !== '' && v !== null && v !== undefined);
+      const periodMean = nonEmpty.length ? E.averageScores(nonEmpty, cat).number : null;
+      const examNum = (() => {
+        if(examVal === '' || examVal === undefined || examVal === null) return null;
+        if(typeof examVal === 'string' && /^[A-Fa-f]$/.test(examVal.trim())) return E.midpointForLetter(examVal, cat);
+        const n = Number(examVal);
+        return Number.isFinite(n) ? n : null;
+      })();
+      let mean;
+      if(periodMean != null && examNum != null) mean = periodMean * w.periodWeight + examNum * w.examWeight;
+      else if(periodMean != null) mean = periodMean;
+      else mean = examNum;
+      if(mean == null) return null;
+      return { letter: E.gradeFromNumber(mean, cat), number: mean };
+    };
+
+    const s1Avg = calcAvg([p1,p2,p3], e1);
+    const s2Avg = calcAvg([p4,p5,p6], e2);
+    const yearly = (() => {
+      if(s1Avg && s2Avg){
+        const mean = s1Avg.number * w.semesterWeight + s2Avg.number * (1 - w.semesterWeight);
+        return { letter: E.gradeFromNumber(mean, cat), number: mean };
+      }
+      if(s1Avg) return s1Avg;
+      if(s2Avg) return s2Avg;
+      return null;
+    })();
+
+    return { ...row, p1, p2, p3, e1, s1Avg, p4, p5, p6, e2, s2Avg, yearly };
   }
 
   function buildYearCard({ year, kind, label, closedAt, rows, expanded, student, subjects, editable }){
@@ -506,14 +603,14 @@
             <h3>${E.esc(year)} · ${E.esc(student.class)}</h3>
             <div class="sub">
               ${kind === 'current'
-                ? 'Live data · edit from Gradesheet'
+                ? (isViewerGated ? 'Approved scores only' : 'Live data · edit from Gradesheet')
                 : kind === 'editable'
                 ? `Archived ${E.fmtDateTime(closedAt)} · editable`
                 : `Archived ${E.fmtDateTime(closedAt)} · read-only`}
             </div>
             <div class="badges" style="margin-top:8px">
               ${kind === 'current'
-                ? '<span class="badge green">Current</span>'
+                ? `<span class="badge green">Current${isViewerGated ? ' · Approved' : ''}</span>`
                 : kind === 'editable'
                 ? '<span class="badge blue">✎ Editable</span>'
                 : '<span class="badge gold">Read-only</span>'}
@@ -532,7 +629,11 @@
           ? `<div class="edit-note" style="background:#fff8e6;border-color:#f3d999;color:#8a6a1a">
                🔒 <strong>Read-only archive.</strong> Only Principal and Registrar can edit scores.
              </div>`
-          : '');
+          : (isViewerGated
+              ? `<div class="edit-note approval-gate">
+                   ✓ <strong>Approved scores only.</strong> Pending or returned scores are hidden until approved by the admin.
+                 </div>`
+              : ''));
 
     const saveBar = editable
       ? `<div class="save-bar">
@@ -572,9 +673,11 @@
             </thead>
             <tbody>
               ${rows.length
-                ? rows.map(r => renderRow(r, { year, student, editable })).join('')
+                ? rows.map(r => renderRow(r, { year, student, editable, subjects })).join('')
                 : `<tr><td colspan="12" style="text-align:center;color:#7a8498;padding:20px">
-                    No results on file for this year.
+                    ${isViewerGated
+                      ? 'No approved scores on file for this year.'
+                      : 'No results on file for this year.'}
                   </td></tr>`}
             </tbody>
           </table>
@@ -588,6 +691,11 @@
   function renderRow(r, ctx){
     const cat = E.classCategoryFor(ctx.student.class);
     const isNursery = E.isNurseryCategory(cat);
+
+    /* The subject row's `subject` field is already a display name (built
+       from subjectsFor()). Look up the code for the archive-edit key by
+       matching on canonical name. */
+    const subCode = ctx.subjects.find(s => E.normSubject(s.name) === E.normSubject(r.subject))?.code || r.subject;
 
     const cellFor = (periodKey, semester, value) => {
       if(!ctx.editable){
@@ -604,7 +712,7 @@
         placeholder="${placeholder}"
         data-arch-year="${E.esc(ctx.year)}"
         data-arch-student="${E.esc(ctx.student.id)}"
-        data-arch-subject="${E.esc(r.subject)}"
+        data-arch-subject="${E.esc(subCode)}"
         data-arch-semester="${semester}"
         data-arch-period="${E.esc(periodKey)}"
         value="${value === '' || value === undefined || value === null ? '' : E.esc(String(value))}">`;
@@ -620,13 +728,13 @@
       <td>${cellFor(2, 1, r.p2)}</td>
       <td>${cellFor(3, 1, r.p3)}</td>
       <td>${cellFor('e1', 1, r.e1)}</td>
-      <td class="avg" data-s1avg="${E.esc(ctx.year)}::${E.esc(r.subject)}">${avgCell(r.s1Avg)}</td>
+      <td class="avg" data-s1avg="${E.esc(ctx.year)}::${E.esc(E.normSubject(r.subject))}">${avgCell(r.s1Avg)}</td>
       <td>${cellFor(4, 2, r.p4)}</td>
       <td>${cellFor(5, 2, r.p5)}</td>
       <td>${cellFor(6, 2, r.p6)}</td>
       <td>${cellFor('e2', 2, r.e2)}</td>
-      <td class="avg" data-s2avg="${E.esc(ctx.year)}::${E.esc(r.subject)}">${avgCell(r.s2Avg)}</td>
-      <td class="avg" style="background:#fffbf0" data-yearavg="${E.esc(ctx.year)}::${E.esc(r.subject)}">${avgCell(r.yearly)}</td>
+      <td class="avg" data-s2avg="${E.esc(ctx.year)}::${E.esc(E.normSubject(r.subject))}">${avgCell(r.s2Avg)}</td>
+      <td class="avg" style="background:#fffbf0" data-yearavg="${E.esc(ctx.year)}::${E.esc(E.normSubject(r.subject))}">${avgCell(r.yearly)}</td>
     </tr>`;
   }
 
@@ -641,7 +749,7 @@
         const year = input.dataset.archYear;
         const key = [
           input.dataset.archStudent,
-          input.dataset.archSubject,
+          E.normSubject(input.dataset.archSubject),
           input.dataset.archSemester,
           input.dataset.archPeriod
         ].join('|');
@@ -661,7 +769,6 @@
 
         recomputeArchivedRowAverages(year, student, input.dataset.archSubject);
 
-        /* Update save bar for this year */
         const note = document.getElementById(`saveNote-${year}`);
         const saveBtn = document.querySelector(`[data-save-year="${year}"]`);
         const dirtyCount = Object.values(editState[year] || {})
@@ -714,16 +821,19 @@
   }
 
   /* ---------- RECOMPUTE ---------- */
-  function recomputeArchivedRowAverages(year, student, subject){
+  function recomputeArchivedRowAverages(year, student, subjectNameValue){
     const cat = E.classCategoryFor(student.class);
+    const target = E.normSubject(subjectNameValue);
 
     const getScore = (semester, period) => {
-      const key = [student.id, subject, semester, period].join('|');
+      /* Check the live edit buffer first */
+      const key = [student.id, target, semester, period].join('|');
       const edit = editState[year] && editState[year][key];
       if(edit) return edit.value;
       const ar = E.getArchive(year);
       const row = (ar?.snapshot?.results || []).find(r =>
-        r.student === student.name && r.class === student.class && r.subject === subject &&
+        r.student === student.name && r.class === student.class &&
+        E.normSubject(r.subject) === target &&
         Number(r.semester) === Number(semester) && String(r.period) === String(period));
       return row ? row.score : '';
     };
@@ -768,9 +878,10 @@
       ? `<span class="avg">${a.number.toFixed(1)}</span> <span class="grade-${gradeCls(a.letter)} grade">${a.letter}</span>`
       : '<span class="missing">—</span>';
 
-    const s1Cell = document.querySelector(`[data-s1avg="${CSS.escape(year + '::' + subject)}"]`);
-    const s2Cell = document.querySelector(`[data-s2avg="${CSS.escape(year + '::' + subject)}"]`);
-    const yrCell = document.querySelector(`[data-yearavg="${CSS.escape(year + '::' + subject)}"]`);
+    const escapeForSel = v => String(v).replace(/"/g, '\\"');
+    const s1Cell = document.querySelector(`[data-s1avg="${escapeForSel(year + '::' + target)}"]`);
+    const s2Cell = document.querySelector(`[data-s2avg="${escapeForSel(year + '::' + target)}"]`);
+    const yrCell = document.querySelector(`[data-yearavg="${escapeForSel(year + '::' + target)}"]`);
     if(s1Cell) s1Cell.innerHTML = fmt(s1Avg);
     if(s2Cell) s2Cell.innerHTML = fmt(s2Avg);
     if(yrCell) yrCell.innerHTML = fmt(yearly);
@@ -787,13 +898,13 @@
     let saved = 0, skipped = 0;
 
     dirty.forEach(([key, x]) => {
-      const [sid, subject, semester, period] = key.split('|');
+      const [sid, subjectCode, semester, period] = key.split('|');
       const v = E.validateScore(x.value, cat);
       if(!v.ok){ skipped++; return; }
       const res = E.updateArchivedResult(year, {
         student: student.name,
         className: student.class,
-        subject,
+        subject: subjectCode,
         semester: Number(semester),
         period,
         score: v.normalized
@@ -807,7 +918,6 @@
     E.toast(`Saved ${saved} change${saved === 1 ? '' : 's'} to ${year}` +
       (skipped ? ` · ${skipped} skipped` : ''));
 
-    /* Re-render the accordions so original values reflect the new stored data */
     paintAccordions(student);
   }
 
@@ -817,7 +927,6 @@
       const sid = e.target.value;
       state.selectedStudentId = sid;
       sessionStorage.setItem('educoreLedgerStudent', sid);
-      /* clear all edit states when switching students */
       Object.keys(editState).forEach(k => delete editState[k]);
       paintAccordions(studentsFor().find(s => s.id === sid));
     });
@@ -865,9 +974,9 @@
     ]];
     students.forEach(s => {
       subjects.forEach(sub => {
-        const r = E.subjectLedgerRow(s.name, s.class, sub, currentYear);
+        const r = E.subjectLedgerRow(s.name, s.class, sub.name, currentYear, viewOpts);
         rows.push([
-          s.id, s.name, s.class, sub,
+          s.id, s.name, s.class, sub.name,
           r.p1, r.p2, r.p3, r.e1,
           r.s1Avg ? r.s1Avg.number.toFixed(1) : '',
           r.s1Avg ? r.s1Avg.letter : '',

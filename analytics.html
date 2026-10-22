@@ -1,0 +1,2152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analytics | EduCore</title>
+<style>
+  :root{
+    --navy:#12315a;--blue:#3987ee;--line:#e8ebf2;--text:#23354d;--muted:#73849a;
+    --green:#14805e;--orange:#d88922;--red:#d64545;--gold:#c99a2e;--gold2:#fff4d6;
+    --shadow:0 8px 24px rgba(24,42,78,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:64px 16px 40px;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+  .page{width:100%;max-width:1320px;margin:0 auto}
+
+  .band{background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
+    border-radius:16px;padding:22px 28px;margin-bottom:20px;
+    box-shadow:0 18px 50px #16345417;display:flex;justify-content:space-between;
+    align-items:center;gap:16px;flex-wrap:wrap;border-top:5px solid #58a4ff}
+  .band-left{display:flex;align-items:center;gap:14px}
+  .band-logo{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;place-items:center;
+    overflow:hidden;color:var(--navy);font-weight:900;font-size:18px;border:3px solid #d8e8ff;flex:0 0 48px}
+  .band-logo img{width:100%;height:100%;object-fit:contain}
+  .band h1{margin:0;font-size:19px;letter-spacing:.3px;text-transform:uppercase}
+  .band p{margin:4px 0 0;font-size:11px;color:#cfdcf5}
+  .band-user{display:flex;align-items:center;gap:10px;font-size:11px;color:#cfdcf5;
+    background:#ffffff14;border:1px solid #ffffff36;padding:7px 12px;border-radius:20px}
+  .band-user strong{color:#fff}
+
+  .controls{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);padding:14px 18px;margin-bottom:14px;
+    display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .controls .group{display:flex;align-items:center;gap:8px}
+  .controls label{font-size:10.5px;color:var(--muted);font-weight:800;
+    text-transform:uppercase;letter-spacing:.7px}
+  .controls select,.controls input[type="date"]{
+    border:1px solid var(--line);border-radius:8px;padding:8px 11px;
+    font-size:12px;outline:none;background:#fff;min-width:130px}
+  .controls select:focus,.controls input[type="date"]:focus{border-color:var(--blue)}
+  .controls .custom-range{display:none;align-items:center;gap:6px}
+  .controls .custom-range.show{display:flex}
+  .controls .right{margin-left:auto;font-size:11px;color:var(--muted);
+    display:flex;align-items:center;gap:6px}
+
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;
+    background:#fff;border:1px solid var(--line);border-radius:13px;
+    padding:8px;box-shadow:var(--shadow)}
+  .tab{border:0;background:transparent;padding:10px 14px;border-radius:9px;
+    font-size:12px;font-weight:800;color:#54637d;cursor:pointer}
+  .tab:hover{background:#f3f6fd}
+  .tab.active{background:#0d1e3a;color:#fff}
+
+  .tabpanel{display:none}
+  .tabpanel.active{display:block}
+
+  .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:16px 18px;
+    box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--blue)}
+  .stat.green::before{background:var(--green)}
+  .stat.orange::before{background:var(--orange)}
+  .stat.red::before{background:var(--red)}
+  .stat small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.8px;
+    color:var(--muted);font-weight:800;margin-bottom:8px}
+  .stat strong{font-size:22px;color:var(--navy);font-weight:800}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);overflow:hidden;margin-bottom:18px}
+  .card-head{padding:16px 20px;border-bottom:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .card-head h3{margin:0;font-size:14px}
+  .card-head p{margin:4px 0 0;font-size:11px;color:var(--muted)}
+  .card-body{padding:18px 20px}
+
+  .bar-row{display:grid;grid-template-columns:140px 1fr 60px;gap:12px;
+    align-items:center;padding:7px 0;font-size:12px}
+  .bar-row .label{color:var(--navy);font-weight:700;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis}
+  .bar-row .track{height:10px;background:#eef1f7;border-radius:20px;overflow:hidden}
+  .bar-row .fill{height:100%;border-radius:20px;background:linear-gradient(90deg,#3987ee,#14805e);
+    transition:width .3s}
+  .bar-row .fill.warn{background:linear-gradient(90deg,#f0b24d,#d88922)}
+  .bar-row .fill.danger{background:linear-gradient(90deg,#ef7d86,#d64545)}
+  .bar-row .value{font-family:monospace;font-weight:800;color:var(--navy);text-align:right}
+
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;white-space:nowrap;font-size:12px}
+  th{text-align:left;background:#fafbfe;color:#7a8498;font-size:10px;
+    text-transform:uppercase;letter-spacing:.6px;padding:11px 14px;
+    border-bottom:1px solid var(--line);font-weight:800}
+  td{padding:11px 14px;border-bottom:1px solid #f0f2f7}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:hover{background:#fbfdff}
+
+  .pill{display:inline-block;padding:4px 8px;border-radius:20px;font-size:10px;font-weight:800}
+  .pill.green{background:#e6f7f0;color:#16835f}
+  .pill.orange{background:#fff2dd;color:#aa6c14}
+  .pill.red{background:#ffeaec;color:#bd3b48}
+  .pill.blue{background:#edf2ff;color:#3b5cc1}
+
+  .empty{padding:40px 20px;text-align:center;color:var(--muted);font-size:13px}
+  .empty .icon{font-size:40px;display:block;margin-bottom:10px;opacity:.5}
+
+  .health-row{display:flex;justify-content:space-between;align-items:center;
+    padding:11px 14px;border-bottom:1px solid #f0f2f7;gap:12px;font-size:12px}
+  .health-row:last-child{border-bottom:0}
+  .health-row .label{color:#3b4a63;font-weight:600}
+  .health-row .value{padding:4px 10px;border-radius:12px;font-weight:800;font-size:11px}
+  .health-row .value.ok{background:#e6f7f0;color:#16835f}
+  .health-row .value.warn{background:#fff2dd;color:#a86414}
+  .health-row .value.danger{background:#ffeaec;color:#bd3b48}
+
+  .access-banner{background:linear-gradient(135deg,#0d1e3a,#245d9c);color:#fff;
+    border-radius:14px;padding:20px 24px;margin-bottom:18px;
+    display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+  .access-banner h3{margin:0 0 4px;font-size:15px}
+  .access-banner p{margin:0;font-size:12px;color:#cfdcf5;line-height:1.6}
+
+  .btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{filter:brightness(.96)}
+  .btn.secondary{background:#eef2fb;color:#34415c}
+  .btn.outline{background:#fff;color:#34415c;border:1px solid var(--line)}
+  .btn.danger{background:#fff0f1;color:var(--red)}
+
+  .range-badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:10px;
+    font-weight:800;background:#edf2ff;color:#3b5cc1;letter-spacing:.4px}
+
+  .filter-bar{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden}
+  .filter-bar-head{padding:12px 18px;display:flex;justify-content:space-between;
+    align-items:center;gap:12px;cursor:pointer;user-select:none;
+    background:linear-gradient(180deg,#fefefe,#fbfcff)}
+  .filter-bar-head:hover{background:linear-gradient(180deg,#fbfcff,#f4f8ff)}
+  .filter-bar-head .left{display:flex;align-items:center;gap:10px}
+  .filter-bar-head .icon{width:30px;height:30px;border-radius:8px;background:#eef2fb;
+    color:#2f4d8a;display:grid;place-items:center;font-size:14px}
+  .filter-bar-head h3{margin:0;font-size:13px}
+  .filter-bar-head .sub{font-size:11px;color:var(--muted);margin-top:2px}
+  .filter-bar-head .match-count{background:#e6f7f0;color:#16835f;font-weight:800;
+    padding:4px 10px;border-radius:12px;font-size:10.5px}
+  .filter-bar-head .chev{color:var(--muted);transition:transform .2s;font-size:12px}
+  .filter-bar.open .filter-bar-head .chev{transform:rotate(90deg)}
+  .filter-bar-body{display:none;padding:16px 18px;border-top:1px solid var(--line);
+    background:#fbfcff}
+  .filter-bar.open .filter-bar-body{display:block}
+
+  .filter-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+  .filter-grid .filter-item{min-width:0}
+  .filter-grid label{display:block;font-size:10px;text-transform:uppercase;
+    letter-spacing:.6px;color:var(--muted);font-weight:800;margin-bottom:6px}
+  .filter-grid input,.filter-grid select{
+    width:100%;border:1px solid #dfe4ee;border-radius:8px;padding:9px 11px;
+    font-size:12px;outline:none;background:#fff}
+  .filter-grid input:focus,.filter-grid select:focus{border-color:var(--blue)}
+
+  .checkbox-row{display:flex;flex-wrap:wrap;gap:6px}
+  .checkbox-row label{display:inline-flex;align-items:center;gap:6px;
+    background:#fff;border:1px solid var(--line);border-radius:7px;
+    padding:6px 10px;font-size:11px;color:#34415c;cursor:pointer;
+    font-weight:700;text-transform:none;letter-spacing:0;margin:0}
+  .checkbox-row label:hover{background:#eef2fb}
+  .checkbox-row label.ticked{background:#245d9c;color:#fff;border-color:#245d9c}
+  .checkbox-row input{margin:0;accent-color:#245d9c;width:14px;height:14px}
+
+  .range-row{display:flex;align-items:center;gap:6px}
+  .range-row input{width:100%}
+  .range-row span{font-size:11px;color:var(--muted);font-weight:800}
+
+  .filter-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;
+    border-top:1px solid var(--line);padding-top:14px}
+
+  .chip-bar{display:none;gap:8px;flex-wrap:wrap;align-items:center;
+    background:#fff;border:1px solid var(--line);border-radius:11px;
+    box-shadow:var(--shadow);padding:10px 14px;margin-bottom:14px}
+  .chip-bar.show{display:flex}
+  .chip-bar .chip-label{font-size:10px;text-transform:uppercase;letter-spacing:.7px;
+    color:var(--muted);font-weight:800;margin-right:2px}
+  .chip{display:inline-flex;align-items:center;gap:6px;background:#edf2ff;
+    border-radius:20px;padding:5px 10px;font-size:11px;color:#3b5cc1;font-weight:700}
+  .chip button{border:0;background:transparent;color:#3b5cc1;font-weight:900;
+    padding:0 2px;cursor:pointer;font-size:13px;line-height:1}
+  .chip button:hover{color:#12315a}
+  .chip-clear{border:0;background:#fff0f1;color:#bd3b48;font-size:11px;font-weight:800;
+    padding:5px 12px;border-radius:20px;margin-left:auto}
+
+  .filtered-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+
+  @media print{
+    @page{size:A4 portrait;margin:10mm}
+    body{padding:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .tabs,.controls,.filter-bar,.chip-bar,.filtered-actions,#educoreBackPill,.access-banner{display:none!important}
+    .tabpanel{display:block!important}
+    .card,.stat{break-inside:avoid;box-shadow:none}
+    .band{box-shadow:none;border-radius:0;margin-bottom:14px}
+    body.print-mode-list .stat,
+    body.print-mode-list .card:not(.filtered-results-card),
+    body.print-mode-list .bar-row,
+    body.print-mode-list .table-wrap:not(.in-filtered-card),
+    body.print-mode-list .filtered-actions,
+    body.print-mode-list .card-body > .empty:not(.in-filtered-card){display:none!important}
+    body.print-mode-list .filtered-results-card{display:block!important;
+      box-shadow:none;border:0;border-radius:0}
+    body.print-mode-list .filtered-results-card .card-head{border-bottom:1px solid #999}
+  }
+
+  @media (max-width:900px){
+    .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .bar-row{grid-template-columns:110px 1fr 50px;font-size:11px}
+  }
+  @media (max-width:650px){
+    body{padding:64px 8px 24px}
+    .band{padding:18px 20px}
+    .band h1{font-size:15px}
+    .stats{grid-template-columns:1fr}
+    .bar-row{grid-template-columns:1fr;gap:4px}
+    .bar-row .value{text-align:left}
+    .filter-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="band">
+    <div class="band-left">
+      <div class="band-logo" id="bandLogo">EC</div>
+      <div>
+        <h1 id="bandSchool">Analytics</h1>
+        <p id="bandSub">School-wide metrics and reports</p>
+      </div>
+    </div>
+    <div class="band-user">Signed in as <strong id="bandUser">—</strong></div>
+  </div>
+
+  <div id="pageBody"></div>
+
+</div>
+
+<script src="educore-shared.js?v=13"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  const user = E.requirePerm('analytics', 'Analytics');
+  if(!user) return;
+  if(!E.can('analytics.view')){ E.showDenied('Analytics'); return; }
+
+  const canEnrolment  = E.can('analytics.enrolment');
+  const canAcademic   = E.can('analytics.academic');
+  const canAttendance = E.can('analytics.attendance');
+  const canFinancial  = E.can('analytics.financial');
+  const canQuizzes    = E.can('analytics.quizzes');
+  const canStaff      = E.can('analytics.staff');
+  const canTimetable  = E.can('analytics.timetable');
+  const canDataHealth = E.can('analytics.dataHealth');
+  const canExport     = E.can('analytics.export');
+
+  const todayISO = () => new Date().toISOString().slice(0, 10);
+
+  function defaultRange(){
+    const now = new Date();
+    const first = new Date(now.getFullYear(), now.getMonth(), 1);
+    return { mode:'month', from: first.toISOString().slice(0,10), to: todayISO() };
+  }
+
+  function emptyFilters(){
+    return {
+      enrolment:  { classes:[], categories:[], statuses:[], genders:[], sort:'name-asc' },
+      academic:   { classes:[], categories:[], grades:[], minScore:'', maxScore:'', sort:'avg-desc' },
+      attendance: { classes:[], minRate:'', maxRate:'', minAbsent:'', maxAbsent:'', sort:'rate-asc' },
+      financial:  { classes:[], minBal:'', maxBal:'', statuses:[], sort:'balance-desc' },
+      finPayments:{ methods:[], minAmt:'', maxAmt:'', reversedOnly:false, sort:'date-desc' },
+      quizzes:    { classes:[], quizIds:[], statuses:[], minScore:'', maxScore:'', sort:'name-asc' },
+      staff:      { employment:[], departments:[], sort:'name-asc' },
+      timetable:  { classes:[], teacherIds:[], days:[], sort:'day-period' },
+      dataHealth: { issues:[], severities:[], sort:'label' }
+    };
+  }
+
+  const state = {
+    tab: 'enrolment',
+    range: defaultRange(),
+    semester: 'year',
+    filters: emptyFilters(),
+    filterOpen: {},
+    finView: 'students'
+  };
+
+  const SNAPSHOT_AT = new Date();
+
+  /* ============================================================
+     HEADER
+     ============================================================ */
+  function paintHeader(){
+    const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const name = settings.name || 'EduCore High School';
+    if(settings.logo){
+      document.getElementById('bandLogo').innerHTML = '<img src="' + settings.logo + '" alt="">';
+    } else {
+      document.getElementById('bandLogo').textContent =
+        name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
+    }
+    document.getElementById('bandSchool').textContent = name;
+    document.getElementById('bandSub').textContent = user.role === 'Principal'
+      ? 'School-wide metrics and reports · Numbers current as of ' + SNAPSHOT_AT.toLocaleString()
+      : 'School-wide metrics and reports (limited) · Numbers current as of ' + SNAPSHOT_AT.toLocaleString();
+    document.getElementById('bandUser').textContent = user.name || user.username;
+  }
+
+  /* ============================================================
+     DATE RANGE
+     ============================================================ */
+  function isoDateInRange(iso, from, to){
+    if(!iso) return false;
+    const d = String(iso).slice(0,10);
+    return d >= from && d <= to;
+  }
+  function computeRangeBounds(mode){
+    const now = new Date();
+    const toISO = d => d.toISOString().slice(0,10);
+    if(mode === 'week'){
+      const dow = now.getDay();
+      const delta = dow === 0 ? 6 : dow - 1;
+      const monday = new Date(now); monday.setDate(now.getDate() - delta);
+      return { from: toISO(monday), to: toISO(now) };
+    }
+    if(mode === 'month'){
+      return { from: toISO(new Date(now.getFullYear(), now.getMonth(), 1)), to: toISO(now) };
+    }
+    if(mode === 'term'){
+      const m = now.getMonth();
+      let start, end;
+      if(m >= 8){ start = new Date(now.getFullYear(), 8, 1); end = new Date(now.getFullYear(), 11, 31); }
+      else if(m < 3){ start = new Date(now.getFullYear(), 0, 1); end = new Date(now.getFullYear(), 2, 31); }
+      else { start = new Date(now.getFullYear(), 3, 1); end = new Date(now.getFullYear(), 7, 31); }
+      return { from: toISO(start), to: toISO(now < end ? now : end) };
+    }
+    if(mode === 'year'){
+      return { from: toISO(new Date(now.getFullYear(), 0, 1)), to: toISO(now) };
+    }
+    if(mode === 'custom'){
+      return { from: state.range.from || toISO(now), to: state.range.to || toISO(now) };
+    }
+    return { from: '0000-01-01', to: toISO(now) };
+  }
+  function currentBounds(){ return computeRangeBounds(state.range.mode); }
+  function rangeLabel(){
+    if(state.range.mode === 'week')  return 'This week';
+    if(state.range.mode === 'month') return 'This month';
+    if(state.range.mode === 'term')  return 'This term';
+    if(state.range.mode === 'year')  return 'This year';
+    if(state.range.mode === 'custom') return state.range.from + ' → ' + state.range.to;
+    return 'All time';
+  }
+
+  /* ============================================================
+     HELPERS
+     ============================================================ */
+  function stat(label, value, tone){
+    return '<div class="stat ' + (tone||'') + '"><small>' + E.esc(label) + '</small><strong>' + value + '</strong></div>';
+  }
+  function barRow(label, value, max, tone){
+    const pct = max > 0 ? Math.min(100, Math.round(value / max * 100)) : 0;
+    return '<div class="bar-row">' +
+      '<span class="label" title="' + E.esc(label) + '">' + E.esc(label) + '</span>' +
+      '<div class="track"><div class="fill ' + (tone||'') + '" style="width:' + pct + '%"></div></div>' +
+      '<span class="value">' + value + '</span>' +
+    '</div>';
+  }
+  function exportBtn(id, label){
+    if(!canExport) return '';
+    return '<button class="btn secondary" data-export="' + id + '">↓ ' + E.esc(label) + '</button>';
+  }
+  function toCSV(rows){
+    return rows.map(function(r){
+      return r.map(function(v){
+        return '"' + String(v == null ? '' : v).replace(/"/g,'""') + '"';
+      }).join(',');
+    }).join('\r\n');
+  }
+  function downloadCSV(filename, rows){
+    const csv = '\ufeff' + toCSV(rows);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+    E.toast('Exported ' + filename);
+  }
+  function slugify(s){
+    return String(s || '').toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40) || 'all';
+  }
+  function semesterFilteredResults(results){
+    if(state.semester === 'year') return results;
+    const s = Number(state.semester);
+    return results.filter(function(r){ return Number(r.semester) === s; });
+  }
+
+  /* ============================================================
+     FILTER PREDICATES
+     ============================================================ */
+  function matchMulti(value, selected){
+    if(!selected || !selected.length) return true;
+    return selected.indexOf(value) >= 0;
+  }
+  function matchNumberRange(n, minStr, maxStr){
+    const nMin = minStr === '' ? null : Number(minStr);
+    const nMax = maxStr === '' ? null : Number(maxStr);
+    if(nMin !== null && Number.isFinite(nMin) && n < nMin) return false;
+    if(nMax !== null && Number.isFinite(nMax) && n > nMax) return false;
+    return true;
+  }
+
+  function filterStudents(list, f){
+    return list.filter(function(s){
+      if(!matchMulti(s.class, f.classes)) return false;
+      if(f.categories && f.categories.length){
+        const cat = E.classCategoryFor(s.class);
+        if(f.categories.indexOf(cat) < 0) return false;
+      }
+      if(f.statuses && f.statuses.length){
+        if(f.statuses.indexOf(s.status || 'Active') < 0) return false;
+      }
+      if(f.genders && f.genders.length){
+        const g = s.gender || 'Unspecified';
+        if(f.genders.indexOf(g) < 0) return false;
+      }
+      return true;
+    });
+  }
+
+  function applySort(list, sortKey){
+    const arr = list.slice();
+    arr.sort(function(a, b){
+      switch(sortKey){
+        case 'name-asc':  return String(a.name||'').localeCompare(String(b.name||''));
+        case 'name-desc': return String(b.name||'').localeCompare(String(a.name||''));
+        case 'class':     return String(a.class||'').localeCompare(String(b.class||''));
+        case 'category':  return String(E.classCategoryFor(a.class)).localeCompare(E.classCategoryFor(b.class));
+        case 'avg-desc':  return (b._avg || 0) - (a._avg || 0);
+        case 'avg-asc':   return (a._avg || 0) - (b._avg || 0);
+        case 'rate-asc':  return (a._rate || 0) - (b._rate || 0);
+        case 'rate-desc': return (b._rate || 0) - (a._rate || 0);
+        case 'balance-desc': return (b._balance || 0) - (a._balance || 0);
+        case 'balance-asc':  return (a._balance || 0) - (b._balance || 0);
+        case 'score-desc':   return (b._score || 0) - (a._score || 0);
+        case 'score-asc':    return (a._score || 0) - (b._score || 0);
+        case 'amount-desc':  return (b._amount || 0) - (a._amount || 0);
+        case 'amount-asc':   return (a._amount || 0) - (b._amount || 0);
+        case 'date-desc':    return new Date(b.date || b.at || 0) - new Date(a.date || a.at || 0);
+        case 'date-asc':     return new Date(a.date || a.at || 0) - new Date(b.date || b.at || 0);
+        case 'day-period':   return (a._day||'').localeCompare(b._day||'') || (a._period||0)-(b._period||0);
+        case 'label':        return String(a.label||'').localeCompare(String(b.label||''));
+        default: return 0;
+      }
+    });
+    return arr;
+  }
+
+  /* ============================================================
+     FILTER PANEL BUILDERS
+     ============================================================ */
+  function buildCheckboxRow(name, options, selected){
+    return '<div class="checkbox-row">' +
+      options.map(function(o){
+        const val = (o && o.value !== undefined) ? o.value : o;
+        const label = (o && o.label !== undefined) ? o.label : o;
+        const ticked = selected.indexOf(val) >= 0;
+        return '<label class="' + (ticked ? 'ticked' : '') + '" data-chk-wrap>' +
+          '<input type="checkbox" data-chk="' + E.esc(name) + '" value="' + E.esc(val) + '" ' + (ticked ? 'checked' : '') + '>' +
+          '<span>' + E.esc(label) + '</span>' +
+        '</label>';
+      }).join('') +
+    '</div>';
+  }
+
+  function buildSelect(name, options, value){
+    return '<select data-sel="' + E.esc(name) + '">' +
+      options.map(function(o){
+        return '<option value="' + E.esc(o.value) + '" ' + (String(o.value) === String(value) ? 'selected' : '') + '>' + E.esc(o.label) + '</option>';
+      }).join('') +
+    '</select>';
+  }
+
+  function buildRangePair(numMin, numMax, minVal, maxVal, placeholder){
+    return '<div class="range-row">' +
+      '<input type="number" ' + (numMin ? 'min="' + numMin + '"' : '') + ' ' + (numMax ? 'max="' + numMax + '"' : '') + ' data-num="' + E.esc(placeholder) + '_min" value="' + E.esc(minVal) + '" placeholder="Min">' +
+      '<span>–</span>' +
+      '<input type="number" ' + (numMin ? 'min="' + numMin + '"' : '') + ' ' + (numMax ? 'max="' + numMax + '"' : '') + ' data-num="' + E.esc(placeholder) + '_max" value="' + E.esc(maxVal) + '" placeholder="Max">' +
+    '</div>';
+  }
+
+  function buildFilterPanel(tab){
+    const f = state.filters[tab];
+    if(!f) return '';
+    const items = [];
+    const classes = E.getClasses().map(function(c){ return c.name; });
+
+    if(tab === 'enrolment'){
+      items.push({ label:'Class', html: buildCheckboxRow('classes', classes, f.classes) });
+      items.push({ label:'Category', html: buildCheckboxRow('categories', E.CATEGORY_LIST, f.categories) });
+      items.push({ label:'Status', html: buildCheckboxRow('statuses', ['Active','Pending','Inactive','Graduated'], f.statuses) });
+      items.push({ label:'Gender', html: buildCheckboxRow('genders', ['Male','Female','Unspecified'], f.genders) });
+      items.push({ label:'Sort', html: buildSelect('sort', [
+        { value:'name-asc', label:'Name A→Z' },
+        { value:'name-desc', label:'Name Z→A' },
+        { value:'class', label:'Class' },
+        { value:'category', label:'Category' }
+      ], f.sort) });
+    }
+    else if(tab === 'academic'){
+      items.push({ label:'Class', html: buildCheckboxRow('classes', classes, f.classes) });
+      items.push({ label:'Category', html: buildCheckboxRow('categories', E.CATEGORY_LIST, f.categories) });
+      items.push({ label:'Grade band', html: buildCheckboxRow('grades', ['A','B','C','D','F'], f.grades) });
+      items.push({ label:'Score range', html:
+        '<div class="range-row">' +
+          '<input type="number" min="0" max="100" data-num="minScore" value="' + E.esc(f.minScore) + '" placeholder="Min">' +
+          '<span>–</span>' +
+          '<input type="number" min="0" max="100" data-num="maxScore" value="' + E.esc(f.maxScore) + '" placeholder="Max">' +
+        '</div>' });
+      items.push({ label:'Sort', html: buildSelect('sort', [
+        { value:'avg-desc', label:'Average high→low' },
+        { value:'avg-asc', label:'Average low→high' },
+        { value:'name-asc', label:'Name A→Z' }
+      ], f.sort) });
+    }
+    else if(tab === 'attendance'){
+      items.push({ label:'Class', html: buildCheckboxRow('classes', classes, f.classes) });
+      items.push({ label:'Attendance rate (%)', html:
+        '<div class="range-row">' +
+          '<input type="number" min="0" max="100" data-num="minRate" value="' + E.esc(f.minRate) + '" placeholder="Min">' +
+          '<span>–</span>' +
+          '<input type="number" min="0" max="100" data-num="maxRate" value="' + E.esc(f.maxRate) + '" placeholder="Max">' +
+        '</div>' });
+      items.push({ label:'Days absent', html:
+        '<div class="range-row">' +
+          '<input type="number" min="0" data-num="minAbsent" value="' + E.esc(f.minAbsent) + '" placeholder="Min">' +
+          '<span>–</span>' +
+          '<input type="number" min="0" data-num="maxAbsent" value="' + E.esc(f.maxAbsent) + '" placeholder="Max">' +
+        '</div>' });
+      items.push({ label:'Sort', html: buildSelect('sort', [
+        { value:'rate-asc', label:'Rate low→high' },
+        { value:'rate-desc', label:'Rate high→low' },
+        { value:'name-asc', label:'Name A→Z' }
+      ], f.sort) });
+    }
+    else if(tab === 'financial'){
+      items.push({ label:'Class', html: buildCheckboxRow('classes', classes, f.classes) });
+      items.push({ label:'Balance range', html:
+        '<div class="range-row">' +
+          '<input type="number" min="0" step="0.01" data-num="minBal" value="' + E.esc(f.minBal) + '" placeholder="Min">' +
+          '<span>–</span>' +
+          '<input type="number" min="0" step="0.01" data-num="maxBal" value="' + E.esc(f.maxBal) + '" placeholder="Max">' +
+        '</div>' });
+      items.push({ label:'Payment status', html: buildCheckboxRow('statuses', ['Paid','Part-paid','Pending','Credit'], f.statuses) });
+      items.push({ label:'Sort', html: buildSelect('sort', [
+        { value:'balance-desc', label:'Balance high→low' },
+        { value:'balance-asc', label:'Balance low→high' },
+        { value:'name-asc', label:'Name A→Z' },
+        { value:'class', label:'Class' }
+      ], f.sort) });
+    }
+    else if(tab === 'quizzes'){
+      items.push({ label:'Class', html: buildCheckboxRow('classes', classes, f.classes) });
+      items.push({ label:'Quiz', html: buildCheckboxRow('quizIds',
+        E.getQuizzes().map(function(q){ return { value:q.id, label:q.title }; }), f.quizIds) });
+      items.push({ label:'Status', html: buildCheckboxRow('statuses', ['Graded','Pending manual','In progress'], f.statuses) });
+      items.push({ label:'Score range', html:
+        '<div class="range-row">' +
+          '<input type="number" min="0" max="100" data-num="minScore" value="' + E.esc(f.minScore) + '" placeholder="Min">' +
+          '<span>–</span>' +
+          '<input type="number" min="0" max="100" data-num="maxScore" value="' + E.esc(f.maxScore) + '" placeholder="Max">' +
+        '</div>' });
+      items.push({ label:'Sort', html: buildSelect('sort', [
+        { value:'name-asc', label:'Name A→Z' },
+        { value:'score-desc', label:'Score high→low' },
+        { value:'score-asc', label:'Score low→high' }
+      ], f.sort) });
+    }
+    else if(tab === 'staff'){
+      items.push({ label:'Employment', html: buildCheckboxRow('employment', ['Full-time','Part-time','Contract'], f.employment) });
+      items.push({ label:'Department', html: buildCheckboxRow('departments',
+        Array.from(new Set(E.getTeachers().map(function(t){ return t.department || 'Unassigned'; }))).sort(),
+        f.departments) });
+      items.push({ label:'Sort', html: buildSelect('sort', [
+        { value:'name-asc', label:'Name A→Z' },
+        { value:'label', label:'Department' }
+      ], f.sort) });
+    }
+    else if(tab === 'timetable'){
+      items.push({ label:'Class', html: buildCheckboxRow('classes', classes, f.classes) });
+      items.push({ label:'Teacher', html: buildCheckboxRow('teacherIds',
+        E.getTeachers().map(function(t){ return { value:t.id, label:t.name }; }), f.teacherIds) });
+      items.push({ label:'Day of week', html: buildCheckboxRow('days', ['Mon','Tue','Wed','Thu','Fri','Sat'], f.days) });
+      items.push({ label:'Sort', html: buildSelect('sort', [
+        { value:'day-period', label:'Day → Period' },
+        { value:'name-asc', label:'Name' }
+      ], f.sort) });
+    }
+    else if(tab === 'dataHealth'){
+      items.push({ label:'Issue type', html: buildCheckboxRow('issues', [
+        'No guardian', 'No phone', 'No fee structure', 'Class has no subjects',
+        'Class has no sponsor', 'Teacher has no assignments',
+        'Assignment has no teacher', 'Parent not linked'
+      ], f.issues) });
+      items.push({ label:'Severity', html: buildCheckboxRow('severities', ['warn','danger'], f.severities) });
+    }
+
+    return '<div class="filter-grid">' +
+      items.map(function(it){
+        return '<div class="filter-item"><label>' + E.esc(it.label) + '</label>' + it.html + '</div>';
+      }).join('') +
+    '</div>' +
+    '<div class="filter-actions">' +
+      '<button class="btn outline" data-filter-clear="' + tab + '">Clear filters</button>' +
+      '<button class="btn secondary" data-filter-close>Done</button>' +
+    '</div>';
+  }
+
+  function buildFilterBar(tab, matchInfo){
+    const isOpen = !!state.filterOpen[tab];
+    const count = matchInfo.count;
+    const total = matchInfo.total;
+    const active = count !== total;
+    let subHTML;
+    if(active){
+      subHTML = '<span class="match-count">' + count + ' of ' + total + ' match</span>';
+    } else {
+      subHTML = '<span style="color:var(--muted)">No filters applied · all ' + total + ' shown</span>';
+    }
+    return '<div class="filter-bar ' + (isOpen ? 'open' : '') + '" data-filter-bar="' + tab + '">' +
+      '<div class="filter-bar-head" data-filter-toggle="' + tab + '">' +
+        '<div class="left">' +
+          '<div class="icon">🔎</div>' +
+          '<div>' +
+            '<h3>Filters</h3>' +
+            '<div class="sub">' + subHTML + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="chev">▶</div>' +
+      '</div>' +
+      '<div class="filter-bar-body">' +
+        buildFilterPanel(tab) +
+      '</div>' +
+    '</div>';
+  }
+
+  /* ============================================================
+     CHIP BAR
+     ============================================================ */
+  function collectChips(tab){
+    const f = state.filters[tab];
+    if(!f) return [];
+    const chips = [];
+
+    if(f.classes && f.classes.length) chips.push({ label: 'Class: ' + f.classes.join(', '), clear: function(){ f.classes = []; } });
+    if(f.categories && f.categories.length) chips.push({ label: 'Category: ' + f.categories.join(', '), clear: function(){ f.categories = []; } });
+    if(f.statuses && f.statuses.length) chips.push({ label: 'Status: ' + f.statuses.join(', '), clear: function(){ f.statuses = []; } });
+    if(f.genders && f.genders.length) chips.push({ label: 'Gender: ' + f.genders.join(', '), clear: function(){ f.genders = []; } });
+    if(f.grades && f.grades.length) chips.push({ label: 'Grade: ' + f.grades.join(', '), clear: function(){ f.grades = []; } });
+    if(f.minScore !== '') chips.push({ label: 'Min score: ' + f.minScore, clear: function(){ f.minScore = ''; } });
+    if(f.maxScore !== '') chips.push({ label: 'Max score: ' + f.maxScore, clear: function(){ f.maxScore = ''; } });
+    if(f.minRate !== '') chips.push({ label: 'Min rate: ' + f.minRate + '%', clear: function(){ f.minRate = ''; } });
+    if(f.maxRate !== '') chips.push({ label: 'Max rate: ' + f.maxRate + '%', clear: function(){ f.maxRate = ''; } });
+    if(f.minAbsent !== '') chips.push({ label: 'Min absent: ' + f.minAbsent, clear: function(){ f.minAbsent = ''; } });
+    if(f.maxAbsent !== '') chips.push({ label: 'Max absent: ' + f.maxAbsent, clear: function(){ f.maxAbsent = ''; } });
+    if(f.minBal !== '') chips.push({ label: 'Min balance: ' + E.money(f.minBal), clear: function(){ f.minBal = ''; } });
+    if(f.maxBal !== '') chips.push({ label: 'Max balance: ' + E.money(f.maxBal), clear: function(){ f.maxBal = ''; } });
+    if(f.employment && f.employment.length) chips.push({ label: 'Employment: ' + f.employment.join(', '), clear: function(){ f.employment = []; } });
+    if(f.departments && f.departments.length) chips.push({ label: 'Dept: ' + f.departments.join(', '), clear: function(){ f.departments = []; } });
+    if(f.days && f.days.length) chips.push({ label: 'Days: ' + f.days.join(', '), clear: function(){ f.days = []; } });
+    if(f.teacherIds && f.teacherIds.length){
+      const names = f.teacherIds.map(function(id){
+        const t = E.getTeachers().find(function(x){ return x.id === id; });
+        return t ? t.name : id;
+      });
+      chips.push({ label: 'Teacher: ' + names.join(', '), clear: function(){ f.teacherIds = []; } });
+    }
+    if(f.quizIds && f.quizIds.length){
+      const names = f.quizIds.map(function(id){
+        const q = E.getQuizzes().find(function(x){ return x.id === id; });
+        return q ? q.title : id;
+      });
+      chips.push({ label: 'Quiz: ' + names.join(', '), clear: function(){ f.quizIds = []; } });
+    }
+    if(f.issues && f.issues.length) chips.push({ label: 'Issue: ' + f.issues.join(', '), clear: function(){ f.issues = []; } });
+    if(f.severities && f.severities.length) chips.push({ label: 'Severity: ' + f.severities.join(', '), clear: function(){ f.severities = []; } });
+    if(f.minAmt !== '') chips.push({ label: 'Min amount: ' + E.money(f.minAmt), clear: function(){ f.minAmt = ''; } });
+    if(f.maxAmt !== '') chips.push({ label: 'Max amount: ' + E.money(f.maxAmt), clear: function(){ f.maxAmt = ''; } });
+    if(f.methods && f.methods.length) chips.push({ label: 'Method: ' + f.methods.join(', '), clear: function(){ f.methods = []; } });
+    if(f.reversedOnly) chips.push({ label: 'Reversed only', clear: function(){ f.reversedOnly = false; } });
+
+    return chips;
+  }
+
+  function buildChips(tab){
+    const chips = collectChips(tab);
+    if(!chips.length) return '';
+    const chipHtml = chips.map(function(c, i){
+      return '<span class="chip">' + E.esc(c.label) +
+        ' <button data-chip-clear="' + tab + ':' + i + '">×</button></span>';
+    }).join('');
+    return '<div class="chip-bar show">' +
+      '<span class="chip-label">Active:</span>' +
+      chipHtml +
+      '<button class="chip-clear" data-chip-all="' + tab + '">Clear all</button>' +
+    '</div>';
+  }
+
+  function clearChip(tab, index){
+    const chips = collectChips(tab);
+    if(chips[index] && typeof chips[index].clear === 'function'){
+      chips[index].clear();
+      paint();
+    }
+  }
+
+  function clearAllFilters(tab){
+    const fresh = emptyFilters();
+    if(fresh[tab]) state.filters[tab] = fresh[tab];
+    paint();
+  }
+
+  /* ============================================================
+     FILTERED RESULT CARD
+     ============================================================ */
+  function buildFilteredResultCard(opts){
+    const title = opts.title;
+    const filtered = opts.filtered;
+    const total = opts.total;
+    const columns = opts.columns;
+    const rows = opts.rows;
+    const tabKey = opts.tabKey;
+    const hasFilters = filtered !== total;
+
+    let sub;
+    if(hasFilters){
+      sub = 'Showing <strong>' + rows.length + '</strong> of ' + total + ' · filtered';
+    } else {
+      sub = 'All ' + rows.length + ' record' + (rows.length === 1 ? '' : 's');
+    }
+
+    const headActions =
+      '<div class="filtered-actions no-print">' +
+        '<button class="btn secondary" data-print-list="' + tabKey + '">🖶 Print this list</button>' +
+        (canExport ? '<button class="btn outline" data-export-list="' + tabKey + '">↓ Export CSV</button>' : '') +
+      '</div>';
+
+    let tableHtml;
+    if(rows.length){
+      tableHtml =
+        '<table>' +
+          '<thead><tr>' + columns.map(function(c){ return '<th>' + E.esc(c) + '</th>'; }).join('') + '</tr></thead>' +
+          '<tbody>' + rows.map(function(r){ return '<tr>' + r.map(function(v){ return '<td>' + v + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody>' +
+        '</table>';
+    } else {
+      tableHtml =
+        '<div class="empty in-filtered-card">' +
+          '<span class="icon">🔎</span>' +
+          'No records match the current filters.' +
+        '</div>';
+    }
+
+    return '<div class="card filtered-results-card">' +
+      '<div class="card-head">' +
+        '<div>' +
+          '<h3>' + E.esc(title) + '</h3>' +
+          '<p>' + sub + '</p>' +
+        '</div>' +
+        headActions +
+      '</div>' +
+      '<div class="table-wrap in-filtered-card">' + tableHtml + '</div>' +
+    '</div>';
+  }
+
+  /* ============================================================
+     TAB: ENROLMENT
+     ============================================================ */
+  function paintEnrolment(){
+    const allStudents = E.readStore(E.STORE_KEYS.students, []) || [];
+    const f = state.filters.enrolment;
+    const filtered = filterStudents(allStudents, f);
+    const sorted = applySort(filtered, f.sort);
+
+    const byStatus = { Active: 0, Pending: 0, Inactive: 0, Graduated: 0 };
+    allStudents.forEach(function(s){ const k = s.status || 'Active'; byStatus[k] = (byStatus[k] || 0) + 1; });
+    const byCategory = {};
+    allStudents.forEach(function(s){
+      const cat = E.classCategoryFor(s.class) || 'Uncategorized';
+      byCategory[cat] = (byCategory[cat] || 0) + 1;
+    });
+    const byClass = {};
+    allStudents.forEach(function(s){ byClass[s.class] = (byClass[s.class] || 0) + 1; });
+    const maxCategory = Math.max(1, ...Object.values(byCategory));
+    const maxClass = Math.max(1, ...Object.values(byClass));
+
+    const rows = sorted.map(function(s){
+      const statusCls = (s.status || 'Active') === 'Active' ? 'green'
+        : (s.status === 'Pending') ? 'orange'
+        : (s.status === 'Inactive') ? 'red' : 'blue';
+      return [
+        '<strong>' + E.esc(s.name) + '</strong>',
+        E.esc(s.id),
+        E.esc(s.class),
+        E.esc(E.classCategoryFor(s.class) || '—'),
+        '<span class="pill ' + statusCls + '">' + E.esc(s.status || 'Active') + '</span>',
+        E.esc(s.gender || '—')
+      ];
+    });
+
+    return {
+      matchInfo: { count: filtered.length, total: allStudents.length },
+      body:
+        buildFilterBar('enrolment', { count: filtered.length, total: allStudents.length }) +
+        buildChips('enrolment') +
+        '<div class="stats">' +
+          stat('Total students', allStudents.length) +
+          stat('Active', byStatus.Active, 'green') +
+          stat('Graduated', byStatus.Graduated) +
+          stat('Pending / Inactive', byStatus.Pending + byStatus.Inactive, 'orange') +
+        '</div>' +
+        '<div class="card">' +
+          '<div class="card-head">' +
+            '<div><h3>Students by category</h3><p>Full school roster</p></div>' +
+            exportBtn('enrolment-category', 'CSV') +
+          '</div>' +
+          '<div class="card-body">' +
+            (Object.entries(byCategory).sort().map(function(pair){ return barRow(pair[0], pair[1], maxCategory); }).join('') ||
+              '<div class="empty">No data.</div>') +
+          '</div>' +
+        '</div>' +
+        '<div class="card">' +
+          '<div class="card-head">' +
+            '<div><h3>Students by class</h3><p>Full school roster</p></div>' +
+            exportBtn('enrolment-class', 'CSV') +
+          '</div>' +
+          '<div class="card-body">' +
+            (Object.entries(byClass).sort().map(function(pair){ return barRow(pair[0], pair[1], maxClass); }).join('') ||
+              '<div class="empty">No data.</div>') +
+          '</div>' +
+        '</div>' +
+        buildFilteredResultCard({
+          title: 'Filtered students',
+          filtered: filtered.length,
+          total: allStudents.length,
+          columns: ['Name', 'ID', 'Class', 'Category', 'Status', 'Gender'],
+          rows: rows,
+          tabKey: 'enrolment'
+        })
+    };
+  }
+
+  /* ============================================================
+     TAB: ACADEMIC
+     ============================================================ */
+  function paintAcademic(){
+    const allStudents = E.readStore(E.STORE_KEYS.students, []) || [];
+    const allResults = E.readResults() || [];
+    const results = semesterFilteredResults(allResults);
+    const year = E.currentAcademicYear();
+    const f = state.filters.academic;
+
+    const studentAverages = allStudents.map(function(s){
+      const subs = Array.from(new Set(results.filter(function(r){ return r.student === s.name && r.class === s.class; }).map(function(r){ return r.subject; })));
+      if(!subs.length) return { student: s, avg: null, grade: null };
+      const category = E.classCategoryFor(s.class);
+      let avgs;
+      if(state.semester === 'year'){
+        avgs = subs.map(function(sub){ return E.yearlyAverageFor(s.name, s.class, sub, category, year); })
+          .filter(Boolean).map(function(x){ return x.number; });
+      } else {
+        avgs = subs.map(function(sub){ return E.semesterAverageFor(s.name, s.class, sub, Number(state.semester), category, year); })
+          .filter(Boolean).map(function(x){ return x.number; });
+      }
+      if(!avgs.length) return { student: s, avg: null, grade: null };
+      const avg = avgs.reduce(function(a,b){ return a+b; }, 0) / avgs.length;
+      const grade = E.gradeFromNumber(avg, category);
+      return { student: s, avg: avg, grade: grade };
+    });
+
+    const filtered = studentAverages.filter(function(x){
+      if(x.avg == null) return false;
+      const s = x.student;
+      if(!matchMulti(s.class, f.classes)) return false;
+      if(f.categories && f.categories.length){
+        const cat = E.classCategoryFor(s.class);
+        if(f.categories.indexOf(cat) < 0) return false;
+      }
+      if(f.grades && f.grades.length){
+        if(f.grades.indexOf(x.grade) < 0) return false;
+      }
+      if(!matchNumberRange(x.avg, f.minScore, f.maxScore)) return false;
+      return true;
+    });
+
+    const withAvg = filtered.map(function(x){
+      return Object.assign({}, x.student, { _avg: x.avg, _grade: x.grade });
+    });
+    const sorted = applySort(withAvg, f.sort);
+
+    const allGraded = studentAverages.filter(function(x){ return x.avg != null; })
+      .sort(function(a,b){ return b.avg - a.avg; });
+    const rankMap = {};
+    allGraded.forEach(function(x, i){ rankMap[x.student.id] = i + 1; });
+
+    const rows = sorted.map(function(s){
+      const cat = E.classCategoryFor(s.class);
+      const g = E.gradeFromNumber(s._avg, cat);
+      const rank = rankMap[s.id] || '—';
+      return [
+        '<strong>' + E.esc(s.name) + '</strong>',
+        E.esc(s.class),
+        '<span style="font-family:monospace;font-weight:700">' + s._avg.toFixed(1) + '%</span>',
+        '<span class="pill ' + (g==='A'?'green':g==='F'?'red':'blue') + '">' + g + '</span>',
+        '<span style="color:var(--muted)">#' + rank + '</span>'
+      ];
+    });
+
+    const graded = studentAverages.filter(function(x){ return x.avg != null; });
+    const schoolAvg = graded.length
+      ? graded.reduce(function(a,b){ return a + b.avg; }, 0) / graded.length
+      : null;
+    const passing = graded.filter(function(x){ return x.avg >= 50; }).length;
+    const passRate = graded.length ? Math.round(passing / graded.length * 100) : null;
+    const semesterLabel = state.semester === 'year' ? 'Full year'
+      : state.semester === '1' ? 'Semester 1' : 'Semester 2';
+
+    const semSelect = '<select id="semesterSelect">' +
+      '<option value="year" ' + (state.semester === 'year' ? 'selected' : '') + '>Full year</option>' +
+      '<option value="1" ' + (state.semester === '1' ? 'selected' : '') + '>Semester One</option>' +
+      '<option value="2" ' + (state.semester === '2' ? 'selected' : '') + '>Semester Two</option>' +
+    '</select>';
+
+    return {
+      matchInfo: { count: filtered.length, total: graded.length },
+      body:
+        '<div class="controls" style="margin-bottom:14px">' +
+          '<div class="group">' +
+            '<label for="semesterSelect">Semester</label>' +
+            semSelect +
+          '</div>' +
+          '<div class="right">' +
+            '<span class="range-badge">' + E.esc(semesterLabel) + '</span>' +
+            '<span>· ' + graded.length + ' student' + (graded.length===1?'':'s') + ' graded</span>' +
+          '</div>' +
+        '</div>' +
+        buildFilterBar('academic', { count: filtered.length, total: graded.length }) +
+        buildChips('academic') +
+        '<div class="stats">' +
+          stat('School average', schoolAvg != null ? schoolAvg.toFixed(1) + '%' : '—', 'green') +
+          stat('Students graded', graded.length) +
+          stat('Pass rate', passRate != null ? passRate + '%' : '—', 'green') +
+          stat('Filtered count', filtered.length + ' / ' + graded.length) +
+        '</div>' +
+        buildFilteredResultCard({
+          title: 'Filtered students',
+          filtered: filtered.length,
+          total: graded.length,
+          columns: ['Name', 'Class', 'Average', 'Grade', 'Rank'],
+          rows: rows,
+          tabKey: 'academic'
+        })
+    };
+  }
+
+  /* ============================================================
+     TAB: ATTENDANCE
+     ============================================================ */
+  function paintAttendance(){
+    const allStudents = E.readStore(E.STORE_KEYS.students, []) || [];
+    const allAttendance = E.readStore(E.STORE_KEYS.attendance, {}) || {};
+    const bounds = currentBounds();
+    const from = bounds.from, to = bounds.to;
+    const f = state.filters.attendance;
+
+    const attendance = {};
+    Object.keys(allAttendance).forEach(function(key){
+      const date = key.split('|')[0];
+      if(date >= from && date <= to) attendance[key] = allAttendance[key];
+    });
+
+    const studentStats = {};
+    Object.keys(attendance).forEach(function(key){
+      const rec = attendance[key] || {};
+      Object.entries(rec).forEach(function(pair){
+        const sid = pair[0], v = pair[1];
+        if(!studentStats[sid]) studentStats[sid] = { present:0, late:0, absent:0, total:0 };
+        studentStats[sid].total++;
+        if(v === 'Present') studentStats[sid].present++;
+        else if(v === 'Late') studentStats[sid].late++;
+        else if(v === 'Absent') studentStats[sid].absent++;
+      });
+    });
+
+    const allRanked = Object.entries(studentStats).map(function(pair){
+      const sid = pair[0], s = pair[1];
+      const st = allStudents.find(function(x){ return x.id === sid; });
+      const rate = s.total ? Math.round((s.present + s.late) / s.total * 100) : 0;
+      return { student: st, rate: rate, total: s.total, absent: s.absent, late: s.late, present: s.present };
+    }).filter(function(x){ return x.student; });
+
+    const filtered = allRanked.filter(function(x){
+      if(!matchMulti(x.student.class, f.classes)) return false;
+      if(!matchNumberRange(x.rate, f.minRate, f.maxRate)) return false;
+      if(!matchNumberRange(x.absent, f.minAbsent, f.maxAbsent)) return false;
+      return true;
+    });
+
+    const withRate = filtered.map(function(x){
+      return Object.assign({}, x.student, { _rate: x.rate, _absent: x.absent, _present: x.present, _late: x.late, _total: x.total });
+    });
+    const sorted = applySort(withRate, f.sort);
+
+    const rows = sorted.map(function(x){
+      return [
+        '<strong>' + E.esc(x.name) + '</strong>',
+        E.esc(x.class),
+        x._present,
+        x._late,
+        x._absent,
+        '<span class="pill ' + (x._rate >= 80 ? 'green' : x._rate >= 60 ? 'orange' : 'red') + '">' + x._rate + '%</span>'
+      ];
+    });
+
+    const classStats = {};
+    Object.keys(attendance).forEach(function(key){
+      const cls = key.split('|')[1];
+      const rec = attendance[key] || {};
+      if(!classStats[cls]) classStats[cls] = { present:0, total:0 };
+      Object.values(rec).forEach(function(v){
+        classStats[cls].total++;
+        if(v === 'Present' || v === 'Late') classStats[cls].present++;
+      });
+    });
+    const classRates = Object.entries(classStats)
+      .map(function(pair){
+        const cls = pair[0], s = pair[1];
+        return { cls: cls, rate: s.total ? Math.round(s.present / s.total * 100) : 0 };
+      })
+      .sort(function(a,b){ return b.rate - a.rate; });
+
+    return {
+      matchInfo: { count: filtered.length, total: allRanked.length },
+      body:
+        buildFilterBar('attendance', { count: filtered.length, total: allRanked.length }) +
+        buildChips('attendance') +
+        '<div class="stats">' +
+          stat('Students tracked', allRanked.length) +
+          stat('Filtered count', filtered.length + ' / ' + allRanked.length, 'green') +
+          stat('Chronic absentees', filtered.filter(function(x){ return x.rate < 60; }).length, 'red') +
+          stat('Period', E.esc(rangeLabel())) +
+        '</div>' +
+        '<div class="card">' +
+          '<div class="card-head"><h3>Attendance by class</h3><p>' + E.esc(rangeLabel()) + '</p></div>' +
+          '<div class="card-body">' +
+            (classRates.length
+              ? classRates.map(function(c){ return barRow(c.cls, c.rate + '%', 100, c.rate >= 80 ? '' : c.rate >= 60 ? 'warn' : 'danger'); }).join('')
+              : '<div class="empty">No data.</div>') +
+          '</div>' +
+        '</div>' +
+        buildFilteredResultCard({
+          title: 'Filtered students',
+          filtered: filtered.length,
+          total: allRanked.length,
+          columns: ['Name', 'Class', 'Present', 'Late', 'Absent', 'Rate'],
+          rows: rows,
+          tabKey: 'attendance'
+        })
+    };
+  }
+
+  /* ============================================================
+     TAB: FINANCIAL
+     ============================================================ */
+  function paintFinancial(){
+    const subTabs =
+      '<div class="tabs" style="margin-bottom:14px">' +
+        '<button class="tab ' + (state.finView === 'students' ? 'active' : '') + '" data-finsub="students">Students</button>' +
+        '<button class="tab ' + (state.finView === 'payments' ? 'active' : '') + '" data-finsub="payments">Payments</button>' +
+      '</div>';
+
+    const bounds = currentBounds();
+    const allPayments = E.getPayments();
+    const paymentsInRange = allPayments.filter(function(p){
+      return isoDateInRange(p.date || p.at, bounds.from, bounds.to);
+    });
+
+    if(state.finView === 'payments'){
+      const f = state.filters.finPayments;
+      const filtered = paymentsInRange.filter(function(p){
+        if(f.methods && f.methods.length && f.methods.indexOf(p.method || 'Unknown') < 0) return false;
+        const amt = Math.abs(Number(p.amount || 0));
+        if(!matchNumberRange(amt, f.minAmt, f.maxAmt)) return false;
+        if(f.reversedOnly && !p.reversed) return false;
+        return true;
+      });
+      const sorted = applySort(filtered, f.sort);
+
+      const rows = sorted.map(function(p){
+        return [
+          '<span style="font-family:monospace;font-size:11px">' + E.esc(E.fmtDate(p.date || p.at)) + '</span>',
+          '<span style="font-family:monospace;font-size:11px">' + E.esc(p.receiptNo || '—') + '</span>',
+          '<strong>' + E.esc(p.studentName || '—') + '</strong>',
+          E.esc(p.method || '—'),
+          '<span style="font-family:monospace;color:' + (Number(p.amount) < 0 ? 'var(--red)' : 'var(--green)') + ';font-weight:800">' + E.money(p.amount) + '</span>',
+          p.reversed ? '<span class="pill red">Reversed</span>' : '<span class="pill green">Active</span>'
+        ];
+      });
+
+      const isOpen = !!state.filterOpen.finPayments;
+      const panelItems = [];
+      panelItems.push({ label:'Method', html: buildCheckboxRow('methods', ['Cash','Mobile Money','Bank transfer','Cheque','Other'], f.methods) });
+      panelItems.push({ label:'Amount range', html:
+        '<div class="range-row">' +
+          '<input type="number" min="0" step="0.01" data-fin="minAmt" value="' + E.esc(f.minAmt) + '" placeholder="Min">' +
+          '<span>–</span>' +
+          '<input type="number" min="0" step="0.01" data-fin="maxAmt" value="' + E.esc(f.maxAmt) + '" placeholder="Max">' +
+        '</div>' });
+      panelItems.push({ label:'Reversed', html:
+        '<div class="checkbox-row">' +
+          '<label class="' + (f.reversedOnly ? 'ticked' : '') + '" data-chk-wrap>' +
+            '<input type="checkbox" data-fin="reversedOnly" value="1" ' + (f.reversedOnly ? 'checked' : '') + '>' +
+            '<span>Reversed only</span>' +
+          '</label>' +
+        '</div>' });
+      panelItems.push({ label:'Sort', html: buildSelect('sort', [
+        { value:'date-desc', label:'Newest first' },
+        { value:'date-asc', label:'Oldest first' },
+        { value:'amount-desc', label:'Amount high→low' },
+        { value:'amount-asc', label:'Amount low→high' }
+      ], f.sort) });
+
+      let subHTML;
+      if(filtered.length !== paymentsInRange.length){
+        subHTML = '<span class="match-count">' + filtered.length + ' of ' + paymentsInRange.length + ' match</span>';
+      } else {
+        subHTML = '<span style="color:var(--muted)">No filters applied · all ' + paymentsInRange.length + ' shown</span>';
+      }
+
+      return {
+        matchInfo: { count: filtered.length, total: paymentsInRange.length },
+        body:
+          subTabs +
+          '<div class="filter-bar ' + (isOpen ? 'open' : '') + '" data-filter-bar="finPayments">' +
+            '<div class="filter-bar-head" data-filter-toggle="finPayments">' +
+              '<div class="left">' +
+                '<div class="icon">🔎</div>' +
+                '<div><h3>Filters</h3><div class="sub">' + subHTML + '</div></div>' +
+              '</div>' +
+              '<div class="chev">▶</div>' +
+            '</div>' +
+            '<div class="filter-bar-body">' +
+              '<div class="filter-grid">' +
+                panelItems.map(function(it){ return '<div class="filter-item"><label>' + E.esc(it.label) + '</label>' + it.html + '</div>'; }).join('') +
+              '</div>' +
+              '<div class="filter-actions">' +
+                '<button class="btn outline" data-filter-clear="finPayments">Clear filters</button>' +
+                '<button class="btn secondary" data-filter-close>Done</button>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          buildChips('finPayments') +
+          '<div class="stats">' +
+            stat('Payments in range', paymentsInRange.length) +
+            stat('Filtered count', filtered.length, 'green') +
+            stat('Total amount', E.money(filtered.filter(function(p){ return !p.reversed; }).reduce(function(a,b){ return a + Number(b.amount||0); }, 0)), 'green') +
+            stat('Reversed', filtered.filter(function(p){ return p.reversed; }).length, 'red') +
+          '</div>' +
+          buildFilteredResultCard({
+            title: 'Filtered payments',
+            filtered: filtered.length,
+            total: paymentsInRange.length,
+            columns: ['Date', 'Receipt', 'Student', 'Method', 'Amount', 'Status'],
+            rows: rows,
+            tabKey: 'finPayments'
+          })
+      };
+    }
+
+    /* Students sub-view */
+    const allStudents = E.readStore(E.STORE_KEYS.students, []) || [];
+    const activeStudents = allStudents.filter(function(s){
+      const st = s.status || 'Active';
+      return st === 'Active' || st === 'Pending';
+    });
+    const f = state.filters.financial;
+    const withFee = activeStudents.map(function(s){
+      const sum = E.studentFeeSummary(s.id, s.class);
+      return { student: s, billed: sum.netBill, paid: sum.paid, balance: sum.balance, status: sum.status };
+    });
+
+    const filtered = withFee.filter(function(x){
+      if(!matchMulti(x.student.class, f.classes)) return false;
+      if(!matchNumberRange(x.balance, f.minBal, f.maxBal)) return false;
+      if(f.statuses && f.statuses.length){
+        const st = x.balance < -0.005 ? 'Credit' : x.status;
+        if(f.statuses.indexOf(st) < 0) return false;
+      }
+      return true;
+    });
+
+    const withBal = filtered.map(function(x){
+      return Object.assign({}, x.student, {
+        _balance: x.balance, _billed: x.billed, _paid: x.paid, _status: x.status
+      });
+    });
+    const sorted = applySort(withBal, f.sort);
+
+    const rows = sorted.map(function(x){
+      const status = x._balance < -0.005 ? 'Credit' : x._status;
+      const pillCls = status === 'Paid' ? 'green'
+        : status === 'Credit' ? 'green'
+        : status === 'Part-paid' ? 'orange' : 'red';
+      return [
+        '<strong>' + E.esc(x.name) + '</strong>',
+        E.esc(x.class),
+        '<span style="font-family:monospace">' + E.money(x._billed) + '</span>',
+        '<span style="font-family:monospace;color:var(--green)">' + E.money(x._paid) + '</span>',
+        '<span style="font-family:monospace;color:' + (x._balance < -0.005 ? 'var(--green)' : 'var(--red)') + ';font-weight:800">' +
+          (x._balance < -0.005 ? 'CR ' + E.money(-x._balance) : E.money(x._balance)) + '</span>',
+        '<span class="pill ' + pillCls + '">' + E.esc(status) + '</span>'
+      ];
+    });
+
+    let totalBilled = 0, totalPaid = 0;
+    withFee.forEach(function(x){ totalBilled += x.billed; totalPaid += x.paid; });
+    const outstanding = Math.max(0, totalBilled - totalPaid);
+    const rate = totalBilled > 0 ? Math.round(totalPaid / totalBilled * 100) : 0;
+
+    return {
+      matchInfo: { count: filtered.length, total: activeStudents.length },
+      body:
+        subTabs +
+        buildFilterBar('financial', { count: filtered.length, total: activeStudents.length }) +
+        buildChips('financial') +
+        '<div class="stats">' +
+          stat('Total billed', E.money(totalBilled)) +
+          stat('Total collected', E.money(totalPaid), 'green') +
+          stat('Outstanding', E.money(outstanding), 'red') +
+          stat('Collection rate', rate + '%', rate >= 75 ? 'green' : rate >= 50 ? 'orange' : 'red') +
+        '</div>' +
+        buildFilteredResultCard({
+          title: 'Filtered students (fee accounts)',
+          filtered: filtered.length,
+          total: activeStudents.length,
+          columns: ['Name', 'Class', 'Billed', 'Paid', 'Balance', 'Status'],
+          rows: rows,
+          tabKey: 'financial'
+        })
+    };
+  }
+
+  /* ============================================================
+     TAB: QUIZZES
+     ============================================================ */
+  function paintQuizzes(){
+    const allStudents = E.readStore(E.STORE_KEYS.students, []) || [];
+    const bounds = currentBounds();
+    const f = state.filters.quizzes;
+
+    const allAttempts = E.getQuizAttempts().filter(function(a){
+      const d = a.submittedAt || a.startedAt || a.at;
+      if(!d) return true;
+      const day = String(d).slice(0,10);
+      return day >= bounds.from && day <= bounds.to && a.status !== 'reset';
+    });
+
+    const enriched = allAttempts.map(function(a){
+      const st = allStudents.find(function(s){ return s.id === a.studentId; });
+      const q = E.getQuizzes().find(function(x){ return x.id === a.quizId; });
+      return Object.assign({}, a, { _student: st, _quiz: q });
+    });
+
+    const filtered = enriched.filter(function(a){
+      if(!a._student) return false;
+      if(!matchMulti(a._student.class, f.classes)) return false;
+      if(f.quizIds && f.quizIds.length && f.quizIds.indexOf(a.quizId) < 0) return false;
+      if(f.statuses && f.statuses.length){
+        const label = a.status === 'graded' ? 'Graded'
+          : a.status === 'pending-manual' ? 'Pending manual'
+          : a.status === 'in-progress' ? 'In progress' : a.status;
+        if(f.statuses.indexOf(label) < 0) return false;
+      }
+      if(!matchNumberRange(Number(a.percentage) || 0, f.minScore, f.maxScore)) return false;
+      return true;
+    });
+
+    const withScore = filtered.map(function(a){
+      return Object.assign({}, a, { _score: Number(a.percentage) || 0 });
+    });
+    const sorted = applySort(withScore, f.sort);
+
+    const rows = sorted.map(function(a){
+      const statusPill = a.status === 'graded' ? 'green'
+        : a.status === 'pending-manual' ? 'orange'
+        : a.status === 'in-progress' ? 'orange' : 'blue';
+      const statusLabel = a.status === 'graded' ? 'Graded'
+        : a.status === 'pending-manual' ? 'Pending manual'
+        : a.status === 'in-progress' ? 'In progress' : a.status;
+      const quizTitle = a._quiz ? a._quiz.title : '—';
+      return [
+        '<strong>' + E.esc(a._student.name) + '</strong>',
+        E.esc(a._student.class),
+        E.esc(quizTitle),
+        '<span style="font-family:monospace">' + (a.score != null ? a.score + ' / ' + (a.totalMarks || '—') : '—') + '</span>',
+        '<span style="font-family:monospace;font-weight:700">' + (a.percentage != null ? a.percentage.toFixed(1) + '%' : '—') + '</span>',
+        '<span class="pill ' + statusPill + '">' + statusLabel + '</span>'
+      ];
+    });
+
+    return {
+      matchInfo: { count: filtered.length, total: enriched.length },
+      body:
+        buildFilterBar('quizzes', { count: filtered.length, total: enriched.length }) +
+        buildChips('quizzes') +
+        '<div class="stats">' +
+          stat('Attempts in range', enriched.length) +
+          stat('Filtered count', filtered.length, 'green') +
+          stat('Graded', enriched.filter(function(a){ return a.status === 'graded'; }).length, 'green') +
+          stat('Pending manual', enriched.filter(function(a){ return a.status === 'pending-manual'; }).length, 'orange') +
+        '</div>' +
+        buildFilteredResultCard({
+          title: 'Filtered attempts',
+          filtered: filtered.length,
+          total: enriched.length,
+          columns: ['Student', 'Class', 'Quiz', 'Score', '%', 'Status'],
+          rows: rows,
+          tabKey: 'quizzes'
+        })
+    };
+  }
+
+  /* ============================================================
+     TAB: STAFF
+     ============================================================ */
+  function paintStaff(){
+    const allTeachers = E.getTeachers();
+    const f = state.filters.staff;
+
+    const enriched = allTeachers.map(function(t){
+      const asn = E.assignmentsForTeacher(t.id).length;
+      return Object.assign({}, t, {
+        _status: t.status || 'Full-time',
+        _dept: t.department || 'Unassigned',
+        _asn: asn
+      });
+    });
+
+    const filtered = enriched.filter(function(t){
+      if(f.employment && f.employment.length && f.employment.indexOf(t._status) < 0) return false;
+      if(f.departments && f.departments.length && f.departments.indexOf(t._dept) < 0) return false;
+      return true;
+    });
+
+    const sorted = applySort(filtered, f.sort);
+
+    const rows = sorted.map(function(t){
+      const statusCls = t._status === 'Full-time' ? 'green'
+        : t._status === 'Part-time' ? 'orange' : 'blue';
+      return [
+        '<strong>' + E.esc(t.name) + '</strong>',
+        E.esc(t._dept),
+        '<span class="pill ' + statusCls + '">' + E.esc(t._status) + '</span>',
+        E.esc(t.phone || '—'),
+        t._asn
+      ];
+    });
+
+    const byType = { 'Full-time':0, 'Part-time':0, 'Contract':0 };
+    allTeachers.forEach(function(t){
+      const k = t.status || 'Full-time';
+      byType[k] = (byType[k] || 0) + 1;
+    });
+
+    return {
+      matchInfo: { count: filtered.length, total: allTeachers.length },
+      body:
+        buildFilterBar('staff', { count: filtered.length, total: allTeachers.length }) +
+        buildChips('staff') +
+        '<div class="stats">' +
+          stat('Total teachers', allTeachers.length) +
+          stat('Full-time', byType['Full-time'], 'green') +
+          stat('Part-time', byType['Part-time'], 'orange') +
+          stat('Filtered count', filtered.length + ' / ' + allTeachers.length) +
+        '</div>' +
+        buildFilteredResultCard({
+          title: 'Filtered teachers',
+          filtered: filtered.length,
+          total: allTeachers.length,
+          columns: ['Name', 'Department', 'Employment', 'Phone', 'Assignments'],
+          rows: rows,
+          tabKey: 'staff'
+        })
+    };
+  }
+
+  /* ============================================================
+     TAB: TIMETABLE
+     ============================================================ */
+  function paintTimetable(){
+    const tt = E.getTimetable();
+    const allLessons = (tt.lessons || []).map(function(l){
+      return Object.assign({}, l, {
+        _day: l.day,
+        _period: Number(l.period),
+        _subjectName: E.subjectName(l.subject)
+      });
+    });
+    const f = state.filters.timetable;
+
+    const filtered = allLessons.filter(function(l){
+      if(!matchMulti(l.className, f.classes)) return false;
+      if(f.teacherIds && f.teacherIds.length && f.teacherIds.indexOf(l.teacherId) < 0) return false;
+      if(f.days && f.days.length && f.days.indexOf(l.day) < 0) return false;
+      return true;
+    });
+
+    const sorted = applySort(filtered, f.sort);
+
+    const rows = sorted.map(function(l){
+      return [
+        '<strong>' + E.esc(l.day) + '</strong>',
+        'P' + l.period,
+        E.esc(l.className),
+        E.esc(l._subjectName),
+        E.esc(l.teacherName || '—')
+      ];
+    });
+
+    return {
+      matchInfo: { count: filtered.length, total: allLessons.length },
+      body:
+        buildFilterBar('timetable', { count: filtered.length, total: allLessons.length }) +
+        buildChips('timetable') +
+        '<div class="stats">' +
+          stat('Published', tt.status === 'published' ? 'Yes' : 'No', tt.status === 'published' ? 'green' : 'orange') +
+          stat('Lessons total', allLessons.length) +
+          stat('Filtered count', filtered.length + ' / ' + allLessons.length, 'green') +
+          stat('Unplaced', (tt.unplaced || []).length, (tt.unplaced || []).length > 0 ? 'red' : 'green') +
+        '</div>' +
+        buildFilteredResultCard({
+          title: 'Filtered lessons',
+          filtered: filtered.length,
+          total: allLessons.length,
+          columns: ['Day', 'Period', 'Class', 'Subject', 'Teacher'],
+          rows: rows,
+          tabKey: 'timetable'
+        })
+    };
+  }
+
+  /* ============================================================
+     TAB: DATA HEALTH
+     ============================================================ */
+  function buildIssues(){
+    const students = E.readStore(E.STORE_KEYS.students, []) || [];
+    const classes = E.getClasses();
+    const teachers = E.getTeachers();
+    const assignments = E.getAssignments();
+    const parents = E.getParents();
+    const issues = [];
+
+    students.filter(function(s){ return !s.guardian; }).forEach(function(s){
+      issues.push({ entity: s.name, context: s.class, issue: 'No guardian', severity: 'warn' });
+    });
+    students.filter(function(s){ return !s.phone; }).forEach(function(s){
+      issues.push({ entity: s.name, context: s.class, issue: 'No phone', severity: 'warn' });
+    });
+    students.filter(function(s){ return !E.classFeeFor(s.class); }).forEach(function(s){
+      issues.push({ entity: s.name, context: s.class, issue: 'No fee structure', severity: 'warn' });
+    });
+    classes.filter(function(c){ return !c.subjects || !c.subjects.length; }).forEach(function(c){
+      issues.push({ entity: c.name, context: c.category || '—', issue: 'Class has no subjects', severity: 'danger' });
+    });
+    classes.filter(function(c){ return !E.classSponsor(c.name); }).forEach(function(c){
+      issues.push({ entity: c.name, context: c.category || '—', issue: 'Class has no sponsor', severity: 'warn' });
+    });
+    teachers.filter(function(t){ return E.assignmentsForTeacher(t.id).length === 0; }).forEach(function(t){
+      issues.push({ entity: t.name, context: t.department || '—', issue: 'Teacher has no assignments', severity: 'warn' });
+    });
+    assignments.filter(function(a){ return !teachers.some(function(t){ return t.id === a.teacherId; }); }).forEach(function(a){
+      issues.push({ entity: a.className, context: E.subjectName(a.subject), issue: 'Assignment has no teacher', severity: 'danger' });
+    });
+    parents.filter(function(p){ return !students.some(function(s){ return s.guardian === p.name; }); }).forEach(function(p){
+      issues.push({ entity: p.name, context: p.phone || '—', issue: 'Parent not linked', severity: 'warn' });
+    });
+
+    return issues;
+  }
+
+  function paintDataHealth(){
+    const allIssues = buildIssues();
+    const f = state.filters.dataHealth;
+
+    const filtered = allIssues.filter(function(it){
+      if(f.issues && f.issues.length && f.issues.indexOf(it.issue) < 0) return false;
+      if(f.severities && f.severities.length && f.severities.indexOf(it.severity) < 0) return false;
+      return true;
+    });
+
+    const sorted = applySort(filtered, 'label');
+
+    const rows = sorted.map(function(it){
+      return [
+        '<strong>' + E.esc(it.entity) + '</strong>',
+        E.esc(it.context),
+        E.esc(it.issue),
+        '<span class="pill ' + (it.severity === 'danger' ? 'red' : 'orange') + '">' + E.esc(it.severity) + '</span>'
+      ];
+    });
+
+    return {
+      matchInfo: { count: filtered.length, total: allIssues.length },
+      body:
+        buildFilterBar('dataHealth', { count: filtered.length, total: allIssues.length }) +
+        buildChips('dataHealth') +
+        '<div class="stats">' +
+          stat('Total issues', allIssues.length, allIssues.length === 0 ? 'green' : allIssues.length < 5 ? 'orange' : 'red') +
+          stat('Filtered count', filtered.length + ' / ' + allIssues.length) +
+          stat('Danger severity', allIssues.filter(function(i){ return i.severity === 'danger'; }).length, 'red') +
+          stat('Warn severity', allIssues.filter(function(i){ return i.severity === 'warn'; }).length, 'orange') +
+        '</div>' +
+        buildFilteredResultCard({
+          title: 'Issues',
+          filtered: filtered.length,
+          total: allIssues.length,
+          columns: ['Entity', 'Context', 'Issue', 'Severity'],
+          rows: rows,
+          tabKey: 'dataHealth'
+        })
+    };
+  }
+
+  /* ============================================================
+     CONTROL BAR
+     ============================================================ */
+  function buildControls(){
+    const showRange = ['attendance','financial','quizzes'].indexOf(state.tab) >= 0;
+    if(!showRange) return '';
+    const b = currentBounds();
+    const custom = state.range.mode === 'custom';
+    return '<div class="controls" id="rangeControls">' +
+      '<div class="group">' +
+        '<label for="rangeSelect">Period</label>' +
+        '<select id="rangeSelect">' +
+          '<option value="week"   ' + (state.range.mode === 'week' ? 'selected' : '') + '>This week</option>' +
+          '<option value="month"  ' + (state.range.mode === 'month' ? 'selected' : '') + '>This month</option>' +
+          '<option value="term"   ' + (state.range.mode === 'term' ? 'selected' : '') + '>This term</option>' +
+          '<option value="year"   ' + (state.range.mode === 'year' ? 'selected' : '') + '>This year</option>' +
+          '<option value="custom" ' + (custom ? 'selected' : '') + '>Custom range</option>' +
+        '</select>' +
+      '</div>' +
+      '<div class="group custom-range ' + (custom ? 'show' : '') + '" id="customRangeWrap">' +
+        '<input type="date" id="rangeFrom" value="' + E.esc(b.from) + '">' +
+        '<span style="font-size:11px;color:var(--muted)">to</span>' +
+        '<input type="date" id="rangeTo" value="' + E.esc(b.to) + '">' +
+      '</div>' +
+      '<div class="right">' +
+        '<span class="range-badge">' + E.esc(rangeLabel()) + '</span>' +
+        '<span>· ' + E.esc(b.from) + ' → ' + E.esc(b.to) + '</span>' +
+      '</div>' +
+    '</div>';
+  }
+
+  /* ============================================================
+     TAB PAINTERS
+     ============================================================ */
+  const TAB_PAINTERS = {
+    enrolment:  paintEnrolment,
+    academic:   paintAcademic,
+    attendance: paintAttendance,
+    financial:  paintFinancial,
+    quizzes:    paintQuizzes,
+    staff:      paintStaff,
+    timetable:  paintTimetable,
+    dataHealth: paintDataHealth
+  };
+
+  function renderTabContent(){
+    const painter = TAB_PAINTERS[state.tab];
+    if(!painter) return '';
+    const result = painter();
+    return result.body || '';
+  }
+
+  /* ============================================================
+     MAIN PAINT
+     ============================================================ */
+  function paint(){
+    const tabs = [];
+    if(canEnrolment)  tabs.push({ key:'enrolment',  label:'📊 Enrolment' });
+    if(canAcademic)   tabs.push({ key:'academic',   label:'🎓 Academic' });
+    if(canAttendance) tabs.push({ key:'attendance', label:'✅ Attendance' });
+    if(canFinancial)  tabs.push({ key:'financial',  label:'💰 Financial' });
+    if(canQuizzes)    tabs.push({ key:'quizzes',    label:'📝 Quizzes' });
+    if(canStaff)      tabs.push({ key:'staff',      label:'👥 Staff' });
+    if(canTimetable)  tabs.push({ key:'timetable',  label:'📅 Timetable' });
+    if(canDataHealth) tabs.push({ key:'dataHealth', label:'⚠ Data Health' });
+
+    if(!tabs.length){
+      document.getElementById('pageBody').innerHTML =
+        '<div class="card"><div class="card-body">' +
+          '<div class="empty"><span class="icon">🔒</span>You don\'t have access to any analytics sections.</div>' +
+        '</div></div>';
+      return;
+    }
+    if(!tabs.find(function(t){ return t.key === state.tab; })){
+      state.tab = tabs[0].key;
+    }
+
+    const tabHTML = tabs.map(function(t){
+      return '<button class="tab ' + (state.tab === t.key ? 'active' : '') + '" data-tab="' + t.key + '">' + t.label + '</button>';
+    }).join('');
+
+    const userRole = E.currentUser().role;
+    const limitedBanner = userRole !== 'Principal'
+      ? '<div class="access-banner">' +
+          '<div>' +
+            '<h3>Limited analytics access</h3>' +
+            '<p>You can see operational metrics but not financial or academic deep-dive data. Contact the Principal for those reports.</p>' +
+          '</div>' +
+        '</div>'
+      : '';
+
+    document.getElementById('pageBody').innerHTML =
+      limitedBanner +
+      '<div class="tabs">' + tabHTML + '</div>' +
+      buildControls() +
+      '<div id="tabContent">' + renderTabContent() + '</div>';
+
+    bindAll();
+  }
+
+  /* ============================================================
+     EVENT BINDERS
+     ============================================================ */
+  function bindAll(){
+    bindTabEvents();
+    bindControlBar();
+    bindFilterEvents();
+    bindSubTabs();
+    bindFilteredActions();
+    bindExportButtons();
+    bindSemesterSelect();
+  }
+
+  function bindTabEvents(){
+    document.querySelectorAll('.tabs .tab[data-tab]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        state.tab = btn.dataset.tab;
+        paint();
+      });
+    });
+  }
+
+  function bindSubTabs(){
+    document.querySelectorAll('[data-finsub]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        state.finView = btn.dataset.finsub;
+        paint();
+      });
+    });
+  }
+
+  function bindControlBar(){
+    const sel = document.getElementById('rangeSelect');
+    if(!sel) return;
+    sel.addEventListener('change', function(){
+      state.range.mode = sel.value;
+      if(state.range.mode === 'custom'){
+        const b = currentBounds();
+        state.range.from = b.from;
+        state.range.to = b.to;
+      }
+      paint();
+    });
+    const from = document.getElementById('rangeFrom');
+    const to = document.getElementById('rangeTo');
+    if(from && to){
+      const onInput = function(){
+        if(from.value && to.value && from.value <= to.value){
+          state.range.from = from.value;
+          state.range.to = to.value;
+          paint();
+        }
+      };
+      from.addEventListener('change', onInput);
+      to.addEventListener('change', onInput);
+    }
+  }
+
+  function bindSemesterSelect(){
+    const sel = document.getElementById('semesterSelect');
+    if(!sel) return;
+    sel.addEventListener('change', function(){
+      state.semester = sel.value;
+      paint();
+    });
+  }
+
+  function getFilterForTab(tab){
+    if(tab === 'finPayments') return state.filters.finPayments;
+    return state.filters[tab];
+  }
+
+  function getActiveFilterTabForElement(el){
+    const bar = el.closest('[data-filter-bar]');
+    if(bar) return bar.dataset.filterBar;
+    return state.tab;
+  }
+
+  function bindFilterEvents(){
+    /* Toggle */
+    document.querySelectorAll('[data-filter-toggle]').forEach(function(head){
+      head.addEventListener('click', function(){
+        const tab = head.dataset.filterToggle;
+        state.filterOpen[tab] = !state.filterOpen[tab];
+        const tabId = tab === 'finPayments' ? 'financial' : tab;
+        state.tab = tabId;
+        paint();
+      });
+    });
+
+    /* Close */
+    document.querySelectorAll('[data-filter-close]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        Object.keys(state.filterOpen).forEach(function(k){ state.filterOpen[k] = false; });
+        paint();
+      });
+    });
+
+    /* Clear filters */
+    document.querySelectorAll('[data-filter-clear]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        const tab = btn.dataset.filterClear;
+        if(tab === 'finPayments'){
+          state.filters.finPayments = emptyFilters().finPayments;
+        } else {
+          state.filters[tab] = emptyFilters()[tab];
+        }
+        paint();
+      });
+    });
+
+    /* Checkboxes */
+    document.querySelectorAll('[data-chk]').forEach(function(cb){
+      cb.addEventListener('change', function(){
+        const wrap = cb.closest('[data-chk-wrap]');
+        if(wrap) wrap.classList.toggle('ticked', cb.checked);
+        const name = cb.dataset.chk;
+        const tab = getActiveFilterTabForElement(cb);
+        const f = getFilterForTab(tab);
+        if(!f) return;
+        const arr = f[name] || [];
+        if(cb.checked){
+          if(arr.indexOf(cb.value) < 0) arr.push(cb.value);
+        } else {
+          const i = arr.indexOf(cb.value);
+          if(i >= 0) arr.splice(i, 1);
+        }
+        f[name] = arr;
+        repaintTabContent();
+      });
+    });
+
+    /* Selects */
+    document.querySelectorAll('[data-sel]').forEach(function(sel){
+      sel.addEventListener('change', function(){
+        const name = sel.dataset.sel;
+        const tab = getActiveFilterTabForElement(sel);
+        const f = getFilterForTab(tab);
+        if(f) f[name] = sel.value;
+        repaintTabContent();
+      });
+    });
+
+    /* Number inputs */
+    document.querySelectorAll('[data-num]').forEach(function(inp){
+      inp.addEventListener('change', function(){
+        const name = inp.dataset.num;
+        const tab = getActiveFilterTabForElement(inp);
+        const f = getFilterForTab(tab);
+        if(f) f[name] = inp.value;
+        repaintTabContent();
+      });
+    });
+
+    /* Fin payments */
+    document.querySelectorAll('[data-fin]').forEach(function(inp){
+      inp.addEventListener('change', function(){
+        const name = inp.dataset.fin;
+        if(name === 'reversedOnly'){
+          state.filters.finPayments.reversedOnly = inp.checked;
+          const wrap = inp.closest('[data-chk-wrap]');
+          if(wrap) wrap.classList.toggle('ticked', inp.checked);
+        } else {
+          state.filters.finPayments[name] = inp.value;
+        }
+        repaintTabContent();
+      });
+    });
+
+    /* Chips */
+    document.querySelectorAll('[data-chip-clear]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        const parts = btn.dataset.chipClear.split(':');
+        clearChip(parts[0], Number(parts[1]));
+      });
+    });
+    document.querySelectorAll('[data-chip-all]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        clearAllFilters(btn.dataset.chipAll);
+      });
+    });
+  }
+
+  function repaintTabContent(){
+    const el = document.getElementById('tabContent');
+    if(!el) return;
+    el.innerHTML = renderTabContent();
+    bindFilterEvents();
+    bindSubTabs();
+    bindFilteredActions();
+    bindExportButtons();
+    bindSemesterSelect();
+  }
+
+  /* ============================================================
+     FILTERED ACTIONS
+     ============================================================ */
+  function bindFilteredActions(){
+    document.querySelectorAll('[data-print-list]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        printFilteredList(btn.dataset.printList);
+      });
+    });
+    document.querySelectorAll('[data-export-list]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        exportFilteredCSV(btn.dataset.exportList);
+      });
+    });
+  }
+
+  function printFilteredList(tabKey){
+    document.body.classList.add('print-mode-list');
+
+    const tabNames = {
+      enrolment: 'Enrolment', academic: 'Academic', attendance: 'Attendance',
+      financial: 'Financial — Students', finPayments: 'Financial — Payments',
+      quizzes: 'Quizzes', staff: 'Staff', timetable: 'Timetable',
+      dataHealth: 'Data Health'
+    };
+
+    const s = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const printHeader = document.createElement('div');
+    printHeader.id = 'printHeader';
+    printHeader.style.cssText = 'display:none;font-family:Arial,Helvetica,sans-serif;border-bottom:2px solid #12315a;margin-bottom:14px;padding-bottom:8px;';
+
+    const bounds = currentBounds();
+    const semesterLine = state.semester !== 'year'
+      ? ' · ' + (state.semester === '1' ? 'Semester One' : 'Semester Two')
+      : '';
+
+    printHeader.innerHTML =
+      '<div style="font-size:16px;font-weight:800;color:#12315a">' + E.esc(s.name || 'EduCore') + '</div>' +
+      '<div style="font-size:12px;color:#54637d;margin-top:2px">Analytics · ' + E.esc(tabNames[tabKey] || tabKey) + '</div>' +
+      '<div style="font-size:11px;color:#7a8498;margin-top:6px">' +
+        'Period: ' + E.esc(rangeLabel()) + ' · ' + E.esc(bounds.from) + ' → ' + E.esc(bounds.to) +
+        semesterLine + ' · Generated ' + E.esc(new Date().toLocaleString()) +
+      '</div>';
+
+    const style = document.createElement('style');
+    style.id = 'printHeaderStyle';
+    style.textContent = '@media print { body.print-mode-list #printHeader { display: block !important; } }';
+    document.head.appendChild(style);
+
+    const container = document.getElementById('tabContent');
+    container.parentNode.insertBefore(printHeader, container);
+
+    window.print();
+
+    const cleanup = function(){
+      document.body.classList.remove('print-mode-list');
+      printHeader.remove();
+      style.remove();
+    };
+    window.addEventListener('afterprint', cleanup, { once: true });
+    setTimeout(cleanup, 5000);
+  }
+
+  /* ============================================================
+     EXPORTS
+     ============================================================ */
+  function exportFilteredCSV(tabKey){
+    if(!canExport){ E.toast("You don't have permission to export."); return; }
+    const students = E.readStore(E.STORE_KEYS.students, []) || [];
+    const bounds = currentBounds();
+    const from = bounds.from, to = bounds.to;
+
+    let headers = [];
+    let rows = [];
+    let filename = 'analytics.csv';
+
+    if(tabKey === 'enrolment'){
+      const f = state.filters.enrolment;
+      const list = filterStudents(students, f);
+      const sorted = applySort(list, f.sort);
+      headers = ['Name', 'ID', 'Class', 'Category', 'Status', 'Gender'];
+      rows = sorted.map(function(s){
+        return [s.name, s.id, s.class, E.classCategoryFor(s.class) || '', s.status || 'Active', s.gender || ''];
+      });
+      filename = 'enrolment_' + slugify(rangeLabel()) + '_' + todayISO() + '.csv';
+    }
+    else if(tabKey === 'academic'){
+      const allResults = E.readResults() || [];
+      const results = semesterFilteredResults(allResults);
+      const year = E.currentAcademicYear();
+      const averages = students.map(function(s){
+        const subs = Array.from(new Set(results.filter(function(r){ return r.student === s.name && r.class === s.class; }).map(function(r){ return r.subject; })));
+        if(!subs.length) return { s: s, avg: null };
+        const cat = E.classCategoryFor(s.class);
+        const avgs = subs.map(function(sub){
+          return state.semester === 'year'
+            ? E.yearlyAverageFor(s.name, s.class, sub, cat, year)
+            : E.semesterAverageFor(s.name, s.class, sub, Number(state.semester), cat, year);
+        }).filter(Boolean).map(function(x){ return x.number; });
+        return { s: s, avg: avgs.length ? avgs.reduce(function(a,b){ return a+b; }, 0)/avgs.length : null };
+      }).filter(function(x){ return x.avg != null; });
+      const f = state.filters.academic;
+      const filtered = averages.filter(function(x){
+        if(!matchMulti(x.s.class, f.classes)) return false;
+        if(f.categories && f.categories.length && f.categories.indexOf(E.classCategoryFor(x.s.class)) < 0) return false;
+        if(f.grades && f.grades.length && f.grades.indexOf(E.gradeFromNumber(x.avg, E.classCategoryFor(x.s.class))) < 0) return false;
+        if(!matchNumberRange(x.avg, f.minScore, f.maxScore)) return false;
+        return true;
+      });
+      headers = ['Name', 'Class', 'Average', 'Grade', 'Semester'];
+      rows = filtered.map(function(x){
+        return [
+          x.s.name, x.s.class, x.avg.toFixed(1),
+          E.gradeFromNumber(x.avg, E.classCategoryFor(x.s.class)),
+          state.semester === 'year' ? 'Full year' : ('Semester ' + state.semester)
+        ];
+      });
+      filename = 'academic_' + slugify(rangeLabel()) + '_' + todayISO() + '.csv';
+    }
+    else if(tabKey === 'attendance'){
+      const allAttendance = E.readStore(E.STORE_KEYS.attendance, {}) || {};
+      const attendance = {};
+      Object.keys(allAttendance).forEach(function(k){
+        const d = k.split('|')[0];
+        if(d >= from && d <= to) attendance[k] = allAttendance[k];
+      });
+      const stats = {};
+      Object.keys(attendance).forEach(function(k){
+        const rec = attendance[k];
+        Object.entries(rec).forEach(function(pair){
+          const sid = pair[0], v = pair[1];
+          if(!stats[sid]) stats[sid] = { present:0, late:0, absent:0, total:0 };
+          stats[sid].total++;
+          if(v === 'Present') stats[sid].present++;
+          else if(v === 'Late') stats[sid].late++;
+          else if(v === 'Absent') stats[sid].absent++;
+        });
+      });
+      const f = state.filters.attendance;
+      const enriched = Object.entries(stats).map(function(pair){
+        const sid = pair[0], s = pair[1];
+        const st = students.find(function(x){ return x.id === sid; });
+        if(!st) return null;
+        const rate = s.total ? Math.round((s.present + s.late) / s.total * 100) : 0;
+        return Object.assign({ st: st, rate: rate }, s);
+      }).filter(Boolean).filter(function(x){
+        if(!matchMulti(x.st.class, f.classes)) return false;
+        if(!matchNumberRange(x.rate, f.minRate, f.maxRate)) return false;
+        if(!matchNumberRange(x.absent, f.minAbsent, f.maxAbsent)) return false;
+        return true;
+      });
+      headers = ['Name', 'Class', 'Present', 'Late', 'Absent', 'Rate %'];
+      rows = enriched.map(function(x){ return [x.st.name, x.st.class, x.present, x.late, x.absent, x.rate]; });
+      filename = 'attendance_' + slugify(rangeLabel()) + '_' + todayISO() + '.csv';
+    }
+    else if(tabKey === 'financial'){
+      const active = students.filter(function(s){
+        const st = s.status || 'Active';
+        return st === 'Active' || st === 'Pending';
+      });
+      const f = state.filters.financial;
+      const enriched = active.map(function(s){
+        const sum = E.studentFeeSummary(s.id, s.class);
+        return { s: s, sum: sum };
+      }).filter(function(x){
+        if(!matchMulti(x.s.class, f.classes)) return false;
+        if(!matchNumberRange(x.sum.balance, f.minBal, f.maxBal)) return false;
+        if(f.statuses && f.statuses.length){
+          const st = x.sum.balance < -0.005 ? 'Credit' : x.sum.status;
+          if(f.statuses.indexOf(st) < 0) return false;
+        }
+        return true;
+      });
+      headers = ['Name', 'Class', 'Billed', 'Paid', 'Balance', 'Status'];
+      rows = enriched.map(function(x){
+        return [
+          x.s.name, x.s.class,
+          x.sum.netBill.toFixed(2), x.sum.paid.toFixed(2), x.sum.balance.toFixed(2),
+          x.sum.balance < -0.005 ? 'Credit' : x.sum.status
+        ];
+      });
+      filename = 'financial-students_' + slugify(rangeLabel()) + '_' + todayISO() + '.csv';
+    }
+    else if(tabKey === 'finPayments'){
+      const allPayments = E.getPayments();
+      const inRange = allPayments.filter(function(p){ return isoDateInRange(p.date || p.at, from, to); });
+      const f = state.filters.finPayments;
+      const filtered = inRange.filter(function(p){
+        if(f.methods && f.methods.length && f.methods.indexOf(p.method || 'Unknown') < 0) return false;
+        const amt = Math.abs(Number(p.amount || 0));
+        if(!matchNumberRange(amt, f.minAmt, f.maxAmt)) return false;
+        if(f.reversedOnly && !p.reversed) return false;
+        return true;
+      });
+      headers = ['Date', 'Receipt', 'Student', 'Class', 'Method', 'Amount', 'Status'];
+      rows = filtered.map(function(p){
+        return [
+          p.date || p.at || '', p.receiptNo || '', p.studentName || '', p.className || '',
+          p.method || '', Number(p.amount || 0).toFixed(2), p.reversed ? 'Reversed' : 'Active'
+        ];
+      });
+      filename = 'financial-payments_' + slugify(rangeLabel()) + '_' + todayISO() + '.csv';
+    }
+    else if(tabKey === 'quizzes'){
+      const allAttempts = E.getQuizAttempts().filter(function(a){
+        const d = a.submittedAt || a.startedAt || a.at;
+        return d && String(d).slice(0,10) >= from && String(d).slice(0,10) <= to && a.status !== 'reset';
+      });
+      const f = state.filters.quizzes;
+      const filtered = allAttempts.filter(function(a){
+        const st = students.find(function(x){ return x.id === a.studentId; });
+        if(!st) return false;
+        if(!matchMulti(st.class, f.classes)) return false;
+        if(f.quizIds && f.quizIds.length && f.quizIds.indexOf(a.quizId) < 0) return false;
+        if(f.statuses && f.statuses.length){
+          const label = a.status === 'graded' ? 'Graded'
+            : a.status === 'pending-manual' ? 'Pending manual'
+            : a.status === 'in-progress' ? 'In progress' : a.status;
+          if(f.statuses.indexOf(label) < 0) return false;
+        }
+        if(!matchNumberRange(Number(a.percentage) || 0, f.minScore, f.maxScore)) return false;
+        return true;
+      });
+      headers = ['Student', 'Class', 'Quiz', 'Score', 'Total', 'Percentage', 'Status'];
+      rows = filtered.map(function(a){
+        const st = students.find(function(x){ return x.id === a.studentId; });
+        const q = E.getQuizzes().find(function(x){ return x.id === a.quizId; });
+        return [
+          st ? st.name : '', st ? st.class : '', q ? q.title : '',
+          a.score != null ? a.score : '', a.totalMarks || '',
+          a.percentage != null ? a.percentage.toFixed(1) : '', a.status
+        ];
+      });
+      filename = 'quizzes_' + slugify(rangeLabel()) + '_' + todayISO() + '.csv';
+    }
+    else if(tabKey === 'staff'){
+      const teachers = E.getTeachers();
+      const f = state.filters.staff;
+      const filtered = teachers.filter(function(t){
+        if(f.employment && f.employment.length && f.employment.indexOf(t.status || 'Full-time') < 0) return false;
+        if(f.departments && f.departments.length && f.departments.indexOf(t.department || 'Unassigned') < 0) return false;
+        return true;
+      });
+      headers = ['Name', 'Department', 'Employment', 'Phone', 'Assignments'];
+      rows = filtered.map(function(t){
+        return [t.name, t.department || '', t.status || 'Full-time', t.phone || '', E.assignmentsForTeacher(t.id).length];
+      });
+      filename = 'staff_' + todayISO() + '.csv';
+    }
+    else if(tabKey === 'timetable'){
+      const lessons = (E.getTimetable().lessons || []);
+      const f = state.filters.timetable;
+      const filtered = lessons.filter(function(l){
+        if(!matchMulti(l.className, f.classes)) return false;
+        if(f.teacherIds && f.teacherIds.length && f.teacherIds.indexOf(l.teacherId) < 0) return false;
+        if(f.days && f.days.length && f.days.indexOf(l.day) < 0) return false;
+        return true;
+      });
+      headers = ['Day', 'Period', 'Class', 'Subject', 'Teacher'];
+      rows = filtered.map(function(l){
+        return [l.day, 'P' + l.period, l.className, E.subjectName(l.subject), l.teacherName || ''];
+      });
+      filename = 'timetable_' + todayISO() + '.csv';
+    }
+    else if(tabKey === 'dataHealth'){
+      const allIssues = buildIssues();
+      const f = state.filters.dataHealth;
+      const filtered = allIssues.filter(function(it){
+        if(f.issues && f.issues.length && f.issues.indexOf(it.issue) < 0) return false;
+        if(f.severities && f.severities.length && f.severities.indexOf(it.severity) < 0) return false;
+        return true;
+      });
+      headers = ['Entity', 'Context', 'Issue', 'Severity'];
+      rows = filtered.map(function(it){ return [it.entity, it.context, it.issue, it.severity]; });
+      filename = 'data-health_' + todayISO() + '.csv';
+    }
+
+    if(!rows.length){ E.toast('Nothing to export — no rows match.'); return; }
+    downloadCSV(filename, [headers].concat(rows));
+  }
+
+  function bindExportButtons(){
+    document.querySelectorAll('[data-export]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        handleSimpleExport(btn.dataset.export);
+      });
+    });
+  }
+
+  function handleSimpleExport(kind){
+    if(!canExport){ E.toast("You don't have permission to export."); return; }
+    const students = E.readStore(E.STORE_KEYS.students, []) || [];
+    if(kind === 'enrolment-category'){
+      const byCat = {};
+      students.forEach(function(s){
+        const cat = E.classCategoryFor(s.class) || 'Uncategorized';
+        byCat[cat] = (byCat[cat] || 0) + 1;
+      });
+      downloadCSV('enrolment-by-category.csv', [['Category','Students']].concat(Object.entries(byCat).sort()));
+    }
+    if(kind === 'enrolment-class'){
+      const byClass = {};
+      students.forEach(function(s){ byClass[s.class] = (byClass[s.class] || 0) + 1; });
+      downloadCSV('enrolment-by-class.csv', [['Class','Students']].concat(Object.entries(byClass).sort()));
+    }
+  }
+
+  /* ============================================================
+     INIT
+     ============================================================ */
+  paintHeader();
+  paint();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hiring | EduCore</title>
+<style>
+  :root{
+    --navy:#12315a;--blue:#3987ee;--line:#e8ebf2;--text:#23354d;--muted:#73849a;
+    --green:#14805e;--orange:#d88922;--red:#d64545;--gold:#c99a2e;--gold2:#fff4d6;
+    --shadow:0 8px 24px rgba(24,42,78,.06);
+    --shadow-lg:0 20px 60px rgba(24,42,78,.14);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:64px 16px 40px;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+  .page{width:100%;max-width:1320px;margin:0 auto}
+
+  .band{background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
+    border-radius:16px;padding:22px 28px;margin-bottom:20px;
+    box-shadow:0 18px 50px #16345417;display:flex;justify-content:space-between;
+    align-items:center;gap:16px;flex-wrap:wrap;border-top:5px solid #58a4ff}
+  .band-left{display:flex;align-items:center;gap:14px}
+  .band-logo{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;place-items:center;
+    overflow:hidden;color:var(--navy);font-weight:900;font-size:18px;border:3px solid #d8e8ff;flex:0 0 48px}
+  .band-logo img{width:100%;height:100%;object-fit:contain}
+  .band h1{margin:0;font-size:19px;letter-spacing:.3px;text-transform:uppercase}
+  .band p{margin:4px 0 0;font-size:11px;color:#cfdcf5}
+  .band-user{display:flex;align-items:center;gap:10px;font-size:11px;color:#cfdcf5;
+    background:#ffffff14;border:1px solid #ffffff36;padding:7px 12px;border-radius:20px}
+  .band-user strong{color:#fff}
+
+  .btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{filter:brightness(.96)}
+  .btn.secondary{background:#eef2fb;color:#34415c}
+  .btn.outline{background:#fff;color:#34415c;border:1px solid var(--line)}
+  .btn.danger{background:#fff0f1;color:var(--red)}
+  .btn.green{background:#e6f7f0;color:#16835f}
+  .btn.warn{background:#fff2dd;color:#a86414}
+  .btn.gold{background:linear-gradient(135deg,#f7d97a,#c99a2e);color:#5a3a00}
+  .btn.small{padding:7px 11px;font-size:11px}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  /* ---------- STATUS STRIP ---------- */
+  .status-strip{
+    background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);padding:16px 20px;margin-bottom:18px;
+    display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;
+  }
+  .status-strip .stats{display:flex;gap:24px;flex-wrap:wrap;font-size:12px}
+  .status-strip .stat small{display:block;color:var(--muted);font-size:10px;
+    text-transform:uppercase;letter-spacing:.8px;font-weight:800;margin-bottom:4px}
+  .status-strip .stat strong{font-size:18px;color:var(--navy)}
+  .status-strip .actions{display:flex;gap:8px;flex-wrap:wrap}
+
+  /* ---------- TABS ---------- */
+  .tabs{display:flex;gap:4px;border-bottom:2px solid var(--line);margin-bottom:18px}
+  .tab{border:0;background:transparent;padding:11px 18px;font-size:12px;font-weight:800;
+    color:var(--muted);border-bottom:2px solid transparent;cursor:pointer;
+    margin-bottom:-2px;display:inline-flex;align-items:center;gap:8px;transition:.15s}
+  .tab:hover{color:var(--text)}
+  .tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+  .tab .badge-count{background:#fff2dd;color:#a86414;padding:1px 7px;border-radius:10px;
+    font-size:10px;font-weight:800}
+
+  .tabpanel{display:none}
+  .tabpanel.active{display:block}
+
+  /* ---------- POSITIONS LIST ---------- */
+  .pos-list{display:flex;flex-direction:column;gap:14px}
+  .pos-card{
+    background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);padding:20px 24px;border-left:5px solid #94a3b8;
+    transition:box-shadow .15s;
+  }
+  .pos-card:hover{box-shadow:var(--shadow-lg)}
+  .pos-card.status-draft{border-left-color:#94a3b8}
+  .pos-card.status-scheduled{border-left-color:var(--orange);background:#fffdf7}
+  .pos-card.status-open{border-left-color:var(--green);background:#f8fffc}
+  .pos-card.status-closed{border-left-color:var(--muted);background:#fafbfc}
+  .pos-card.status-archived{border-left-color:#c5cee0;background:#f8f9fb;opacity:.7}
+
+  .pos-card .top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+  .pos-card h3{margin:0 0 6px;font-size:16px;color:var(--navy)}
+  .pos-card .meta{font-size:12px;color:var(--muted);line-height:1.6}
+  .pos-card .meta strong{color:var(--text)}
+  .pos-card .badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .pos-card .badge{display:inline-flex;align-items:center;gap:5px;
+    padding:4px 10px;border-radius:12px;font-size:10px;font-weight:800;
+    letter-spacing:.4px;text-transform:uppercase}
+  .pos-card .badge.draft{background:#eef1f6;color:#59647c}
+  .pos-card .badge.scheduled{background:#fff2dd;color:#a86414}
+  .pos-card .badge.open{background:#e6f7f0;color:#16835f}
+  .pos-card .badge.closed{background:#eef1f6;color:#59647c}
+  .pos-card .badge.archived{background:#f0f2f6;color:#59647c}
+  .pos-card .badge.results-out{background:#e6f7f0;color:#16835f}
+  .pos-card .badge.results-pending{background:#fff8e6;color:#8a6a1a}
+
+  .pos-card .stats{display:flex;gap:20px;flex-wrap:wrap;margin-top:14px;
+    padding-top:14px;border-top:1px solid var(--line);font-size:12px}
+  .pos-card .stats span{color:var(--muted)}
+  .pos-card .stats strong{color:var(--navy);font-weight:800;font-size:14px}
+  .pos-card .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
+  .pos-card .actions .btn{padding:8px 12px;font-size:11px}
+
+  /* ---------- BUILDER VIEW ---------- */
+  .builder{display:grid;grid-template-columns:1fr 380px;gap:18px;align-items:start}
+
+  .builder-main{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);overflow:hidden}
+
+  .builder-head{padding:22px 26px;background:linear-gradient(120deg,#102949,#245d9c);
+    color:#fff;border-top:5px solid #d88922}
+  .builder-head h2{margin:0 0 4px;font-size:18px;letter-spacing:.2px}
+  .builder-head p{margin:0;font-size:11.5px;color:#cfdcf5;line-height:1.6}
+
+  .builder-body{padding:22px 26px}
+
+  .builder-section{margin-bottom:26px;padding-bottom:22px;border-bottom:1px solid var(--line)}
+  .builder-section:last-child{border-bottom:0;margin-bottom:0;padding-bottom:0}
+  .builder-section h3{margin:0 0 12px;font-size:13px;color:var(--navy);
+    display:flex;align-items:center;gap:8px;letter-spacing:.2px}
+  .builder-section h3 .num{
+    display:inline-grid;place-items:center;width:24px;height:24px;
+    background:#eef2fb;color:#2f4d8a;border-radius:8px;
+    font-size:11px;font-weight:800;flex:0 0 24px;
+  }
+
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+  .field:last-child{margin-bottom:0}
+  .field label{font-size:10.5px;font-weight:800;color:#657089;
+    text-transform:uppercase;letter-spacing:.7px}
+  .field input,.field select,.field textarea{
+    width:100%;border:1px solid #dfe4ee;border-radius:8px;
+    padding:10px 12px;font-size:12.5px;outline:none;background:#f8faff;
+    font-family:inherit;transition:.15s
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{
+    border-color:var(--blue);background:#fff;
+    box-shadow:0 0 0 3px rgba(65,105,225,.1)
+  }
+  .field textarea{min-height:80px;resize:vertical;line-height:1.6}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+  /* Questions list */
+  .q-list{display:flex;flex-direction:column;gap:10px}
+  .q-row{
+    background:#fbfdff;border:1px solid var(--line);border-radius:10px;
+    padding:14px 16px;position:relative;
+  }
+  .q-row .q-head{display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:10px;padding-bottom:8px;border-bottom:1px dashed var(--line);
+    gap:10px;flex-wrap:wrap}
+  .q-row .q-head strong{font-size:11px;color:var(--navy);font-weight:800;
+    text-transform:uppercase;letter-spacing:.5px}
+  .q-row .q-actions{display:flex;gap:4px}
+  .q-row .q-actions button{
+    border:0;border-radius:6px;padding:4px 8px;font-size:10px;
+    font-weight:800;cursor:pointer;background:#eef2fb;color:#34415c;
+  }
+  .q-row .q-actions button:hover{background:#dde7f7}
+  .q-row .q-actions button.danger{background:#fff0f1;color:#bd3b48}
+
+  .q-type-pill{
+    display:inline-flex;padding:2px 8px;border-radius:10px;
+    font-size:9.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;
+    background:#edf2ff;color:#3b5cc1;margin-left:6px;
+  }
+
+  .add-q-btn{
+    border:1px dashed #b9c8e8;background:#f8faff;border-radius:9px;
+    padding:11px 16px;font-size:11.5px;font-weight:800;color:#2f4d8a;
+    width:100%;cursor:pointer;text-align:center;margin-top:6px
+  }
+  .add-q-btn:hover{background:#eef2fb}
+
+  /* ---------- BUILDER SIDEBAR ---------- */
+  .builder-side{position:sticky;top:12px;display:flex;flex-direction:column;gap:14px}
+  .side-card{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);overflow:hidden}
+  .side-card .side-head{padding:14px 18px;border-bottom:1px solid var(--line);
+    background:#fafbfe;font-size:12px;font-weight:800;color:var(--navy)}
+  .side-card .side-body{padding:16px 18px}
+
+  .side-card .status-preview{
+    padding:14px 16px;border-radius:10px;margin-bottom:12px;
+    border:1px solid;font-size:12px;line-height:1.6
+  }
+  .side-card .status-preview.draft{background:#f0f2f6;border-color:#c5cee0;color:#59647c}
+  .side-card .status-preview.scheduled{background:#fff2dd;border-color:#f0d9a0;color:#a86414}
+  .side-card .status-preview.open{background:#e6f7f0;border-color:#b8e9d3;color:#16835f}
+  .side-card .status-preview.closed{background:#eef1f6;border-color:#c5cee0;color:#59647c}
+  .side-card .status-preview.archived{background:#f0f2f6;border-color:#c5cee0;color:#59647c}
+
+  .side-card .status-preview strong{display:block;font-weight:800;
+    text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;font-size:11px}
+
+  /* ---------- APPLICATIONS VIEW ---------- */
+  .apps-toolbar{
+    background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);padding:14px 18px;margin-bottom:14px;
+    display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center
+  }
+  .apps-toolbar select,.apps-toolbar input{
+    border:1px solid var(--line);border-radius:8px;padding:9px 12px;
+    font-size:12px;outline:none;background:#fff
+  }
+  .apps-toolbar input{min-width:220px}
+
+  .apps-table{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);overflow:hidden}
+  .apps-table table{width:100%;border-collapse:collapse;font-size:12px}
+  .apps-table th{text-align:left;background:#fafbfe;color:#7a8498;
+    font-size:10px;text-transform:uppercase;letter-spacing:.6px;
+    padding:12px 16px;border-bottom:1px solid var(--line);font-weight:800}
+  .apps-table td{padding:12px 16px;border-bottom:1px solid #f0f2f7}
+  .apps-table tr:last-child td{border-bottom:0}
+  .apps-table tr:hover{background:#fbfdff;cursor:pointer}
+
+  .status-pill{
+    display:inline-flex;align-items:center;gap:5px;
+    padding:4px 10px;border-radius:20px;font-size:10px;font-weight:800;
+    letter-spacing:.4px;text-transform:uppercase
+  }
+  .status-pill.pending{background:#fff8e6;color:#8a6a1a}
+  .status-pill.shortlisted{background:#edf2ff;color:#3b5cc1}
+  .status-pill.accepted{background:#e6f7f0;color:#16835f}
+  .status-pill.rejected{background:#ffeaec;color:#bd3b48}
+
+  .verify-code{
+    display:inline-block;font-family:monospace;font-size:11px;
+    background:#f0f2f6;color:#34415c;padding:2px 8px;border-radius:6px;
+    letter-spacing:.5px;font-weight:700
+  }
+
+  /* ---------- APPLICATION DETAIL (drawer) ---------- */
+  .app-detail{
+    position:fixed;top:0;right:0;bottom:0;width:100%;max-width:640px;
+    background:#fff;box-shadow:-20px 0 60px rgba(0,0,0,.2);
+    z-index:9999;transform:translateX(100%);transition:transform .3s ease;
+    overflow-y:auto;
+  }
+  .app-detail.open{transform:translateX(0)}
+  .app-detail-head{
+    padding:22px 26px;background:linear-gradient(120deg,#102949,#245d9c);
+    color:#fff;border-top:5px solid #d88922;
+    position:sticky;top:0;z-index:2;
+  }
+  .app-detail-head h2{margin:0 0 6px;font-size:17px;padding-right:44px}
+  .app-detail-head p{margin:0;font-size:11.5px;color:#cfdcf5;line-height:1.6}
+  .app-detail-head .close{
+    position:absolute;top:18px;right:18px;
+    background:rgba(255,255,255,.15);color:#fff;border:0;
+    border-radius:8px;padding:7px 11px;font-size:14px;cursor:pointer
+  }
+  .app-detail-head .close:hover{background:rgba(255,255,255,.28)}
+  .app-detail-body{padding:22px 26px}
+  .app-detail-body .meta-row{
+    display:flex;justify-content:space-between;padding:8px 0;
+    border-bottom:1px solid var(--line);font-size:12px;gap:12px
+  }
+  .app-detail-body .meta-row:last-child{border-bottom:0}
+  .app-detail-body .meta-row span{color:var(--muted);text-transform:uppercase;
+    letter-spacing:.5px;font-weight:800;font-size:10px;flex:0 0 auto}
+  .app-detail-body .meta-row strong{color:var(--navy);text-align:right;word-break:break-word}
+
+  .answer-block{
+    background:#fbfdff;border:1px solid var(--line);border-radius:10px;
+    padding:14px 16px;margin-bottom:10px
+  }
+  .answer-block label{display:block;font-size:10px;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.7px;font-weight:800;margin-bottom:6px}
+  .answer-block .value{font-size:13px;color:var(--navy);line-height:1.6;white-space:pre-wrap}
+  .answer-block .file-link{
+    display:inline-flex;align-items:center;gap:8px;
+    background:#eef2fb;color:#34415c;padding:8px 14px;border-radius:8px;
+    text-decoration:none;font-size:12px;font-weight:700
+  }
+  .answer-block .file-link:hover{background:#dde7f7}
+
+  .app-actions{
+    display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;
+    padding-top:16px;border-top:1px solid var(--line)
+  }
+  .review-note{
+    margin-top:14px;padding:12px 14px;background:#f8faff;
+    border:1px solid var(--line);border-radius:9px;font-size:11.5px;color:#3b4a63;line-height:1.6
+  }
+  .review-note textarea{
+    width:100%;border:1px solid #dfe4ee;border-radius:8px;
+    padding:9px 11px;font-size:12px;outline:none;background:#fff;
+    margin-top:6px;min-height:70px;resize:vertical;font-family:inherit
+  }
+
+  /* ---------- RESULTS VIEW ---------- */
+  .results-card{
+    background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);padding:26px 28px;
+  }
+  .results-hero{
+    padding:22px 26px;background:linear-gradient(120deg,#0d1e3a,#245d9c);
+    color:#fff;border-radius:12px;margin-bottom:22px;border-top:5px solid #c99a2e
+  }
+  .results-hero h3{margin:0 0 6px;font-size:16px}
+  .results-hero p{margin:0;font-size:12px;color:#cfdcf5;line-height:1.6}
+  .results-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+  .results-stats .cell{background:#fafbfe;border:1px solid var(--line);
+    border-radius:10px;padding:14px 16px}
+  .results-stats .cell small{display:block;font-size:10px;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.6px;font-weight:800;margin-bottom:6px}
+  .results-stats .cell strong{font-size:22px;color:var(--navy)}
+
+  /* ---------- QUESTION EDITOR MODAL ---------- */
+  .q-modal-backdrop{
+    position:fixed;inset:0;background:rgba(14,24,44,.55);z-index:9998;
+    display:none;align-items:center;justify-content:center;padding:18px
+  }
+  .q-modal-backdrop.show{display:flex}
+  .q-modal{
+    width:100%;max-width:560px;max-height:92vh;overflow:auto;
+    background:#fff;border-radius:16px;box-shadow:0 25px 70px rgba(11,23,51,.25)
+  }
+  .q-modal-head{
+    padding:20px 24px;border-bottom:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;
+    position:sticky;top:0;background:#fff;z-index:2
+  }
+  .q-modal-head h3{margin:0;font-size:16px;color:var(--navy)}
+  .q-modal-head .close{
+    background:#f2f4f8;border:0;border-radius:8px;padding:6px 11px;
+    color:#34415c;font-size:16px;cursor:pointer
+  }
+  .q-modal-body{padding:20px 24px}
+  .q-modal-foot{
+    padding:16px 24px;border-top:1px solid var(--line);
+    display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;
+    position:sticky;bottom:0;background:#fff
+  }
+
+  .option-row{
+    display:grid;grid-template-columns:1fr auto auto;gap:8px;
+    align-items:center;margin-bottom:6px
+  }
+  .option-row input[type="text"]{
+    border:1px solid #dfe4ee;border-radius:8px;padding:9px 11px;
+    font-size:12px;outline:none;background:#fff;width:100%
+  }
+
+  /* ---------- EMPTY ---------- */
+  .empty-state{
+    background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);padding:60px 30px;text-align:center;
+    color:var(--muted);font-size:13px
+  }
+  .empty-state .icon{font-size:48px;margin-bottom:14px;opacity:.5;display:block}
+  .empty-state strong{display:block;color:var(--navy);font-size:15px;margin-bottom:8px}
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:1000px){
+    .builder{grid-template-columns:1fr}
+    .builder-side{position:relative;top:0}
+    .results-stats{grid-template-columns:1fr 1fr}
+    .app-detail{max-width:100%}
+  }
+  @media (max-width:650px){
+    body{padding:64px 8px 24px}
+    .band{padding:18px 20px}
+    .band h1{font-size:15px}
+    .field-row{grid-template-columns:1fr}
+    .results-stats{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="band">
+    <div class="band-left">
+      <div class="band-logo" id="bandLogo">EC</div>
+      <div>
+        <h1 id="bandSchool">Hiring</h1>
+        <p id="bandSub">Build positions, review applicants, publish results</p>
+      </div>
+    </div>
+    <div class="band-user">Signed in as <strong id="bandUser">—</strong></div>
+  </div>
+
+  <div class="status-strip" id="statusStrip"></div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-tab="positions">💼 Positions <span class="badge-count" id="posBadge" style="display:none">0</span></button>
+    <button class="tab" data-tab="applications">📥 Applications</button>
+    <button class="tab" data-tab="results">📢 Results</button>
+  </div>
+
+  <div class="tabpanel active" data-panel="positions">
+    <div id="positionsBody"></div>
+  </div>
+
+  <div class="tabpanel" data-panel="applications">
+    <div id="applicationsBody"></div>
+  </div>
+
+  <div class="tabpanel" data-panel="results">
+    <div id="resultsBody"></div>
+  </div>
+
+</div>
+
+<!-- Question editor modal -->
+<div class="q-modal-backdrop" id="qModalBackdrop">
+  <div class="q-modal" id="qModal"></div>
+</div>
+
+<!-- Application detail drawer -->
+<div class="app-detail" id="appDetail" role="dialog" aria-modal="true" aria-label="Application details">
+  <div id="appDetailContent"></div>
+</div>
+
+<script src="educore-shared.js?v=12"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  /* ---------- GUARD ---------- */
+  const user = E.requirePerm('hiring', 'Hiring');
+  if(!user) return;
+
+  const canCreate  = E.can('hiring.create');
+  const canEdit    = E.can('hiring.edit');
+  const canDelete  = E.can('hiring.delete');
+  const canPublish = E.can('hiring.publish');
+  const canReview  = E.can('hiring.review');
+  const canResults = E.can('hiring.results');
+  const canExport  = E.can('hiring.export');
+
+  /* ---------- STATE ---------- */
+  const state = {
+    tab: 'positions',
+    currentFormId: null,
+    applicationsFilterFormId: '',
+    applicationsFilterStatus: ''
+  };
+
+  /* ---------- HEADER ---------- */
+  function paintHeader(){
+    const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const name = settings.name || 'EduCore High School';
+    if(settings.logo){
+      document.getElementById('bandLogo').innerHTML = `<img src="${settings.logo}" alt="">`;
+    } else {
+      document.getElementById('bandLogo').textContent =
+        name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
+    }
+    document.getElementById('bandSchool').textContent = name;
+    document.getElementById('bandUser').textContent = user.name || user.username;
+  }
+
+  /* ---------- STATUS STRIP ---------- */
+  function paintStatus(){
+    const forms = E.readHiringForms();
+    const apps = E.readHiringApplications();
+    const open = forms.filter(f => E.computeHiringStatus(f) === 'open').length;
+    const pending = apps.filter(a => a.status === 'pending').length;
+    const accepted = apps.filter(a => a.status === 'accepted').length;
+
+    document.getElementById('statusStrip').innerHTML = `
+      <div class="stats">
+        <div class="stat"><small>Positions</small><strong>${forms.length}</strong></div>
+        <div class="stat"><small>Open now</small><strong>${open}</strong></div>
+        <div class="stat"><small>Applications</small><strong>${apps.length}</strong></div>
+        <div class="stat"><small>Pending review</small><strong>${pending}</strong></div>
+        <div class="stat"><small>Accepted</small><strong>${accepted}</strong></div>
+      </div>
+      <div class="actions">
+        <a href="home.html" target="_blank" class="btn outline small">↗ View public page</a>
+      </div>
+    `;
+
+    const badge = document.getElementById('posBadge');
+    if(badge){
+      if(state.currentFormId){
+        badge.style.display = 'inline-block';
+        badge.textContent = 'Editing';
+        badge.style.background = '#edf2ff';
+        badge.style.color = '#3b5cc1';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+  }
+
+  /* ---------- TABS ---------- */
+  function paintTabs(){
+    document.querySelectorAll('#tabs .tab').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === state.tab);
+      if(btn.dataset.bound) return;
+      btn.dataset.bound = '1';
+      btn.addEventListener('click', () => {
+        if(state.tab === 'positions' && state.currentFormId){
+          if(!confirm('You have unsaved edits in the current form. Leave anyway?')) return;
+        }
+        state.tab = btn.dataset.tab;
+        state.currentFormId = null;
+        paintTabs();
+        paintAllPanels();
+      });
+    });
+  }
+
+  /* ---------- MAIN RENDER ---------- */
+  function paintAllPanels(){
+    document.querySelectorAll('.tabpanel').forEach(p => {
+      p.classList.toggle('active', p.dataset.panel === state.tab);
+    });
+    if(state.tab === 'positions') paintPositionsPanel();
+    if(state.tab === 'applications') paintApplicationsPanel();
+    if(state.tab === 'results') paintResultsPanel();
+    paintStatus();
+  }
+
+  /* ============================================================
+     POSITIONS PANEL
+     ============================================================ */
+  function paintPositionsPanel(){
+    const wrap = document.getElementById('positionsBody');
+
+    if(state.currentFormId){
+      const form = E.getHiringForm(state.currentFormId);
+      if(form){ paintBuilder(form); return; }
+      state.currentFormId = null;
+    }
+
+    const forms = E.readHiringForms()
+      .sort((a,b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
+
+    wrap.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;
+        flex-wrap:wrap;margin-bottom:14px">
+        <div style="font-size:13px;color:var(--muted)">
+          Build application forms for open positions. Each form becomes a Google-Forms-style
+          application linked from the home page.
+        </div>
+        ${canCreate ? `<button class="btn gold" id="newPositionBtn">＋ New position</button>` : ''}
+      </div>
+      ${forms.length ? `<div class="pos-list">${forms.map(renderPositionCard).join('')}</div>`
+        : `<div class="empty-state">
+            <span class="icon">💼</span>
+            <strong>No positions yet</strong>
+            Create your first hiring form to start accepting applications.
+          </div>`}
+    `;
+
+    document.getElementById('newPositionBtn')?.addEventListener('click', createNewPosition);
+
+    wrap.querySelectorAll('[data-edit-pos]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.currentFormId = btn.dataset.editPos;
+        state.tab = 'positions';
+        paintTabs();
+        paintAllPanels();
+      });
+    });
+    wrap.querySelectorAll('[data-publish-pos]').forEach(btn => {
+      btn.addEventListener('click', () => publishPosition(btn.dataset.publishPos));
+    });
+    wrap.querySelectorAll('[data-archive-pos]').forEach(btn => {
+      btn.addEventListener('click', () => archivePosition(btn.dataset.archivePos));
+    });
+    wrap.querySelectorAll('[data-delete-pos]').forEach(btn => {
+      btn.addEventListener('click', () => deletePosition(btn.dataset.deletePos));
+    });
+    wrap.querySelectorAll('[data-view-apps-pos]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.applicationsFilterFormId = btn.dataset.viewAppsPos;
+        state.tab = 'applications';
+        paintTabs();
+        paintAllPanels();
+      });
+    });
+    wrap.querySelectorAll('[data-view-results-pos]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.tab = 'results';
+        paintTabs();
+        paintAllPanels();
+      });
+    });
+    wrap.querySelectorAll('[data-preview-apply]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        window.open('apply.html?id=' + encodeURIComponent(btn.dataset.previewApply), '_blank');
+      });
+    });
+  }
+
+  function renderPositionCard(f){
+    const status = E.computeHiringStatus(f);
+    const apps = E.readHiringApplications().filter(a => a.formId === f.id);
+    const accepted = apps.filter(a => a.status === 'accepted').length;
+    const rejected = apps.filter(a => a.status === 'rejected').length;
+    const pending = apps.filter(a => a.status === 'pending' || a.status === 'shortlisted').length;
+    const resultsOut = !!f.showResultsAt;
+
+    const openTxt = f.publishAt ? E.fmtDate(f.publishAt) : '—';
+    const closeTxt = f.closeAt ? E.fmtDate(f.closeAt) : '—';
+
+    return `<div class="pos-card status-${status}">
+      <div class="top">
+        <div>
+          <h3>${E.esc(f.title || 'Untitled position')}</h3>
+          <div class="meta">
+            <strong>${E.esc(f.position || 'Staff')}</strong>
+            ${f.department ? ' · ' + E.esc(f.department) : ''}
+            ${f.location ? ' · ' + E.esc(f.location) : ''}
+            ${f.employmentType ? ' · ' + E.esc(f.employmentType) : ''}
+          </div>
+          <div class="badges">
+            <span class="badge ${status}">${status}</span>
+            ${resultsOut ? '<span class="badge results-out">✓ Results out</span>' : '<span class="badge results-pending">⏳ Results pending</span>'}
+          </div>
+        </div>
+      </div>
+      <div class="stats">
+        <span>Opens: <strong>${E.esc(openTxt)}</strong></span>
+        <span>Closes: <strong>${E.esc(closeTxt)}</strong></span>
+        <span>Applications: <strong>${apps.length}</strong></span>
+        <span>Pending: <strong>${pending}</strong></span>
+        <span>Accepted: <strong>${accepted}</strong></span>
+        <span>Rejected: <strong>${rejected}</strong></span>
+      </div>
+      <div class="actions">
+        ${canEdit ? `<button class="btn secondary" data-edit-pos="${E.esc(f.id)}">✎ Edit</button>` : ''}
+        ${canPublish && !f.formPublished ? `<button class="btn green" data-publish-pos="${E.esc(f.id)}">🚀 Publish</button>` : ''}
+        <button class="btn outline" data-preview-apply="${E.esc(f.id)}">👁 Preview form</button>
+        <button class="btn outline" data-view-apps-pos="${E.esc(f.id)}">📥 Applications (${apps.length})</button>
+        ${canResults ? `<button class="btn outline" data-view-results-pos="${E.esc(f.id)}">📢 Results</button>` : ''}
+        ${canEdit && status === 'open' ? `<button class="btn warn" data-archive-pos="${E.esc(f.id)}">📦 Archive</button>` : ''}
+        ${canDelete ? `<button class="btn danger" data-delete-pos="${E.esc(f.id)}">🗑 Delete</button>` : ''}
+      </div>
+    </div>`;
+  }
+
+  function createNewPosition(){
+    const newForm = {
+      title: '',
+      position: 'Teacher',
+      department: '',
+      description: '',
+      location: 'Monrovia Campus',
+      employmentType: 'Full-time',
+      status: 'draft',
+      publishAt: '',
+      closeAt: '',
+      formPublished: false,
+      questions: defaultQuestions(),
+      showResultsAt: null
+    };
+    const res = E.saveHiringForm(newForm);
+    if(!res.ok){ E.toast('Could not create position.'); return; }
+    state.currentFormId = res.form.id;
+    paintTabs();
+    paintAllPanels();
+  }
+
+  function defaultQuestions(){
+    return [
+      { id: 'q-' + Date.now() + '-1', type:'short-text', label:'Full name', required:true, options:[], order:1 },
+      { id: 'q-' + Date.now() + '-2', type:'email', label:'Email address', required:true, options:[], order:2 },
+      { id: 'q-' + Date.now() + '-3', type:'phone', label:'Phone number', required:false, options:[], order:3 },
+      { id: 'q-' + Date.now() + '-4', type:'file', label:'Upload CV (PDF)', required:true, options:[], order:4, help:'Max 2 MB' }
+    ];
+  }
+
+  function publishPosition(id){
+    if(!canPublish){ E.toast("You don't have permission."); return; }
+    const f = E.getHiringForm(id);
+    if(!f) return;
+    if(!f.publishAt || !f.closeAt){
+      E.toast('Set the open and close dates first.');
+      return;
+    }
+    if(!Array.isArray(f.questions) || !f.questions.length){
+      E.toast('Add at least one question.');
+      return;
+    }
+    if(!confirm(`Publish "${f.title}"?\n\nOpen: ${E.fmtDateTime(f.publishAt)}\nClose: ${E.fmtDateTime(f.closeAt)}`)) return;
+
+    f.formPublished = true;
+    E.saveHiringForm(f);
+    E.audit('update', `Hiring position published ${f.id}`, '', f.title);
+    paintAllPanels();
+    E.toast('Position published — it will appear on the home page when open.');
+  }
+
+  function archivePosition(id){
+    const f = E.getHiringForm(id);
+    if(!f) return;
+    if(!confirm(`Archive "${f.title}"? It will be hidden from the home page but applications are kept.`)) return;
+    f.status = 'archived';
+    E.saveHiringForm(f);
+    paintAllPanels();
+    E.toast('Position archived.');
+  }
+
+  async function deletePosition(id){
+    if(!canDelete){ E.toast("You don't have permission."); return; }
+    const f = E.getHiringForm(id);
+    if(!f) return;
+    const ok = await E.confirmModal({
+      title: 'Delete position?',
+      message: `<strong>${E.esc(f.title)}</strong><br><br>This also deletes all <strong>${E.readHiringApplications().filter(a => a.formId === id).length}</strong> applications for this position. This cannot be undone.`,
+      submitText: 'Delete',
+      danger: true
+    });
+    if(!ok) return;
+    E.deleteHiringForm(id);
+    paintAllPanels();
+    E.toast('Position deleted.');
+  }
+
+  /* ============================================================
+     BUILDER
+     ============================================================ */
+  function paintBuilder(form){
+    const wrap = document.getElementById('positionsBody');
+    const status = E.computeHiringStatus(form);
+
+    const questionsHTML = (form.questions || [])
+      .sort((a,b) => Number(a.order || 0) - Number(b.order || 0))
+      .map((q, i) => renderQuestionRow(q, i, form.questions.length))
+      .join('');
+
+    wrap.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;
+        flex-wrap:wrap;margin-bottom:14px">
+        <button class="btn outline" id="backToPositions">← Back to positions</button>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn outline" id="previewBtn">👁 Preview</button>
+          <button class="btn green" id="saveFormBtn">💾 Save</button>
+        </div>
+      </div>
+      <div class="builder">
+        <div class="builder-main">
+          <div class="builder-head">
+            <h2>${E.esc(form.title || 'New position')}</h2>
+            <p>Build the position details and application questions</p>
+          </div>
+          <div class="builder-body">
+
+            <div class="builder-section">
+              <h3><span class="num">1</span> Position details</h3>
+              <div class="field">
+                <label>Job title</label>
+                <input type="text" id="fTitle" value="${E.esc(form.title || '')}" placeholder="e.g. Grade 5 Mathematics Teacher">
+              </div>
+              <div class="field-row">
+                <div class="field">
+                  <label>Position type</label>
+                  <select id="fPosition">
+                    ${['Teacher','Administrator','Support Staff','Technician','Coach','Other'].map(t =>
+                      `<option ${form.position === t ? 'selected' : ''}>${t}</option>`).join('')}
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Employment type</label>
+                  <select id="fEmploymentType">
+                    ${['Full-time','Part-time','Contract','Temporary'].map(t =>
+                      `<option ${form.employmentType === t ? 'selected' : ''}>${t}</option>`).join('')}
+                  </select>
+                </div>
+              </div>
+              <div class="field-row">
+                <div class="field">
+                  <label>Department</label>
+                  <input type="text" id="fDepartment" value="${E.esc(form.department || '')}" placeholder="e.g. Primary · Mathematics">
+                </div>
+                <div class="field">
+                  <label>Location</label>
+                  <input type="text" id="fLocation" value="${E.esc(form.location || '')}" placeholder="e.g. Monrovia Campus">
+                </div>
+              </div>
+              <div class="field">
+                <label>Description</label>
+                <textarea id="fDescription" placeholder="Short description shown on the public form...">${E.esc(form.description || '')}</textarea>
+              </div>
+            </div>
+
+            <div class="builder-section">
+              <h3><span class="num">2</span> Schedule</h3>
+              <div class="field-row">
+                <div class="field">
+                  <label>Opens at</label>
+                  <input type="datetime-local" id="fPublishAt" value="${form.publishAt ? form.publishAt.slice(0,16) : ''}">
+                </div>
+                <div class="field">
+                  <label>Closes at</label>
+                  <input type="datetime-local" id="fCloseAt" value="${form.closeAt ? form.closeAt.slice(0,16) : ''}">
+                </div>
+              </div>
+              <div style="font-size:11px;color:var(--muted);background:#f8faff;
+                border:1px solid var(--line);border-radius:8px;padding:10px 12px;line-height:1.6">
+                The form auto-opens and auto-closes based on these dates once published.
+                Before the open date: applicants see "not yet open". After the close date:
+                applicants see "closed".
+              </div>
+            </div>
+
+            <div class="builder-section">
+              <h3><span class="num">3</span> Application questions</h3>
+              <div class="q-list" id="qList">
+                ${questionsHTML || '<div style="color:var(--muted);padding:20px;text-align:center;font-size:12px">No questions yet. Add one below.</div>'}
+              </div>
+              <button class="add-q-btn" id="addQBtn">＋ Add question</button>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="builder-side">
+          <div class="side-card">
+            <div class="side-head">📋 Form status</div>
+            <div class="side-body">
+              <div class="status-preview ${status}">
+                <strong>${status}</strong>
+                ${status === 'draft' ? 'Not yet published. Fix the schedule and click Publish on the positions list.' : ''}
+                ${status === 'scheduled' ? 'Will auto-open on ' + E.esc(E.fmtDate(form.publishAt)) + '.' : ''}
+                ${status === 'open' ? 'Accepting applications until ' + E.esc(E.fmtDate(form.closeAt)) + '.' : ''}
+                ${status === 'closed' ? 'No longer accepting applications.' : ''}
+                ${status === 'archived' ? 'Archived — hidden from the public page.' : ''}
+              </div>
+              <div style="font-size:11.5px;color:var(--muted);line-height:1.6">
+                <strong style="color:var(--navy)">${(form.questions||[]).length}</strong> questions ·
+                <strong style="color:var(--navy)">${E.readHiringApplications().filter(a => a.formId === form.id).length}</strong> applications
+              </div>
+            </div>
+          </div>
+
+          <div class="side-card">
+            <div class="side-head">👁 Public link</div>
+            <div class="side-body">
+              <div style="font-size:11px;color:var(--muted);word-break:break-all;
+                background:#f8faff;border:1px solid var(--line);border-radius:8px;
+                padding:9px 11px;font-family:monospace">
+                apply.html?id=${E.esc(form.id)}
+              </div>
+              <button class="btn outline small" style="margin-top:8px;width:100%;justify-content:center"
+                id="copyLinkBtn">📋 Copy link</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    bindBuilder(form, status);
+  }
+
+  function renderQuestionRow(q, i, total){
+    const typeLabels = {
+      'short-text':'Short text','long-text':'Long text','email':'Email','phone':'Phone',
+      'number':'Number','date':'Date','select':'Dropdown','radio':'Single choice',
+      'checkbox':'Multiple choice','file':'File upload','section':'Section heading'
+    };
+    const typeLabel = typeLabels[q.type] || q.type;
+    return `<div class="q-row" data-q-id="${E.esc(q.id)}">
+      <div class="q-head">
+        <strong>${i + 1}. ${E.esc(q.label || '(untitled)')} <span class="q-type-pill">${E.esc(typeLabel)}</span></strong>
+        <div class="q-actions">
+          <button data-move-q="${E.esc(q.id)}:-1" ${i === 0 ? 'disabled' : ''}>↑</button>
+          <button data-move-q="${E.esc(q.id)}:1" ${i === total - 1 ? 'disabled' : ''}>↓</button>
+          <button data-edit-q="${E.esc(q.id)}">Edit</button>
+          <button data-rm-q="${E.esc(q.id)}" class="danger">Delete</button>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--muted)">
+        ${q.required ? '<span style="color:#bd3b48;font-weight:800">Required</span>' : 'Optional'}
+        ${q.help ? ' · ' + E.esc(q.help) : ''}
+      </div>
+    </div>`;
+  }
+
+  function bindBuilder(form, status){
+    document.getElementById('backToPositions').addEventListener('click', () => {
+      state.currentFormId = null;
+      paintAllPanels();
+    });
+
+    document.getElementById('previewBtn')?.addEventListener('click', () => {
+      if(saveFormFromBuilder(form)) window.open('apply.html?id=' + encodeURIComponent(form.id) + '&preview=1', '_blank');
+    });
+
+    document.getElementById('saveFormBtn')?.addEventListener('click', () => {
+      if(saveFormFromBuilder(form)){
+        E.toast('Saved.');
+        paintAllPanels();
+      }
+    });
+
+    document.getElementById('copyLinkBtn')?.addEventListener('click', () => {
+      const url = location.origin + location.pathname.replace(/[^/]*$/, '') + 'apply.html?id=' + form.id;
+      navigator.clipboard.writeText(url).then(() => E.toast('Link copied.')).catch(() => E.toast('Copy failed.'));
+    });
+
+    document.getElementById('addQBtn')?.addEventListener('click', () => openQuestionModal(form, null));
+    document.querySelectorAll('[data-edit-q]').forEach(btn => {
+      btn.addEventListener('click', () => openQuestionModal(form, btn.dataset.editQ));
+    });
+    document.querySelectorAll('[data-rm-q]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if(!confirm('Remove this question?')) return;
+        form.questions = form.questions.filter(q => q.id !== btn.dataset.rmQ);
+        E.saveHiringForm(form);
+        paintAllPanels();
+      });
+    });
+    document.querySelectorAll('[data-move-q]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const [id, dir] = btn.dataset.moveQ.split(':');
+        const sorted = form.questions.slice().sort((a,b) => Number(a.order || 0) - Number(b.order || 0));
+        const idx = sorted.findIndex(q => q.id === id);
+        const target = idx + Number(dir);
+        if(target < 0 || target >= sorted.length) return;
+        const a = sorted[idx], b = sorted[target];
+        const temp = a.order; a.order = b.order; b.order = temp;
+        E.saveHiringForm(form);
+        paintAllPanels();
+      });
+    });
+  }
+
+  /* PATCH: validate title before saving the builder */
+  function saveFormFromBuilder(form){
+    const title = (document.getElementById('fTitle').value || '').trim();
+    if(!title){
+      E.toast('Enter a job title first.');
+      document.getElementById('fTitle')?.focus();
+      return false;
+    }
+    form.title = title;
+    form.position = document.getElementById('fPosition').value;
+    form.employmentType = document.getElementById('fEmploymentType').value;
+    form.department = document.getElementById('fDepartment').value.trim();
+    form.location = document.getElementById('fLocation').value.trim();
+    form.description = document.getElementById('fDescription').value.trim();
+    form.publishAt = document.getElementById('fPublishAt').value
+      ? new Date(document.getElementById('fPublishAt').value).toISOString() : '';
+    form.closeAt = document.getElementById('fCloseAt').value
+      ? new Date(document.getElementById('fCloseAt').value).toISOString() : '';
+    E.saveHiringForm(form);
+    return true;
+  }
+
+  /* ============================================================
+     QUESTION MODAL
+     ============================================================ */
+  function openQuestionModal(form, editId){
+    const existing = editId ? form.questions.find(q => q.id === editId) : null;
+    const q = existing || {
+      id: 'q-' + Date.now() + '-' + Math.random().toString(36).slice(2,5),
+      type: 'short-text',
+      label: '',
+      required: true,
+      options: [],
+      help: '',
+      order: form.questions.length + 1
+    };
+
+    const backdrop = document.getElementById('qModalBackdrop');
+    const modal = document.getElementById('qModal');
+
+    const types = [
+      ['short-text', 'Short text'],
+      ['long-text', 'Long text'],
+      ['email', 'Email'],
+      ['phone', 'Phone'],
+      ['number', 'Number'],
+      ['date', 'Date'],
+      ['select', 'Dropdown'],
+      ['radio', 'Single choice'],
+      ['checkbox', 'Multiple choice'],
+      ['file', 'File upload'],
+      ['section', 'Section heading']
+    ];
+
+    function render(){
+      modal.innerHTML = `
+        <div class="q-modal-head">
+          <h3>${existing ? 'Edit question' : 'Add question'}</h3>
+          <button class="close" data-close-q aria-label="Close">×</button>
+        </div>
+        <div class="q-modal-body">
+          <div class="field">
+            <label>Question type</label>
+            <select id="qType">
+              ${types.map(([k, l]) => `<option value="${k}" ${q.type === k ? 'selected' : ''}>${l}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field">
+            <label>${q.type === 'section' ? 'Section heading text' : 'Question label'}</label>
+            <input type="text" id="qLabel" value="${E.esc(q.label || '')}" placeholder="${q.type === 'section' ? 'e.g. Section 2: Experience' : 'e.g. Full name'}">
+          </div>
+          ${q.type !== 'section' ? `
+            <div class="field">
+              <label>Help text (optional)</label>
+              <input type="text" id="qHelp" value="${E.esc(q.help || '')}" placeholder="Shown below the input">
+            </div>
+          ` : ''}
+          ${['select','radio','checkbox'].includes(q.type) ? `
+            <div class="field">
+              <label>Options</label>
+              <div id="qOptions"></div>
+              <button class="btn outline small" id="addOptionBtn" style="margin-top:6px">＋ Add option</button>
+            </div>
+          ` : ''}
+          ${q.type === 'file' ? `
+            <div class="field">
+              <label>Accepted files</label>
+              <input type="text" id="qFileTypes" value="${E.esc(q.fileTypes || 'PDF, DOC, DOCX')}" placeholder="PDF, DOC, DOCX">
+            </div>
+          ` : ''}
+          ${q.type !== 'section' ? `
+            <div class="toggle-row" style="margin-top:8px">
+              <input type="checkbox" id="qRequired" ${q.required ? 'checked' : ''}>
+              <label for="qRequired">Required question</label>
+            </div>
+          ` : ''}
+        </div>
+        <div class="q-modal-foot">
+          <button class="btn outline" data-close-q>Cancel</button>
+          <button class="btn green" id="saveQBtn">Save question</button>
+        </div>
+      `;
+
+      if(['select','radio','checkbox'].includes(q.type)){
+        paintOptions();
+      }
+
+      modal.querySelectorAll('[data-close-q]').forEach(btn =>
+        btn.addEventListener('click', closeModal));
+
+      document.getElementById('qType')?.addEventListener('change', e => {
+        q.type = e.target.value;
+        if(!['select','radio','checkbox'].includes(q.type)) q.options = [];
+        render();
+      });
+
+      document.getElementById('addOptionBtn')?.addEventListener('click', () => {
+        if(!Array.isArray(q.options)) q.options = [];
+        q.options.push('');
+        paintOptions();
+      });
+
+      document.getElementById('saveQBtn')?.addEventListener('click', () => {
+        q.label = document.getElementById('qLabel').value.trim();
+        if(!q.label){ E.toast('Enter a label.'); return; }
+        if(q.type !== 'section'){
+          const helpEl = document.getElementById('qHelp');
+          if(helpEl) q.help = helpEl.value.trim();
+          const requiredEl = document.getElementById('qRequired');
+          if(requiredEl) q.required = requiredEl.checked;
+        }
+        if(q.type === 'file'){
+          const ftEl = document.getElementById('qFileTypes');
+          if(ftEl) q.fileTypes = ftEl.value.trim();
+        }
+        if(['select','radio','checkbox'].includes(q.type)){
+          if(!q.options.length || q.options.some(o => !String(o).trim())){
+            E.toast('Add at least one option and fill them all in.');
+            return;
+          }
+        }
+
+        if(existing){
+          const idx = form.questions.findIndex(x => x.id === existing.id);
+          form.questions[idx] = q;
+        } else {
+          form.questions.push(q);
+        }
+        E.saveHiringForm(form);
+        closeModal();
+        paintAllPanels();
+        E.toast(existing ? 'Question updated.' : 'Question added.');
+      });
+    }
+
+    function paintOptions(){
+      const wrap = document.getElementById('qOptions');
+      if(!wrap) return;
+      wrap.innerHTML = (q.options || []).map((o, i) => `
+        <div class="option-row">
+          <input type="text" value="${E.esc(o)}" data-opt="${i}" placeholder="Option ${i+1}">
+          <button class="btn danger small" data-rm-opt="${i}">✕</button>
+          <span></span>
+        </div>
+      `).join('');
+
+      wrap.querySelectorAll('[data-opt]').forEach(inp => {
+        inp.addEventListener('input', () => {
+          q.options[Number(inp.dataset.opt)] = inp.value;
+        });
+      });
+      wrap.querySelectorAll('[data-rm-opt]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          q.options.splice(Number(btn.dataset.rmOpt), 1);
+          paintOptions();
+        });
+      });
+    }
+
+    function closeModal(){
+      backdrop.classList.remove('show');
+      modal.innerHTML = '';
+    }
+
+    backdrop.classList.add('show');
+    backdrop.onclick = e => { if(e.target === backdrop) closeModal(); };
+    render();
+  }
+
+  /* ============================================================
+     APPLICATIONS PANEL
+     ============================================================ */
+  function paintApplicationsPanel(){
+    const wrap = document.getElementById('applicationsBody');
+    const forms = E.readHiringForms().sort((a,b) => a.title.localeCompare(b.title));
+    const apps = E.readHiringApplications()
+      .filter(a => !state.applicationsFilterFormId || a.formId === state.applicationsFilterFormId)
+      .filter(a => !state.applicationsFilterStatus || a.status === state.applicationsFilterStatus)
+      .sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+
+    wrap.innerHTML = `
+      <div class="apps-toolbar">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <select id="appFormFilter">
+            <option value="">All positions</option>
+            ${forms.map(f => `<option value="${E.esc(f.id)}" ${state.applicationsFilterFormId === f.id ? 'selected' : ''}>${E.esc(f.title)}</option>`).join('')}
+          </select>
+          <select id="appStatusFilter">
+            <option value="">All statuses</option>
+            <option value="pending" ${state.applicationsFilterStatus === 'pending' ? 'selected' : ''}>Pending</option>
+            <option value="shortlisted" ${state.applicationsFilterStatus === 'shortlisted' ? 'selected' : ''}>Shortlisted</option>
+            <option value="accepted" ${state.applicationsFilterStatus === 'accepted' ? 'selected' : ''}>Accepted</option>
+            <option value="rejected" ${state.applicationsFilterStatus === 'rejected' ? 'selected' : ''}>Rejected</option>
+          </select>
+          <input type="text" id="appSearch" placeholder="Search name, email, or verify code...">
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${canExport ? `<button class="btn secondary" id="exportAppsBtn">↓ Export CSV</button>` : ''}
+        </div>
+      </div>
+
+      <div class="apps-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Applicant</th>
+              <th>Position</th>
+              <th>Submitted</th>
+              <th>Verify code</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="appsTbody"></tbody>
+        </table>
+      </div>
+    `;
+
+    paintAppsTable();
+
+    document.getElementById('appFormFilter').addEventListener('change', e => {
+      state.applicationsFilterFormId = e.target.value;
+      paintApplicationsPanel();
+    });
+    document.getElementById('appStatusFilter').addEventListener('change', e => {
+      state.applicationsFilterStatus = e.target.value;
+      paintApplicationsPanel();
+    });
+    document.getElementById('appSearch').addEventListener('input', paintAppsTable);
+    document.getElementById('exportAppsBtn')?.addEventListener('click', exportApplications);
+  }
+
+  function paintAppsTable(){
+    const tbody = document.getElementById('appsTbody');
+    if(!tbody) return;
+    const search = (document.getElementById('appSearch')?.value || '').toLowerCase();
+    const apps = E.readHiringApplications()
+      .filter(a => !state.applicationsFilterFormId || a.formId === state.applicationsFilterFormId)
+      .filter(a => !state.applicationsFilterStatus || a.status === state.applicationsFilterStatus)
+      .filter(a => {
+        if(!search) return true;
+        const hay = `${a.applicantName} ${a.applicantEmail} ${a.verifyCode}`.toLowerCase();
+        return hay.includes(search);
+      })
+      .sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+
+    if(!apps.length){
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--muted)">
+        No applications match your filters.
+      </td></tr>`;
+      return;
+    }
+
+    const forms = E.readHiringForms();
+    tbody.innerHTML = apps.map(a => {
+      const form = forms.find(f => f.id === a.formId);
+      return `<tr data-app-id="${E.esc(a.id)}">
+        <td>
+          <div style="font-weight:700;color:var(--navy)">${E.esc(a.applicantName || '—')}</div>
+          <div style="font-size:11px;color:var(--muted)">${E.esc(a.applicantEmail || '')}</div>
+        </td>
+        <td style="font-size:11.5px">${E.esc(form?.title || '—')}</td>
+        <td style="font-size:11.5px;color:var(--muted)">${E.fmtDateTime(a.submittedAt)}</td>
+        <td><span class="verify-code">${E.esc(a.verifyCode)}</span></td>
+        <td><span class="status-pill ${a.status}">${a.status}</span></td>
+        <td>
+          <button class="btn outline small" data-open-app="${E.esc(a.id)}">View</button>
+        </td>
+      </tr>`;
+    }).join('');
+
+    tbody.querySelectorAll('[data-open-app]').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        openApplicationDetail(btn.dataset.openApp);
+      });
+    });
+    tbody.querySelectorAll('tr[data-app-id]').forEach(row => {
+      row.addEventListener('click', () => openApplicationDetail(row.dataset.appId));
+    });
+  }
+
+  function exportApplications(){
+    const apps = E.readHiringApplications();
+    if(!apps.length){ E.toast('Nothing to export.'); return; }
+    const forms = E.readHiringForms();
+    const headers = ['Verify Code','Applicant Name','Applicant Email','Position','Submitted At','Status'];
+    const rows = apps.map(a => {
+      const f = forms.find(x => x.id === a.formId);
+      return [a.verifyCode, a.applicantName, a.applicantEmail, f?.title || '', a.submittedAt, a.status];
+    });
+    const csv = [headers, ...rows].map(r => r.map(v => '"' + String(v ?? '').replace(/"/g, '""') + '"').join(',')).join('\r\n');
+    const blob = new Blob(['\ufeff' + csv], { type:'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob), link = document.createElement('a');
+    link.href = url; link.download = 'hiring-applications.csv'; link.click();
+    URL.revokeObjectURL(url);
+    E.toast(`Exported ${apps.length} applications.`);
+  }
+
+  /* ============================================================
+     APPLICATION DETAIL
+     ============================================================ */
+  function openApplicationDetail(appId){
+    const app = E.readHiringApplications().find(a => a.id === appId);
+    if(!app) return;
+    const form = E.getHiringForm(app.formId);
+    if(!form) return;
+
+    const drawer = document.getElementById('appDetail');
+    const content = document.getElementById('appDetailContent');
+
+    const questions = (form.questions || []).slice().sort((a,b) => Number(a.order || 0) - Number(b.order || 0));
+    const answers = app.answers || {};
+
+    content.innerHTML = `
+      <div class="app-detail-head">
+        <button class="close" data-close-drawer aria-label="Close application details">×</button>
+        <h2>${E.esc(app.applicantName || 'Applicant')}</h2>
+        <p>${E.esc(form.title)} · Submitted ${E.fmtDateTime(app.submittedAt)}</p>
+      </div>
+      <div class="app-detail-body">
+
+        <div class="meta-row"><span>Verify code</span><strong style="font-family:monospace">${E.esc(app.verifyCode)}</strong></div>
+        <div class="meta-row"><span>Email</span><strong>${E.esc(app.applicantEmail || '—')}</strong></div>
+        <div class="meta-row"><span>Status</span><strong><span class="status-pill ${app.status}">${app.status}</span></strong></div>
+        ${app.reviewedAt ? `<div class="meta-row"><span>Reviewed</span><strong>${E.fmtDateTime(app.reviewedAt)}</strong></div>` : ''}
+        ${app.reviewedBy ? `<div class="meta-row"><span>Reviewed by</span><strong>${E.esc(app.reviewedBy)}</strong></div>` : ''}
+
+        <h3 style="margin:22px 0 12px;font-size:13px;color:var(--navy);
+          text-transform:uppercase;letter-spacing:.5px">Application answers</h3>
+
+        ${questions.map(q => {
+          if(q.type === 'section') return `<h4 style="margin:16px 0 8px;font-size:12px;
+            color:var(--navy);text-transform:uppercase;letter-spacing:.5px;padding-bottom:6px;
+            border-bottom:1px solid var(--line)">${E.esc(q.label)}</h4>`;
+          const val = answers[q.id];
+          let html;
+          if(q.type === 'file'){
+            if(val && val.dataUrl){
+              html = `<a href="${E.esc(val.dataUrl)}" download="${E.esc(val.filename || 'file')}" class="file-link">📎 ${E.esc(val.filename || 'Download file')}</a>`;
+            } else {
+              html = '<span style="color:var(--muted)">—</span>';
+            }
+          } else if(q.type === 'checkbox'){
+            html = Array.isArray(val) && val.length
+              ? val.map(v => `<span style="display:inline-block;background:#eef2fb;color:#34415c;
+                  padding:3px 9px;border-radius:12px;font-size:11px;font-weight:700;margin:2px 4px 2px 0">${E.esc(v)}</span>`).join('')
+              : '<span style="color:var(--muted)">—</span>';
+          } else if(val && typeof val === 'object' && val.dataUrl){
+            html = `<a href="${E.esc(val.dataUrl)}" download="${E.esc(val.filename || 'file')}" class="file-link">📎 ${E.esc(val.filename || 'Download file')}</a>`;
+          } else {
+            html = val ? E.esc(String(val)) : '<span style="color:var(--muted)">—</span>';
+          }
+          return `<div class="answer-block">
+            <label>${E.esc(q.label)}</label>
+            <div class="value">${html}</div>
+          </div>`;
+        }).join('') || '<div style="color:var(--muted);padding:20px;text-align:center">No answers recorded.</div>'}
+
+        ${canReview ? `
+          <div class="review-note">
+            <label style="font-weight:800;color:#34415c;text-transform:uppercase;
+              letter-spacing:.5px;font-size:10px">Internal note (not visible to applicant)</label>
+            <textarea id="reviewNote" placeholder="Notes about this applicant...">${E.esc(app.reviewNote || '')}</textarea>
+          </div>
+          <div class="app-actions">
+            ${app.status !== 'shortlisted' ? `<button class="btn secondary" data-set-status="shortlisted">Shortlist</button>` : ''}
+            ${app.status !== 'accepted' ? `<button class="btn green" data-set-status="accepted">✓ Accept</button>` : ''}
+            ${app.status !== 'rejected' ? `<button class="btn danger" data-set-status="rejected">Reject</button>` : ''}
+            ${app.status !== 'pending' ? `<button class="btn outline" data-set-status="pending">Reset to pending</button>` : ''}
+          </div>
+        ` : ''}
+
+      </div>
+    `;
+
+    drawer.classList.add('open');
+
+    content.querySelector('[data-close-drawer]').addEventListener('click', () => {
+      drawer.classList.remove('open');
+    });
+
+    content.querySelectorAll('[data-set-status]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const note = document.getElementById('reviewNote')?.value || '';
+        const res = E.reviewHiringApplication(app.id, btn.dataset.setStatus, note);
+        if(!res.ok){ E.toast(res.error || 'Update failed.'); return; }
+        E.toast(`Marked as ${btn.dataset.setStatus}.`);
+        drawer.classList.remove('open');
+        paintAppsTable();
+        paintStatus();
+      });
+    });
+  }
+
+  /* ============================================================
+     RESULTS PANEL
+     ============================================================ */
+  function paintResultsPanel(){
+    const wrap = document.getElementById('resultsBody');
+    const forms = E.readHiringForms()
+      .filter(f => f.formPublished)
+      .sort((a,b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
+
+    if(!forms.length){
+      wrap.innerHTML = `<div class="empty-state">
+        <span class="icon">📢</span>
+        <strong>No published positions yet</strong>
+        Publish a position first. Once applications are reviewed, you can release results here.
+      </div>`;
+      return;
+    }
+
+    wrap.innerHTML = forms.map(f => renderResultsCard(f)).join('');
+
+    wrap.querySelectorAll('[data-publish-results]').forEach(btn => {
+      btn.addEventListener('click', () => publishResults(btn.dataset.publishResults));
+    });
+    wrap.querySelectorAll('[data-unpublish-results]').forEach(btn => {
+      btn.addEventListener('click', () => unpublishResults(btn.dataset.unpublishResults));
+    });
+  }
+
+  function renderResultsCard(f){
+    const apps = E.readHiringApplications().filter(a => a.formId === f.id);
+    const accepted = apps.filter(a => a.status === 'accepted').length;
+    const shortlisted = apps.filter(a => a.status === 'shortlisted').length;
+    const rejected = apps.filter(a => a.status === 'rejected').length;
+    const pending = apps.filter(a => a.status === 'pending').length;
+    const resultsOut = !!f.showResultsAt;
+    const reviewed = accepted + rejected + shortlisted;
+
+    return `<div class="results-card" style="margin-bottom:16px">
+      <div class="results-hero">
+        <h3>${E.esc(f.title)}</h3>
+        <p>${E.esc(f.position)} · ${apps.length} total applications</p>
+      </div>
+
+      <div class="results-stats">
+        <div class="cell"><small>Accepted</small><strong>${accepted}</strong></div>
+        <div class="cell"><small>Shortlisted</small><strong>${shortlisted}</strong></div>
+        <div class="cell"><small>Rejected</small><strong>${rejected}</strong></div>
+        <div class="cell"><small>Pending</small><strong>${pending}</strong></div>
+      </div>
+
+      ${resultsOut ? `
+        <div style="background:#f0fdf7;border:1px solid #b8e9d3;border-radius:10px;
+          padding:14px 18px;margin-bottom:14px;font-size:12.5px;color:#0e6b4a;line-height:1.6">
+          <strong>✓ Results are live.</strong> Applicants can now check their status on the home page
+          using their verify code. Published on ${E.fmtDateTime(f.showResultsAt)}.
+        </div>
+        ${canResults ? `<button class="btn warn" data-unpublish-results="${E.esc(f.id)}">↺ Unpublish results</button>` : ''}
+      ` : `
+        <div style="background:#fff8e6;border:1px solid #f3d999;border-radius:10px;
+          padding:14px 18px;margin-bottom:14px;font-size:12.5px;color:#8a6a1a;line-height:1.6">
+          <strong>⏳ Results not yet published.</strong> Applicants will see "results pending" if they try
+          to check their status. Review the applications first, then publish results when ready.
+        </div>
+        ${pending > 0 ? `<div style="color:var(--muted);font-size:12px;margin-bottom:12px">
+          ⚠ ${pending} application${pending === 1 ? '' : 's'} still pending review. Consider reviewing them first.
+        </div>` : ''}
+        ${canResults && reviewed > 0 ? `
+          <button class="btn gold" data-publish-results="${E.esc(f.id)}">📢 Publish results now</button>
+        ` : ''}
+        ${canResults && reviewed === 0 ? `
+          <div style="color:var(--muted);font-size:12px">
+            No applications reviewed yet. Accept, shortlist, or reject at least one applicant before publishing.
+          </div>
+        ` : ''}
+      `}
+    </div>`;
+  }
+
+  async function publishResults(formId){
+    if(!canResults){ E.toast("You don't have permission."); return; }
+    const f = E.getHiringForm(formId);
+    if(!f) return;
+    const apps = E.readHiringApplications().filter(a => a.formId === formId);
+    const ok = await E.confirmModal({
+      title: 'Publish results?',
+      message: `
+        <strong>${E.esc(f.title)}</strong><br><br>
+        Once published, <strong>${apps.length}</strong> applicant${apps.length === 1 ? '' : 's'} will be able
+        to check their status on the home page using their verify code.<br><br>
+        Anyone still in <em>pending</em> status will see "still being reviewed" — you can continue
+        reviewing after publishing.<br><br>
+        This action is reversible.
+      `,
+      submitText: 'Publish results'
+    });
+    if(!ok) return;
+    const res = E.publishHiringResults(formId);
+    if(!res.ok){ E.toast(res.error || 'Publish failed.'); return; }
+    paintResultsPanel();
+    paintStatus();
+    E.toast(`Results published for ${res.touched} application${res.touched === 1 ? '' : 's'}.`);
+  }
+
+  async function unpublishResults(formId){
+    if(!canResults){ E.toast("You don't have permission."); return; }
+    const f = E.getHiringForm(formId);
+    if(!f) return;
+    const ok = await E.confirmModal({
+      title: 'Unpublish results?',
+      message: `Applicants will no longer be able to see their status until you publish again. The applications themselves are not affected.`,
+      submitText: 'Unpublish',
+      danger: true
+    });
+    if(!ok) return;
+    f.showResultsAt = null;
+    E.saveHiringForm(f);
+    const apps = E.readHiringApplications();
+    apps.forEach(a => {
+      if(a.formId === formId) a.resultsPublished = false;
+    });
+    E.writeHiringApplications(apps);
+    paintResultsPanel();
+    E.toast('Results unpublished.');
+  }
+
+  /* ---------- INIT ---------- */
+  paintHeader();
+  paintTabs();
+  paintAllPanels();
+
+  /* PATCH: drawer close logic — ignore clicks inside the drawer, on the buttons that
+     open it, and while a modal is open. Add an Escape handler that closes the
+     drawer. */
+  document.addEventListener('click', e => {
+    const drawer = document.getElementById('appDetail');
+    if(!drawer.classList.contains('open')) return;
+    if(drawer.contains(e.target)) return;
+    if(e.target.closest('[data-open-app]')) return;
+    if(e.target.closest('tr[data-app-id]')) return;
+    if(e.target.closest('.educore-modal, #educoreModalBackdrop')) return;
+    drawer.classList.remove('open');
+  });
+
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape'){
+      const drawer = document.getElementById('appDetail');
+      if(drawer.classList.contains('open')){
+        /* If the shared modal is open, let it close first */
+        const modal = document.getElementById('educoreModalBackdrop');
+        if(modal && modal.classList.contains('show')) return;
+        drawer.classList.remove('open');
+      }
+    }
+  });
+})();
+</script>
+</body>
+</html>

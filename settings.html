@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings | EduCore</title>
+<style>
+  :root{
+    --navy:#12315a;--blue:#3987ee;--line:#e8ebf2;--text:#23354d;--muted:#73849a;
+    --green:#14805e;--orange:#d88922;--red:#d64545;--gold:#c99a2e;--gold2:#fff4d6;
+    --shadow:0 8px 24px rgba(24,42,78,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:64px 16px 40px;
+    background:linear-gradient(135deg,#edf4fc,#dfeaf7);
+    font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+  .page{width:100%;max-width:1100px;margin:0 auto}
+
+  .band{background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
+    border-radius:16px;padding:22px 28px;margin-bottom:20px;
+    box-shadow:0 18px 50px #16345417;display:flex;justify-content:space-between;
+    align-items:center;gap:16px;flex-wrap:wrap;border-top:5px solid #58a4ff}
+  .band-left{display:flex;align-items:center;gap:14px}
+  .band-logo{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;place-items:center;
+    overflow:hidden;color:var(--navy);font-weight:900;font-size:18px;border:3px solid #d8e8ff;flex:0 0 48px}
+  .band-logo img{width:100%;height:100%;object-fit:contain}
+  .band h1{margin:0;font-size:19px;letter-spacing:.3px;text-transform:uppercase}
+  .band p{margin:4px 0 0;font-size:11px;color:#cfdcf5}
+  .band-user{display:flex;align-items:center;gap:10px;font-size:11px;color:#cfdcf5;
+    background:#ffffff14;border:1px solid #ffffff36;padding:7px 12px;border-radius:20px}
+  .band-user strong{color:#fff}
+
+  .btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{filter:brightness(.96)}
+  .btn.secondary{background:#eef2fb;color:#34415c}
+  .btn.outline{background:#fff;color:#34415c;border:1px solid var(--line)}
+  .btn.danger{background:#fff0f1;color:var(--red)}
+  .btn.green{background:#e6f7f0;color:#16835f}
+  .btn.gold{background:linear-gradient(135deg,#f7d97a,#c99a2e);color:#5a3a00}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  .tabs{display:flex;gap:4px;background:#fff;border:1px solid var(--line);
+    border-radius:13px;box-shadow:var(--shadow);padding:8px;margin-bottom:18px;flex-wrap:wrap}
+  .tab{border:0;background:transparent;padding:10px 14px;border-radius:9px;
+    font-size:12px;font-weight:800;color:#54637d;cursor:pointer}
+  .tab:hover{background:#f3f6fd}
+  .tab.active{background:#0d1e3a;color:#fff}
+  .tabpanel{display:none}
+  .tabpanel.active{display:block}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);overflow:hidden;margin-bottom:18px}
+  .card-head{padding:16px 22px;border-bottom:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .card-head h3{margin:0;font-size:14px}
+  .card-head p{margin:4px 0 0;font-size:11px;color:var(--muted)}
+  .card-body{padding:22px}
+
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+  .field:last-child{margin-bottom:0}
+  .field label{font-size:10.5px;font-weight:800;color:#657089;
+    text-transform:uppercase;letter-spacing:.7px}
+  .field .help{font-size:10.5px;color:var(--muted);line-height:1.5;margin-top:2px}
+  .field input,.field select,.field textarea{
+    width:100%;border:1px solid #dfe4ee;border-radius:8px;
+    padding:10px 12px;font-size:12.5px;outline:none;background:#f8faff;
+    font-family:inherit;transition:.15s;
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{
+    border-color:var(--blue);background:#fff;
+  }
+  .field textarea{min-height:80px;resize:vertical;line-height:1.6}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+  .img-field{display:flex;gap:14px;align-items:flex-start}
+  .img-preview{width:110px;height:110px;flex:0 0 110px;border:2px dashed #c9d1e0;
+    border-radius:10px;background:#f8faff;display:grid;place-items:center;
+    overflow:hidden;color:var(--muted);font-size:11px;text-align:center;position:relative}
+  .img-preview.wide{width:220px;height:120px;flex-basis:220px}
+  .img-preview img{width:100%;height:100%;object-fit:contain;padding:6px}
+  .img-actions{display:flex;flex-direction:column;gap:8px;flex:1}
+
+  .scale-row{display:grid;grid-template-columns:60px 90px 90px 1fr auto;
+    gap:8px;align-items:center;margin-bottom:8px}
+  .scale-row input{border:1px solid #dfe4ee;border-radius:8px;padding:8px 10px;
+    font-size:12px;outline:none;background:#fff}
+  .scale-row .letter{font-family:monospace;font-weight:800;color:var(--navy);
+    text-align:center;background:#eef2fb;border-radius:8px;padding:8px;
+    border:1px solid #dbe4f2}
+
+  .callout{background:#f8faff;border:1px solid var(--line);border-radius:10px;
+    padding:14px 16px;font-size:11.5px;color:#54637d;line-height:1.6;margin-bottom:16px}
+  .callout strong{color:var(--navy)}
+
+  .save-bar{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;
+    padding-top:16px;border-top:1px solid var(--line)}
+
+  @media (max-width:700px){
+    body{padding:64px 8px 24px}
+    .field-row{grid-template-columns:1fr}
+    .scale-row{grid-template-columns:1fr 1fr 1fr;gap:6px}
+    .scale-row .reason{grid-column:1/-1}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="band">
+    <div class="band-left">
+      <div class="band-logo" id="bandLogo">EC</div>
+      <div>
+        <h1 id="bandSchool">Settings</h1>
+        <p id="bandSub">School identity, grading, academic year, and signatures</p>
+      </div>
+    </div>
+    <div class="band-user">Signed in as <strong id="bandUser">—</strong></div>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-tab="identity">School identity</button>
+    <button class="tab" data-tab="grading">Grading</button>
+    <button class="tab" data-tab="calendar">Academic year</button>
+    <button class="tab" data-tab="signatures">Signatures</button>
+  </div>
+
+  <!-- ========== IDENTITY ========== -->
+  <div class="tabpanel active" data-panel="identity">
+    <div class="card">
+      <div class="card-head"><div><h3>School identity</h3>
+        <p>Name, motto, address, and logo shown across the system</p></div></div>
+      <div class="card-body">
+        <div class="field"><label>School name</label>
+          <input id="schoolName" placeholder="e.g. EduCore High School">
+        </div>
+        <div class="field"><label>Motto</label>
+          <input id="schoolMotto" placeholder="e.g. Excellence in Education">
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Location</label>
+            <input id="schoolLocation" placeholder="e.g. Monrovia, Liberia">
+          </div>
+          <div class="field"><label>Phone</label>
+            <input id="schoolPhone" placeholder="+231 77 000 0000">
+          </div>
+        </div>
+        <div class="field"><label>Email</label>
+          <input id="schoolEmail" type="email" placeholder="info@school.edu">
+        </div>
+        <div class="field"><label>School logo</label>
+          <div class="img-field">
+            <div class="img-preview" id="logoPreview">No logo</div>
+            <div class="img-actions">
+              <input type="file" id="logoInput" accept="image/*" style="display:none">
+              <button class="btn secondary" id="logoPickBtn">📷 Upload logo</button>
+              <button class="btn outline" id="logoClearBtn" style="display:none">✕ Remove logo</button>
+              <span class="help">Square · max 1 MB · PNG / JPG / WEBP</span>
+            </div>
+          </div>
+        </div>
+        <div class="save-bar">
+          <button class="btn green" id="saveIdentity">💾 Save identity</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== GRADING ========== -->
+  <div class="tabpanel" data-panel="grading">
+    <div class="card">
+      <div class="card-head"><div><h3>Grading scale</h3>
+        <p>Applies to numeric (non-nursery) classes</p></div></div>
+      <div class="card-body">
+        <div class="callout">
+          Nursery classes always use the fixed letter scale (A–F). Only the numeric
+          scale below is editable. Changes apply to new averages; existing approved
+          results keep their stored grade.
+        </div>
+        <div id="scaleRows"></div>
+        <button class="btn outline" id="addBandBtn" style="margin-top:8px">＋ Add band</button>
+        <div class="field-row" style="margin-top:22px">
+          <div class="field"><label>Period weight</label>
+            <input id="weightPeriod" type="number" min="0" max="1" step="0.05" placeholder="0.6">
+            <span class="help">Weight of the mean of P1–P3 in the semester average</span>
+          </div>
+          <div class="field"><label>Exam weight</label>
+            <input id="weightExam" type="number" min="0" max="1" step="0.05" placeholder="0.4">
+            <span class="help">Weight of the exam in the semester average</span>
+          </div>
+        </div>
+        <div class="field"><label>Semester weight</label>
+          <input id="weightSemester" type="number" min="0" max="1" step="0.05" placeholder="0.5" style="max-width:200px">
+          <span class="help">Weight of Semester One in the yearly average</span>
+        </div>
+        <div class="save-bar">
+          <button class="btn green" id="saveGrading">💾 Save grading</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== CALENDAR ========== -->
+  <div class="tabpanel" data-panel="calendar">
+    <div class="card">
+      <div class="card-head"><div><h3>Academic year</h3>
+        <p>Current year label used throughout the system</p></div></div>
+      <div class="card-body">
+        <div class="field"><label>Current academic year</label>
+          <input id="academicYear" placeholder="e.g. 2025/2026">
+          <span class="help">Format YYYY/YYYY. Changing this will not move existing results.</span>
+        </div>
+        <div class="save-bar">
+          <button class="btn green" id="saveCalendar">💾 Save year</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SIGNATURES ========== -->
+  <div class="tabpanel" data-panel="signatures">
+    <div class="card">
+      <div class="card-head"><div><h3>Signatures</h3>
+        <p>Used on report cards and receipts</p></div></div>
+      <div class="card-body">
+        <div class="field"><label>Principal name</label>
+          <input id="principalName" placeholder="e.g. Mrs. A. Smith">
+        </div>
+        <div class="field"><label>Principal signature image</label>
+          <div class="img-field">
+            <div class="img-preview wide" id="principalSigPreview">No signature</div>
+            <div class="img-actions">
+              <input type="file" id="principalSigInput" accept="image/*" style="display:none">
+              <button class="btn secondary" id="principalSigPickBtn">📷 Upload signature</button>
+              <button class="btn outline" id="principalSigClearBtn" style="display:none">✕ Remove</button>
+              <span class="help">Transparent PNG recommended · max 500 KB</span>
+            </div>
+          </div>
+        </div>
+        <div class="save-bar">
+          <button class="btn green" id="saveSignatures">💾 Save signatures</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="educore-shared.js?v=13"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+
+  const user = E.requirePerm('settings', 'Settings');
+  if(!user) return;
+
+  function paintHeader(){
+    const s = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const name = s.name || 'EduCore High School';
+    document.getElementById('bandLogo').innerHTML = s.logo
+      ? `<img src="${s.logo}" alt="">`
+      : name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
+    document.getElementById('bandSchool').textContent = name;
+    document.getElementById('bandUser').textContent = user.name || user.username;
+  }
+
+  /* ============================================================
+     TABS
+     ============================================================ */
+  document.querySelectorAll('#tabs .tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#tabs .tab').forEach(t => t.classList.toggle('active', t === btn));
+      document.querySelectorAll('.tabpanel').forEach(p =>
+        p.classList.toggle('active', p.dataset.panel === btn.dataset.tab));
+    });
+  });
+
+  /* ============================================================
+     IDENTITY
+     ============================================================ */
+  let pendingLogo = null;
+
+  function loadIdentity(){
+    const s = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    document.getElementById('schoolName').value    = s.name || '';
+    document.getElementById('schoolMotto').value   = s.motto || '';
+    document.getElementById('schoolLocation').value= s.location || '';
+    document.getElementById('schoolPhone').value   = s.phone || '';
+    document.getElementById('schoolEmail').value   = s.email || '';
+    const prev = document.getElementById('logoPreview');
+    const clr  = document.getElementById('logoClearBtn');
+    if(s.logo){
+      prev.innerHTML = `<img src="${s.logo}" alt="">`;
+      clr.style.display = '';
+    } else {
+      prev.innerHTML = 'No logo';
+      clr.style.display = 'none';
+    }
+  }
+
+  function clearLogo(){
+    pendingLogo = '';
+    document.getElementById('logoPreview').innerHTML = 'No logo';
+    document.getElementById('logoClearBtn').style.display = 'none';
+  }
+
+  document.getElementById('logoPickBtn').addEventListener('click', () =>
+    document.getElementById('logoInput').click());
+  document.getElementById('logoClearBtn').addEventListener('click', clearLogo);
+  document.getElementById('logoInput').addEventListener('change', async e => {
+    const f = e.target.files[0]; if(!f) return;
+    const read = await E.readPhotoFile(f);
+    if(!read.ok){ E.toast(read.error); return; }
+    pendingLogo = await E.downscalePhoto(read.dataUrl, 256);
+    document.getElementById('logoPreview').innerHTML = `<img src="${pendingLogo}" alt="">`;
+    document.getElementById('logoClearBtn').style.display = '';
+  });
+
+  document.getElementById('saveIdentity').addEventListener('click', () => {
+    const s = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    s.name     = document.getElementById('schoolName').value.trim();
+    s.motto    = document.getElementById('schoolMotto').value.trim();
+    s.location = document.getElementById('schoolLocation').value.trim();
+    s.phone    = document.getElementById('schoolPhone').value.trim();
+    s.email    = document.getElementById('schoolEmail').value.trim();
+    if(pendingLogo !== null) s.logo = pendingLogo;
+    E.writeStore(E.STORE_KEYS.settings, s);
+    E.audit('update', 'Settings identity', '', 'saved');
+    paintHeader();
+    E.toast('Identity saved.');
+    pendingLogo = null;
+  });
+
+  /* ============================================================
+     GRADING
+     ============================================================ */
+  function loadGrading(){
+    const s = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const scale = Array.isArray(s.numericScale) && s.numericScale.length
+      ? s.numericScale : E.DEFAULT_NUMERIC_SCALE;
+    const rows = document.getElementById('scaleRows');
+    rows.innerHTML = scale.map((b, i) => `
+      <div class="scale-row" data-idx="${i}">
+        <div class="letter">${E.esc(b.letter)}</div>
+        <input type="number" min="0" max="100" data-min value="${b.min}">
+        <input type="number" min="0" max="100" data-max value="${b.max}">
+        <input type="text" data-remark value="${E.esc(b.remark || '')}" class="reason" placeholder="Remark">
+        <button class="btn danger" data-rm-band="${i}" style="padding:6px 9px;font-size:11px">✕</button>
+      </div>`).join('');
+    rows.querySelectorAll('[data-rm-band]').forEach(btn => {
+      btn.addEventListener('click', () => btn.closest('.scale-row').remove());
+    });
+    const w = E.weightConfig();
+    document.getElementById('weightPeriod').value   = w.periodWeight;
+    document.getElementById('weightExam').value     = w.examWeight;
+    document.getElementById('weightSemester').value = w.semesterWeight;
+  }
+
+  document.getElementById('addBandBtn').addEventListener('click', () => {
+    const idx = document.getElementById('scaleRows').children.length;
+    const row = document.createElement('div');
+    row.className = 'scale-row';
+    row.innerHTML = `
+      <div class="letter">?</div>
+      <input type="number" min="0" max="100" data-min value="0">
+      <input type="number" min="0" max="100" data-max value="0">
+      <input type="text" data-remark class="reason" placeholder="Remark">
+      <button class="btn danger" data-rm-band="${idx}" style="padding:6px 9px;font-size:11px">✕</button>`;
+    document.getElementById('scaleRows').appendChild(row);
+    row.querySelector('[data-rm-band]').addEventListener('click', () => row.remove());
+  });
+
+  document.getElementById('saveGrading').addEventListener('click', () => {
+    const s = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    const scale = Array.from(document.querySelectorAll('.scale-row')).map(row => {
+      const letter = row.querySelector('.letter').textContent.trim();
+      return {
+        letter: letter === '?' ? '' : letter,
+        min: Number(row.querySelector('[data-min]').value),
+        max: Number(row.querySelector('[data-max]').value),
+        remark: row.querySelector('[data-remark]').value.trim()
+      };
+    }).filter(b => b.letter);
+    if(scale.some(b => !Number.isFinite(b.min) || !Number.isFinite(b.max) || b.min > b.max)){
+      E.toast('Check band min/max values.'); return;
+    }
+    s.numericScale = scale;
+    const p   = Number(document.getElementById('weightPeriod').value);
+    const ex  = Number(document.getElementById('weightExam').value);
+    const sem = Number(document.getElementById('weightSemester').value);
+    if(Math.abs((p + ex) - 1) > 0.01){
+      E.toast('Period + exam weight must add up to 1.0.'); return;
+    }
+    s.weights = { periodWeight: p, examWeight: ex, semesterWeight: sem };
+    E.writeStore(E.STORE_KEYS.settings, s);
+    E.audit('update', 'Settings grading', '', 'saved');
+    E.toast('Grading saved.');
+  });
+
+  /* ============================================================
+     CALENDAR
+     ============================================================ */
+  function loadCalendar(){
+    const s = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    document.getElementById('academicYear').value = s.academicYear || E.currentAcademicYear();
+  }
+
+  document.getElementById('saveCalendar').addEventListener('click', () => {
+    const v = document.getElementById('academicYear').value.trim();
+    if(!/^\d{4}\/\d{4}$/.test(v)){ E.toast('Use format YYYY/YYYY.'); return; }
+    const s = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    s.academicYear = v;
+    E.writeStore(E.STORE_KEYS.settings, s);
+    E.audit('update', 'Settings year', '', v);
+    E.toast('Academic year saved.');
+  });
+
+  /* ============================================================
+     SIGNATURES
+     ============================================================ */
+  let pendingPrincipalSig = null;
+
+  function loadSignatures(){
+    const s = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    document.getElementById('principalName').value = s.principal || '';
+    const prev = document.getElementById('principalSigPreview');
+    const clr  = document.getElementById('principalSigClearBtn');
+    if(s.principalSignature){
+      prev.innerHTML = `<img src="${s.principalSignature}" alt="">`;
+      clr.style.display = '';
+    } else {
+      prev.innerHTML = 'No signature';
+      clr.style.display = 'none';
+    }
+  }
+
+  document.getElementById('principalSigPickBtn').addEventListener('click', () =>
+    document.getElementById('principalSigInput').click());
+  document.getElementById('principalSigInput').addEventListener('change', async e => {
+    const f = e.target.files[0]; if(!f) return;
+    const read = await E.readPhotoFile(f);
+    if(!read.ok){ E.toast(read.error); return; }
+    pendingPrincipalSig = await E.downscalePhoto(read.dataUrl, 600);
+    document.getElementById('principalSigPreview').innerHTML =
+      `<img src="${pendingPrincipalSig}" alt="">`;
+    document.getElementById('principalSigClearBtn').style.display = '';
+  });
+  document.getElementById('principalSigClearBtn').addEventListener('click', () => {
+    pendingPrincipalSig = '';
+    document.getElementById('principalSigPreview').innerHTML = 'No signature';
+    document.getElementById('principalSigClearBtn').style.display = 'none';
+  });
+
+  document.getElementById('saveSignatures').addEventListener('click', () => {
+    const s = E.readStore(E.STORE_KEYS.settings, {}) || {};
+    s.principal = document.getElementById('principalName').value.trim();
+    if(pendingPrincipalSig !== null) s.principalSignature = pendingPrincipalSig;
+    E.writeStore(E.STORE_KEYS.settings, s);
+    E.audit('update', 'Settings signatures', '', 'saved');
+    E.toast('Signatures saved.');
+    pendingPrincipalSig = null;
+  });
+
+  /* ============================================================
+     INIT
+     ============================================================ */
+  paintHeader();
+  loadIdentity();
+  loadGrading();
+  loadCalendar();
+  loadSignatures();
+})();
+</script>
+</body>
+</html>

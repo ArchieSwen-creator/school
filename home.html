@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduCore | Excellence in Education</title>
+<meta name="description" id="metaDescription" content="EduCore School — a modern K-12 institution dedicated to academic excellence, character, and community.">
+<meta name="keywords" content="school, education, K-12, Monrovia, Liberia">
+<meta property="og:title" id="ogTitle" content="EduCore School">
+<meta property="og:description" id="ogDescription" content="Nurturing future leaders since 2010.">
+<meta property="og:type" content="website">
+<link rel="canonical" id="canonicalLink" href="">
+<meta name="theme-color" content="#14213d">
+<style>
+  :root{
+    --navy:#14213d;--navy2:#1d3158;--blue:#4169e1;--pale:#eef5ff;
+    --ink:#202a3b;--muted:#7a8498;--line:#e8ebf2;--bg:#f5f7fb;--white:#fff;
+    --green:#1c9b72;--gold:#c99a2e;--gold2:#fff4d6;--red:#d64545;
+    --shadow-sm:0 4px 14px rgba(24,42,78,.06);
+    --shadow:0 8px 24px rgba(24,42,78,.08);
+    --shadow-lg:0 20px 60px rgba(24,42,78,.14);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:82px}
+  body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--ink);
+    -webkit-font-smoothing:antialiased;line-height:1.6}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+  a{color:inherit;text-decoration:none}
+
+  .skip{position:absolute;left:12px;top:-40px;background:var(--navy);color:#fff;
+    padding:10px 16px;border-radius:8px;font-size:12px;font-weight:800;
+    z-index:9999;transition:top .2s}
+  .skip:focus{top:12px}
+
+  /* ============ HEADER ============ */
+  .site-header{
+    position:sticky;top:0;z-index:50;height:72px;
+    background:rgba(255,255,255,.96);backdrop-filter:blur(10px);
+    border-bottom:1px solid transparent;transition:box-shadow .2s,border-color .2s;
+  }
+  .site-header.scrolled{
+    box-shadow:0 4px 16px rgba(24,42,78,.08);
+    border-bottom-color:var(--line);
+  }
+  .header-inner{
+    max-width:1200px;margin:0 auto;height:100%;padding:0 24px;
+    display:flex;align-items:center;gap:24px;
+  }
+  .brand{display:flex;align-items:center;gap:12px;flex-shrink:0}
+  .brand-mark{
+    width:40px;height:40px;border-radius:12px;
+    background:linear-gradient(135deg,var(--navy),var(--navy2));
+    color:#fff;display:grid;place-items:center;
+    font-weight:900;font-size:19px;
+    box-shadow:0 4px 14px rgba(20,33,61,.25);
+  }
+  .brand-mark img{width:100%;height:100%;object-fit:contain;border-radius:12px}
+  .brand-text strong{display:block;font-size:16px;color:var(--navy);letter-spacing:.2px}
+  .brand-text small{display:block;font-size:10px;color:var(--muted);
+    text-transform:uppercase;letter-spacing:1px;margin-top:1px}
+  .site-nav{display:flex;align-items:center;gap:4px;margin-left:auto}
+  .site-nav a{padding:9px 14px;border-radius:8px;font-size:13px;font-weight:700;
+    color:#34415c;transition:background .15s}
+  .site-nav a:hover{background:#eef2fb;color:var(--navy)}
+  .btn-signin{
+    border:0;border-radius:10px;padding:11px 20px;
+    background:linear-gradient(135deg,#f7d97a,#c99a2e);color:#5a3a00;
+    font-size:13px;font-weight:800;letter-spacing:.2px;
+    box-shadow:0 6px 18px rgba(201,154,46,.3);margin-left:10px;
+    display:inline-flex;align-items:center;gap:7px;
+  }
+  .btn-signin:hover{filter:brightness(.96);transform:translateY(-1px);transition:.15s}
+  .menu-toggle{display:none;border:0;background:#f0f3fa;border-radius:9px;
+    padding:9px 11px;font-size:18px;color:var(--navy)}
+  .mobile-nav{display:none;position:absolute;top:100%;left:0;right:0;
+    background:#fff;border-bottom:1px solid var(--line);
+    box-shadow:0 12px 30px rgba(24,42,78,.1);padding:12px 24px 20px;
+    flex-direction:column;gap:4px}
+  .mobile-nav.open{display:flex}
+  .mobile-nav a{padding:12px 14px;border-radius:8px;font-size:14px;font-weight:700;color:#34415c}
+  .mobile-nav a:hover{background:#eef2fb}
+  .mobile-nav .btn-signin{margin:8px 0 0;justify-content:center;padding:13px}
+
+  /* ============ HERO ============ */
+  .hero{
+    position:relative;overflow:hidden;
+    background:linear-gradient(135deg,#0d1e3a 0%,#1d3158 55%,#245d9c 100%);
+    color:#fff;padding:100px 24px 90px;
+  }
+  .hero.no-carousel::before{
+    content:"";position:absolute;right:-100px;top:-100px;
+    width:500px;height:500px;border-radius:50%;
+    background:radial-gradient(circle,rgba(88,164,255,.25),transparent 70%);
+    pointer-events:none;
+  }
+  .hero.no-carousel::after{
+    content:"";position:absolute;left:-120px;bottom:-120px;
+    width:400px;height:400px;border-radius:50%;
+    background:radial-gradient(circle,rgba(201,154,46,.18),transparent 70%);
+    pointer-events:none;
+  }
+  .hero-inner{
+    position:relative;z-index:1;max-width:1200px;margin:0 auto;
+    display:grid;grid-template-columns:1.4fr 1fr;gap:60px;align-items:center;
+  }
+  .hero-kicker{
+    display:inline-flex;align-items:center;gap:8px;
+    background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+    padding:7px 14px;border-radius:20px;
+    font-size:10.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;
+    margin-bottom:22px;
+  }
+  .hero-kicker .dot{width:7px;height:7px;border-radius:50%;background:#58a4ff;
+    box-shadow:0 0 0 0 rgba(88,164,255,.6);animation:pulse 2s infinite}
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(88,164,255,.6)}
+    70%{box-shadow:0 0 0 10px rgba(88,164,255,0)}
+    100%{box-shadow:0 0 0 0 rgba(88,164,255,0)}
+  }
+  .hero h1{
+    font-size:48px;line-height:1.1;letter-spacing:-1px;
+    margin:0 0 20px;font-weight:900;
+  }
+  .hero h1 .gold{
+    background:linear-gradient(120deg,#f7d97a,#e0b83e);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero p{
+    font-size:16px;line-height:1.7;color:#cfdcf5;
+    margin:0 0 32px;max-width:560px;
+  }
+  .hero-cta{display:flex;gap:12px;flex-wrap:wrap}
+  .btn-hero-primary{
+    border:0;border-radius:12px;padding:16px 28px;
+    background:linear-gradient(135deg,#f7d97a,#c99a2e);color:#5a3a00;
+    font-size:14px;font-weight:800;letter-spacing:.2px;
+    box-shadow:0 10px 30px rgba(201,154,46,.35);
+    display:inline-flex;align-items:center;gap:8px;
+    transition:transform .15s;
+  }
+  .btn-hero-primary:hover{transform:translateY(-2px);filter:brightness(.96)}
+  .btn-hero-outline{
+    border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.05);
+    color:#fff;border-radius:12px;padding:16px 28px;
+    font-size:14px;font-weight:800;letter-spacing:.2px;
+    display:inline-flex;align-items:center;gap:8px;
+    transition:background .15s;
+  }
+  .btn-hero-outline:hover{background:rgba(255,255,255,.12)}
+
+  .hero-card{
+    position:relative;background:rgba(255,255,255,.08);
+    backdrop-filter:blur(14px);
+    border:1px solid rgba(255,255,255,.15);
+    border-radius:20px;padding:0;overflow:hidden;
+    box-shadow:0 20px 50px rgba(0,0,0,.25);
+  }
+  .hero-card::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:5px;
+    background:linear-gradient(90deg,#58a4ff,#c99a2e);
+  }
+  .hero-stat{
+    padding:22px 26px;
+    border-bottom:1px solid rgba(255,255,255,.1);
+    display:flex;align-items:center;gap:16px;
+  }
+  .hero-stat:last-child{border-bottom:0}
+  .hero-stat .icon{
+    width:46px;height:46px;border-radius:12px;flex:0 0 46px;
+    background:rgba(255,255,255,.12);
+    display:grid;place-items:center;font-size:22px;
+  }
+  .hero-stat small{
+    display:block;font-size:10px;letter-spacing:.8px;text-transform:uppercase;
+    color:#cfdcf5;font-weight:800;margin-bottom:3px;
+  }
+  .hero-stat strong{display:block;font-size:24px;font-weight:900;color:#fff;letter-spacing:-.5px}
+  .hero-stat .sub{font-size:10.5px;color:#aab8d6;margin-top:2px}
+
+  /* ============ CAROUSEL ============ */
+  .carousel-wrap{
+    position:relative;height:520px;overflow:hidden;
+    background:linear-gradient(135deg,#0d1e3a,#245d9c);
+  }
+  .carousel-track{position:relative;width:100%;height:100%}
+  .carousel-slide{
+    position:absolute;inset:0;opacity:0;
+    transition:opacity .8s ease;
+    display:flex;align-items:center;justify-content:center;
+    background-size:cover;background-position:center;
+  }
+  .carousel-slide.active{opacity:1;z-index:1}
+  .carousel-slide.dark::before{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(135deg,rgba(13,30,58,.85),rgba(36,93,156,.65));
+  }
+  .carousel-slide.light::before{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(135deg,rgba(255,255,255,.55),rgba(255,255,255,.35));
+  }
+  .carousel-content{
+    position:relative;z-index:2;max-width:800px;
+    text-align:center;padding:0 24px;color:#fff;
+  }
+  .carousel-slide.light .carousel-content{color:var(--navy)}
+  .carousel-content h2{
+    font-size:44px;line-height:1.15;letter-spacing:-.8px;
+    margin:0 0 16px;font-weight:900;
+  }
+  .carousel-content p{
+    font-size:16px;line-height:1.6;margin:0 0 26px;
+    opacity:.92;
+  }
+  .carousel-content .btn{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:14px 26px;border-radius:11px;
+    background:linear-gradient(135deg,#f7d97a,#c99a2e);color:#5a3a00;
+    font-size:14px;font-weight:800;letter-spacing:.2px;
+    box-shadow:0 10px 30px rgba(201,154,46,.35);
+  }
+  .carousel-dots{
+    position:absolute;bottom:24px;left:50%;transform:translateX(-50%);
+    display:flex;gap:8px;z-index:10;
+  }
+  .carousel-dot{
+    width:10px;height:10px;border-radius:50%;
+    background:rgba(255,255,255,.4);border:0;cursor:pointer;
+    transition:background .2s,transform .2s;
+  }
+  .carousel-dot.active{background:#fff;transform:scale(1.3)}
+  .carousel-nav{
+    position:absolute;top:50%;transform:translateY(-50%);
+    width:44px;height:44px;border-radius:50%;
+    background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
+    color:#fff;font-size:18px;z-index:10;cursor:pointer;
+    display:grid;place-items:center;
+    transition:background .15s;
+  }
+  .carousel-nav:hover{background:rgba(255,255,255,.3)}
+  .carousel-nav.prev{left:24px}
+  .carousel-nav.next{right:24px}
+
+  /* ============ TICKER ============ */
+  .ticker{
+    background:#0d1e3a;color:#fff;
+    padding:12px 24px;font-size:12px;
+    display:flex;align-items:center;gap:14px;overflow:hidden;
+  }
+  .ticker .badge{
+    background:#c99a2e;color:#5a3a00;
+    padding:3px 9px;border-radius:12px;font-size:10px;font-weight:900;
+    letter-spacing:.8px;text-transform:uppercase;flex-shrink:0;
+  }
+  .ticker-track{overflow:hidden;flex:1}
+  .ticker-items{display:flex;gap:48px;animation:tickerScroll 40s linear infinite}
+  .ticker-items:hover{animation-play-state:paused}
+  .ticker-item{
+    color:#cfdcf5;font-size:12px;white-space:nowrap;
+    display:inline-flex;align-items:center;gap:8px;
+  }
+  .ticker-item strong{color:#fff}
+  .ticker-item::before{content:"•";color:#c99a2e;font-size:16px}
+  @keyframes tickerScroll{
+    from{transform:translateX(0)}
+    to{transform:translateX(-50%)}
+  }
+
+  /* ============ SECTION ============ */
+  section{padding:80px 24px}
+  .section-inner{max-width:1200px;margin:0 auto}
+  .section-head{text-align:center;max-width:680px;margin:0 auto 50px}
+  .section-head .kicker{
+    display:inline-block;padding:5px 12px;border-radius:20px;
+    background:#eef5ff;color:var(--blue);
+    font-size:10.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  .section-head h2{font-size:32px;letter-spacing:-.5px;color:var(--navy);margin:0 0 14px}
+  .section-head p{font-size:15px;color:var(--muted);margin:0;line-height:1.7}
+
+  /* ============ WELCOME ============ */
+  .welcome{background:#fff}
+  .welcome-grid{
+    max-width:1100px;margin:0 auto;
+    display:grid;grid-template-columns:320px 1fr;gap:60px;align-items:center;
+  }
+  .welcome-photo{
+    aspect-ratio:1/1;border-radius:24px;overflow:hidden;
+    background:linear-gradient(135deg,#1d3158,#245d9c);
+    display:grid;place-items:center;color:#fff;
+    font-size:56px;font-weight:900;letter-spacing:.5px;
+    border:6px solid #d8e8ff;
+    box-shadow:0 20px 50px rgba(36,93,156,.2);
+  }
+  .welcome-photo img{width:100%;height:100%;object-fit:cover}
+  .welcome-content .quote{
+    font-size:22px;line-height:1.5;color:var(--navy);
+    font-weight:600;letter-spacing:-.3px;margin:0 0 22px;
+    padding-left:20px;border-left:4px solid var(--gold);
+  }
+  .welcome-content .message{
+    font-size:15px;line-height:1.75;color:#3b4a63;
+    margin:0 0 20px;white-space:pre-wrap;
+  }
+  .welcome-content .signature{
+    font-size:13px;color:var(--navy);font-weight:800;margin-top:8px;
+  }
+  .welcome-content .signature small{
+    display:block;font-size:11px;color:var(--muted);
+    font-weight:600;margin-top:2px;
+  }
+
+  /* ============ QUICK FACTS ============ */
+  .quick-facts{background:#fff;padding:60px 24px}
+  .facts-grid{
+    max-width:1200px;margin:0 auto;
+    display:grid;grid-template-columns:repeat(4,1fr);gap:20px;
+  }
+  .fact{
+    padding:26px 22px;background:#fafbfe;border:1px solid var(--line);
+    border-radius:16px;text-align:center;
+    transition:transform .2s,box-shadow .2s;
+  }
+  .fact:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+  .fact .icon{
+    width:56px;height:56px;border-radius:14px;margin:0 auto 14px;
+    background:#eef5ff;color:var(--blue);display:grid;place-items:center;font-size:24px;
+  }
+  .fact h3{font-size:28px;color:var(--navy);margin:0 0 6px;letter-spacing:-.5px;font-weight:900}
+  .fact small{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:800}
+  .fact p{font-size:12px;color:var(--muted);margin:4px 0 0}
+
+  /* ============ PROGRAMS ============ */
+  .academics{background:#f5f7fb}
+  .academics-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  .tier{
+    background:#fff;border:1px solid var(--line);border-radius:18px;
+    padding:30px 26px;display:flex;flex-direction:column;
+    transition:transform .2s,box-shadow .2s;
+  }
+  .tier:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+  .tier .icon{
+    width:56px;height:56px;border-radius:14px;margin-bottom:16px;
+    display:grid;place-items:center;font-size:24px;
+    background:#eef5ff;color:var(--blue);
+  }
+  .tier.nursery .icon{background:#fdeef6;color:#9c2a63}
+  .tier.primary .icon{background:#eef5ff;color:var(--blue)}
+  .tier.secondary .icon{background:#e6f7f0;color:var(--green)}
+  .tier h3{margin:0 0 6px;font-size:17px;color:var(--navy)}
+  .tier .range{font-size:12px;color:var(--muted);margin:0 0 16px;font-weight:700}
+  .tier ul{list-style:none;padding:0;margin:0 0 20px}
+  .tier ul li{
+    padding:7px 0;font-size:13px;color:#3b4a63;
+    display:flex;align-items:center;gap:8px;
+  }
+  .tier ul li::before{
+    content:"";width:5px;height:5px;border-radius:50%;
+    background:var(--blue);flex:0 0 5px;
+  }
+  .tier .pill{
+    display:inline-block;padding:4px 10px;border-radius:12px;
+    font-size:10.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
+    align-self:flex-start;margin-bottom:14px;
+  }
+  .tier.nursery .pill{background:#fdeef6;color:#9c2a63}
+  .tier.primary .pill{background:#eef5ff;color:#3b5cc1}
+  .tier.secondary .pill{background:#e6f7f0;color:#16835f}
+
+  /* ============ WHY CHOOSE US ============ */
+  .why{background:#fff}
+  .why-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:20px;
+  }
+  .why-tile{
+    padding:26px 22px;background:#fafbfe;border:1px solid var(--line);
+    border-radius:16px;text-align:center;
+    transition:transform .2s,box-shadow .2s;
+  }
+  .why-tile:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+  .why-tile .icon{
+    width:56px;height:56px;border-radius:14px;margin:0 auto 14px;
+    background:#eef5ff;color:var(--blue);display:grid;place-items:center;font-size:24px;
+  }
+  .why-tile h3{margin:0 0 8px;font-size:15px;color:var(--navy);letter-spacing:.2px}
+  .why-tile p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.6}
+
+  /* ============ GALLERY ============ */
+  .gallery{background:#f5f7fb}
+  .gallery-track{
+    display:flex;gap:16px;overflow-x:auto;
+    scroll-snap-type:x mandatory;padding-bottom:8px;
+  }
+  .gallery-track::-webkit-scrollbar{height:8px}
+  .gallery-track::-webkit-scrollbar-thumb{background:#c9d1e0;border-radius:4px}
+  .gallery-item{
+    flex:0 0 auto;width:340px;height:240px;border-radius:16px;
+    overflow:hidden;scroll-snap-align:start;position:relative;
+    background:linear-gradient(135deg,#1d3158,#245d9c);
+  }
+  .gallery-item img{width:100%;height:100%;object-fit:cover}
+  .gallery-item .placeholder{
+    position:absolute;inset:0;display:grid;place-items:center;
+    color:rgba(255,255,255,.4);font-size:48px;
+  }
+  .gallery-item .caption{
+    position:absolute;bottom:0;left:0;right:0;
+    padding:20px 18px 14px;
+    background:linear-gradient(0deg,rgba(0,0,0,.7),transparent);
+    color:#fff;font-size:12px;font-weight:600;
+  }
+
+  /* ============ LEADERSHIP ============ */
+  .leadership{background:#fff}
+  .lead-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+  .lead-card{
+    text-align:center;padding:26px 20px;
+    border:1px solid var(--line);border-radius:16px;background:#fafbfe;
+    transition:transform .2s,box-shadow .2s;
+  }
+  .lead-card:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+  .lead-avatar{
+    width:88px;height:88px;border-radius:50%;margin:0 auto 16px;
+    background:linear-gradient(135deg,#245d9c,#1d3158);
+    color:#fff;display:grid;place-items:center;
+    font-size:26px;font-weight:900;letter-spacing:.5px;
+    border:4px solid #d8e8ff;
+    box-shadow:0 8px 20px rgba(36,93,156,.25);
+    overflow:hidden;
+  }
+  .lead-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+  .lead-card h4{margin:0 0 4px;font-size:14.5px;color:var(--navy)}
+  .lead-card .role{
+    font-size:10.5px;color:var(--blue);font-weight:800;
+    text-transform:uppercase;letter-spacing:.8px;
+  }
+  .lead-card .bio{
+    font-size:11.5px;color:var(--muted);line-height:1.6;
+    margin:10px 0 0;
+  }
+
+  /* ============ HIRING ============ */
+  .hiring{background:#f5f7fb}
+  .hiring-list{display:flex;flex-direction:column;gap:14px;margin-bottom:32px}
+  .hiring-card{
+    background:#fff;border:1px solid var(--line);border-radius:14px;
+    padding:22px 26px;display:grid;grid-template-columns:1fr auto;gap:20px;
+    align-items:center;transition:transform .15s,box-shadow .15s;
+  }
+  .hiring-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+  .hiring-card h4{margin:0 0 6px;font-size:16px;color:var(--navy)}
+  .hiring-card .meta{font-size:12px;color:var(--muted);margin:0}
+  .hiring-card .closes{
+    display:inline-block;margin-top:6px;padding:3px 9px;border-radius:12px;
+    background:#fff2dd;color:#a86414;font-size:10px;font-weight:800;
+    letter-spacing:.4px;text-transform:uppercase;
+  }
+  .hiring-card .apply{
+    border:0;border-radius:9px;padding:11px 18px;
+    background:linear-gradient(135deg,#245d9c,#1d4d82);color:#fff;
+    font-size:12px;font-weight:800;display:inline-flex;align-items:center;gap:6px;
+  }
+  .hiring-card .apply:hover{filter:brightness(1.08)}
+
+  .status-check{
+    background:#fff;border:1px solid var(--line);border-radius:16px;
+    padding:26px 28px;box-shadow:var(--shadow-sm);
+  }
+  .status-check h4{
+    margin:0 0 6px;font-size:15px;color:var(--navy);
+  }
+  .status-check p{
+    margin:0 0 16px;font-size:12px;color:var(--muted);line-height:1.6;
+  }
+  .status-check .row{
+    display:flex;gap:10px;flex-wrap:wrap;
+  }
+  .status-check input{
+    flex:1;min-width:200px;border:1px solid #dfe4ee;border-radius:9px;
+    padding:12px 14px;font-size:13px;outline:none;background:#f8faff;
+    font-family:monospace;letter-spacing:.5px;
+  }
+  .status-check input:focus{border-color:var(--blue);background:#fff}
+  .status-check button{
+    border:0;border-radius:9px;padding:12px 22px;
+    background:linear-gradient(135deg,#245d9c,#1d4d82);color:#fff;
+    font-size:13px;font-weight:800;
+  }
+  .status-result{
+    margin-top:16px;padding:16px 18px;border-radius:10px;
+    font-size:13px;line-height:1.6;display:none;
+  }
+  .status-result.show{display:block}
+  .status-result.success{background:#e6f7f0;border:1px solid #b8e9d3;color:#16835f}
+  .status-result.error{background:#fff0f1;border:1px solid #f6c9ce;color:#bd3b48}
+  .status-result.info{background:#eef5ff;border:1px solid #cfe3ff;color:#1d4d82}
+  .status-result strong{font-weight:800}
+  .status-result .label{
+    display:block;font-size:10px;text-transform:uppercase;
+    letter-spacing:.8px;font-weight:800;margin-bottom:4px;opacity:.75;
+  }
+
+  /* ============ VERIFY ============ */
+  .verify{background:#f5f7fb}
+  .verify-card{
+    max-width:720px;margin:0 auto;background:#fff;
+    border:1px solid var(--line);border-radius:20px;
+    box-shadow:var(--shadow-lg);overflow:hidden;
+  }
+  .verify-head{
+    padding:28px 30px;background:linear-gradient(120deg,#102949,#245d9c);
+    color:#fff;border-top:5px solid #d88922;
+  }
+  .verify-head h3{margin:0 0 6px;font-size:18px;letter-spacing:.2px}
+  .verify-head p{margin:0;font-size:12px;color:#cfdcf5;line-height:1.6}
+  .verify-body{padding:26px 30px}
+  .verify-input-row{
+    display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;
+  }
+  .verify-input-row input{
+    flex:1;min-width:220px;border:1px solid #dfe4ee;border-radius:10px;
+    padding:14px 16px;font-size:14px;outline:none;background:#f8faff;
+    transition:.15s;
+  }
+  .verify-input-row input:focus{border-color:var(--blue);background:#fff}
+  .verify-input-row button{
+    border:0;border-radius:10px;padding:14px 26px;
+    background:linear-gradient(135deg,#245d9c,#1d4d82);color:#fff;
+    font-size:13px;font-weight:800;letter-spacing:.2px;
+  }
+  .verify-input-row button:hover{filter:brightness(1.08)}
+  .verify-input-row button:disabled{opacity:.6;cursor:not-allowed}
+  .verify-note{
+    font-size:11px;color:var(--muted);line-height:1.6;
+    background:#f8faff;padding:10px 14px;border-radius:8px;border:1px solid var(--line);
+  }
+  .verify-result{
+    margin-top:18px;padding:20px 22px;border-radius:12px;
+    display:none;line-height:1.6;
+  }
+  .verify-result.show{display:block}
+  .verify-result.matched{
+    background:#f0fdf7;border:2px solid #b8e9d3;color:#0e6b4a;
+  }
+  .verify-result.not-matched{
+    background:#fff8e6;border:2px solid #f3d999;color:#8a6a1a;
+  }
+  .verify-result .verdict{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:4px 10px;border-radius:12px;font-size:10px;font-weight:900;
+    letter-spacing:.6px;text-transform:uppercase;margin-bottom:12px;
+  }
+  .verify-result.matched .verdict{background:#0e6b4a;color:#fff}
+  .verify-result.not-matched .verdict{background:#a86414;color:#fff}
+  .verify-result dl{
+    margin:0;display:grid;grid-template-columns:auto 1fr;gap:8px 20px;
+    font-size:13px;
+  }
+  .verify-result dt{opacity:.7;font-weight:600}
+  .verify-result dd{margin:0;font-weight:700;color:inherit}
+  .verify-result .verified-at{
+    margin-top:14px;padding-top:12px;border-top:1px solid rgba(0,0,0,.08);
+    font-size:11px;opacity:.75;
+  }
+
+  /* ============ CONTACT / ENQUIRY ============ */
+  .contact-grid{
+    max-width:1200px;margin:0 auto;
+    display:grid;grid-template-columns:1fr 1.2fr;gap:60px;
+  }
+  .contact-info h2{font-size:30px;color:var(--navy);margin:0 0 12px;letter-spacing:-.3px}
+  .contact-info .lead{font-size:14.5px;color:#3b4a63;line-height:1.7;margin:0 0 30px}
+  .contact-row{
+    display:flex;align-items:flex-start;gap:14px;
+    padding:16px 0;border-bottom:1px solid var(--line);
+  }
+  .contact-row:last-of-type{border-bottom:0}
+  .contact-row .icon{
+    width:42px;height:42px;border-radius:11px;flex:0 0 42px;
+    background:#eef5ff;color:var(--blue);display:grid;place-items:center;
+    font-size:18px;
+  }
+  .contact-row small{
+    display:block;font-size:10px;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.8px;font-weight:800;margin-bottom:3px;
+  }
+  .contact-row strong{display:block;font-size:13.5px;color:var(--navy);line-height:1.5}
+
+  .enq-card{
+    background:#fff;border:1px solid var(--line);border-radius:18px;
+    box-shadow:var(--shadow-lg);overflow:hidden;
+  }
+  .enq-card .enq-head{
+    padding:24px 28px;background:linear-gradient(120deg,#102949,#245d9c);
+    color:#fff;border-top:5px solid #d88922;
+  }
+  .enq-card .enq-head h3{margin:0;font-size:18px;letter-spacing:.2px}
+  .enq-card .enq-head p{margin:6px 0 0;font-size:12px;color:#cfdcf5;line-height:1.6}
+  .enq-form{padding:26px 28px 24px;display:grid;gap:14px}
+  .enq-form .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .enq-form .field{display:flex;flex-direction:column;gap:6px}
+  .enq-form label{
+    font-size:10.5px;font-weight:800;color:#657089;
+    text-transform:uppercase;letter-spacing:.7px;
+  }
+  .enq-form input,.enq-form select,.enq-form textarea{
+    width:100%;border:1px solid #dfe4ee;border-radius:9px;
+    padding:11px 13px;font-size:13px;outline:none;background:#f8faff;
+    font-family:inherit;transition:.15s;
+  }
+  .enq-form input:focus,.enq-form select:focus,.enq-form textarea:focus{
+    border-color:var(--blue);background:#fff;
+    box-shadow:0 0 0 3px rgba(65,105,225,.1);
+  }
+  .enq-form textarea{min-height:110px;resize:vertical}
+  .enq-form .honeypot{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+  .enq-form .submit{
+    border:0;border-radius:10px;padding:14px;
+    background:linear-gradient(135deg,#245d9c,#1d4d82);color:#fff;
+    font-size:13px;font-weight:800;letter-spacing:.3px;
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    transition:filter .15s;
+  }
+  .enq-form .submit:hover{filter:brightness(1.08)}
+  .enq-form .submit:disabled{opacity:.6;cursor:not-allowed;filter:none}
+  .enq-form .status{
+    font-size:12px;padding:10px 13px;border-radius:8px;display:none;
+  }
+  .enq-form .status.success{display:block;background:#e6f7f0;color:#16835f;border:1px solid #b8e9d3}
+  .enq-form .status.error{display:block;background:#fff0f1;color:#bd3b48;border:1px solid #f6c9ce}
+
+  /* ============ FOOTER ============ */
+  .site-footer{background:var(--navy);color:#cfdcf5;padding:60px 24px 26px}
+  .footer-inner{
+    max-width:1200px;margin:0 auto;
+    display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:40px;
+  }
+  .footer-brand{display:flex;align-items:flex-start;gap:14px}
+  .footer-brand .brand-mark{flex-shrink:0}
+  .footer-brand strong{display:block;font-size:16px;color:#fff;letter-spacing:.2px;margin-bottom:8px}
+  .footer-brand p{margin:0 0 16px;font-size:12.5px;line-height:1.7;max-width:300px}
+  .footer-social{display:flex;gap:8px}
+  .footer-social a{
+    width:36px;height:36px;border-radius:9px;
+    background:rgba(255,255,255,.08);
+    display:grid;place-items:center;font-size:15px;
+    transition:background .15s;
+  }
+  .footer-social a:hover{background:rgba(255,255,255,.16)}
+  .footer-col h5{
+    margin:0 0 16px;font-size:11px;letter-spacing:1.4px;
+    text-transform:uppercase;color:#fff;font-weight:800;
+  }
+  .footer-col ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px}
+  .footer-col a{font-size:12.5px;transition:color .15s}
+  .footer-col a:hover{color:#fff}
+  .footer-bottom{
+    max-width:1200px;margin:44px auto 0;padding-top:24px;
+    border-top:1px solid rgba(255,255,255,.1);
+    display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+    font-size:11px;color:#8fa2c4;
+  }
+  .footer-bottom strong{color:#fff}
+
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
+  .reveal.visible{opacity:1;transform:translateY(0)}
+  @media (prefers-reduced-motion:reduce){
+    .reveal{opacity:1;transform:none;transition:none}
+    html{scroll-behavior:auto}
+    .ticker-items{animation:none}
+  }
+
+  #educoreToast{
+    position:fixed;right:22px;bottom:22px;background:#152744;color:#fff;
+    padding:14px 18px;border-radius:10px;font-size:13px;z-index:9999;
+    box-shadow:0 8px 24px rgba(24,42,78,.25);max-width:340px;
+    display:none;
+  }
+  #educoreToast.show{display:block;animation:toastFade .2s}
+  @keyframes toastFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  @media (max-width:1000px){
+    .hero-inner{grid-template-columns:1fr;gap:40px;text-align:center}
+    .hero p{margin-left:auto;margin-right:auto}
+    .hero-cta{justify-content:center}
+    .hero h1{font-size:38px}
+    .carousel-content h2{font-size:34px}
+    .carousel-wrap{height:440px}
+    .welcome-grid{grid-template-columns:1fr;gap:40px}
+    .welcome-photo{max-width:320px;margin:0 auto}
+    .facts-grid{grid-template-columns:repeat(2,1fr)}
+    .academics-grid{grid-template-columns:1fr;gap:18px}
+    .why-grid{grid-template-columns:repeat(2,1fr)}
+    .lead-grid{grid-template-columns:repeat(2,1fr)}
+    .contact-grid{grid-template-columns:1fr;gap:40px}
+    .footer-inner{grid-template-columns:1fr 1fr;gap:32px}
+    .hiring-card{grid-template-columns:1fr}
+  }
+  @media (max-width:800px){
+    .site-nav{display:none}
+    .btn-signin{margin-left:0;padding:10px 14px;font-size:12px}
+    .menu-toggle{display:inline-block}
+    .header-inner{padding:0 16px}
+    .brand-text small{display:none}
+  }
+  @media (max-width:600px){
+    section{padding:60px 20px}
+    .hero{padding:70px 20px 60px}
+    .hero h1{font-size:32px;letter-spacing:-.5px}
+    .hero p{font-size:14.5px}
+    .btn-hero-primary,.btn-hero-outline{width:100%;justify-content:center}
+    .section-head h2{font-size:26px}
+    .carousel-content h2{font-size:26px}
+    .carousel-wrap{height:400px}
+    .carousel-nav{width:36px;height:36px;font-size:15px}
+    .carousel-nav.prev{left:12px}
+    .carousel-nav.next{right:12px}
+    .enq-form .row{grid-template-columns:1fr}
+    .footer-inner{grid-template-columns:1fr;gap:28px;text-align:center}
+    .footer-brand{justify-content:center;text-align:left}
+    .footer-social{justify-content:center}
+    .footer-bottom{flex-direction:column;gap:8px;text-align:center}
+    .verify-head,.verify-body{padding:22px 20px}
+  }
+</style>
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<noscript>
+  <div style="max-width:640px;margin:40px auto;padding:30px;background:#fff;
+    border-radius:14px;box-shadow:0 12px 40px rgba(24,42,78,.12);text-align:center;
+    font-family:Arial,Helvetica,sans-serif;color:#23354d">
+    <h1 style="color:#12315a;font-size:20px;margin:0 0 10px">JavaScript required</h1>
+    <p style="font-size:13px;color:#73849a;line-height:1.7">
+      This site uses JavaScript to render the school home page. Please enable it,
+      or call the school office for assistance.
+    </p>
+    <a href="index.html" style="display:inline-block;margin-top:14px;background:#245d9c;
+      color:#fff;padding:11px 20px;border-radius:9px;text-decoration:none;
+      font-weight:700;font-size:13px">Sign in →</a>
+  </div>
+</noscript>
+
+<header class="site-header" id="siteHeader" role="banner">
+  <div class="header-inner">
+    <a class="brand" href="#top" aria-label="EduCore home">
+      <div class="brand-mark" id="brandMark">E</div>
+      <div class="brand-text">
+        <strong id="brandName">EduCore</strong>
+        <small>School Management</small>
+      </div>
+    </a>
+    <nav class="site-nav" aria-label="Main navigation">
+      <a href="#about">About</a>
+      <a href="#academics">Academics</a>
+      <a href="#hiring">Careers</a>
+      <a href="#contact">Contact</a>
+      <button class="btn-signin" id="signInBtn" type="button">Sign In →</button>
+    </nav>
+    <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">☰</button>
+    <nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
+      <a href="#about">About</a>
+      <a href="#academics">Academics</a>
+      <a href="#hiring">Careers</a>
+      <a href="#contact">Contact</a>
+      <button class="btn-signin" id="signInBtnMobile" type="button">Sign In →</button>
+    </nav>
+  </div>
+</header>
+
+<main id="main"></main>
+
+<footer class="site-footer" role="contentinfo">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="brand-mark" id="footerBrandMark">E</div>
+      <div>
+        <strong id="footerBrandName">EduCore</strong>
+        <p id="footerTagline">Nurturing future leaders through academic excellence, character, and community.</p>
+        <div class="footer-social" id="footerSocials"></div>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h5>Quick Links</h5>
+      <ul id="footerQuickLinks"></ul>
+    </div>
+    <div class="footer-col">
+      <h5>Information</h5>
+      <ul>
+        <li><a href="#about">Admissions</a></li>
+        <li><a href="#academics">Curriculum</a></li>
+        <li><a href="#hiring">Careers</a></li>
+        <li><a href="#contact">Visit Us</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h5>Get Started</h5>
+      <ul>
+        <li><a href="index.html">Sign In →</a></li>
+        <li><a href="#contact">Enquire</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© <span id="copyYear">2026</span> <strong id="footerSchoolName">EduCore High School</strong>. All rights reserved.</span>
+    <span>Powered by EduCore · Privacy · Terms</span>
+  </div>
+</footer>
+
+<script src="educore-shared.js?v=12"></script>
+<script>
+(function(){
+  'use strict';
+  const E = window.EduCore;
+  if(!E) return;
+
+  /* ---------- PREVIEW MODE ---------- */
+  const params = new URLSearchParams(location.search);
+  const isPreview = params.has('preview');
+
+  /* ---------- CONFIG RESOLUTION ----------
+     ?preview=1 always uses the DRAFT so the editor's iframe shows
+     exactly what was just typed. The live page uses LIVE first, then
+     falls back to DRAFT (for first-ever save before publish). */
+  const settings = E.readStore(E.STORE_KEYS.settings, {}) || {};
+  const liveConfig = E.getHomepageLive();
+  const draftConfig = E.getHomepageDraft();
+  const config = isPreview
+    ? (draftConfig || liveConfig || E.DEFAULT_HOMEPAGE)
+    : (liveConfig || draftConfig || E.DEFAULT_HOMEPAGE);
+
+  const schoolName = settings.name || 'EduCore High School';
+  const motto = settings.motto || 'Nurturing future leaders through academic excellence, character, and community.';
+
+  /* ---------- PREVIEW BANNER ---------- */
+  if(isPreview){
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#c99a2e;color:#5a3a00;' +
+      'padding:8px 16px;font-size:11px;font-weight:800;text-align:center;letter-spacing:.6px;' +
+      'text-transform:uppercase;z-index:99999';
+    banner.textContent = '● Preview Mode — This is not the live page';
+    document.body.appendChild(banner);
+    document.body.style.paddingTop = '26px';
+  }
+
+  /* ---------- BRAND ---------- */
+  function setBrandMark(el){
+    if(!el) return;
+    if(settings.logo){
+      el.innerHTML = `<img src="${settings.logo}" alt="">`;
+    } else {
+      el.textContent = schoolName.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'E';
+    }
+  }
+  setBrandMark(document.getElementById('brandMark'));
+  setBrandMark(document.getElementById('footerBrandMark'));
+  document.getElementById('brandName').textContent = schoolName;
+  document.getElementById('footerBrandName').textContent = schoolName;
+  document.getElementById('footerSchoolName').textContent = schoolName;
+  document.title = `${schoolName} | Excellence in Education`;
+  document.getElementById('copyYear').textContent = new Date().getFullYear();
+  document.getElementById('footerTagline').textContent = (config.footer && config.footer.tagline) || motto;
+
+  /* ---------- PATCH: dynamic OG meta + canonical ---------- */
+  const ogTitle = document.getElementById('ogTitle');
+  if(ogTitle) ogTitle.content = schoolName;
+  const ogDesc = document.getElementById('ogDescription');
+  if(ogDesc) ogDesc.content = (config.hero && config.hero.subtitle) || motto;
+  const metaDesc = document.getElementById('metaDescription');
+  if(metaDesc) metaDesc.content = (config.hero && config.hero.subtitle) || motto;
+  const canonical = document.getElementById('canonicalLink');
+  if(canonical) canonical.href = location.origin + location.pathname.replace(/[^/]*$/, '') + 'home.html';
+
+  /* ---------- HEADER SCROLL ---------- */
+  const header = document.getElementById('siteHeader');
+  function onScroll(){ header.classList.toggle('scrolled', window.scrollY > 20); }
+  window.addEventListener('scroll', onScroll, { passive:true });
+  onScroll();
+
+  /* ---------- MOBILE NAV ---------- */
+  const menuBtn = document.getElementById('menuToggle');
+  const mobileNav = document.getElementById('mobileNav');
+  menuBtn.addEventListener('click', () => {
+    const open = mobileNav.classList.toggle('open');
+    menuBtn.setAttribute('aria-expanded', String(open));
+    menuBtn.textContent = open ? '✕' : '☰';
+  });
+  mobileNav.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      mobileNav.classList.remove('open');
+      menuBtn.setAttribute('aria-expanded', 'false');
+      menuBtn.textContent = '☰';
+    });
+  });
+
+  /* ---------- SIGN IN ---------- */
+  document.getElementById('signInBtn').addEventListener('click', () => {
+    window.location.href = 'index.html';
+  });
+  document.getElementById('signInBtnMobile').addEventListener('click', () => {
+    window.location.href = 'index.html';
+  });
+
+  /* ---------- HERO STATS ---------- */
+  function computeHeroStats(){
+    const students = (E.readStore(E.STORE_KEYS.students, []) || [])
+      .filter(s => !s.status || s.status === 'Active' || s.status === 'Pending');
+    const teachers = E.readStore(E.STORE_KEYS.teachers, []) || [];
+    return [
+      { icon:'👥', label:'Students', value:String(students.length), sub:'Active roster' },
+      { icon:'👩‍🏫', label:'Teaching Staff', value:String(teachers.length), sub:'Qualified educators' },
+      { icon:'🎓', label:'Years of Excellence', value:'15+', sub:'Serving our community' }
+    ];
+  }
+
+  /* ---------- SECTION RENDERERS ---------- */
+  const RENDERERS = {
+    hero: renderHero,
+    carousel: renderCarousel,
+    ticker: renderTicker,
+    welcome: renderWelcome,
+    quickFacts: renderQuickFacts,
+    programs: renderPrograms,
+    whyChooseUs: renderWhyChooseUs,
+    gallery: renderGallery,
+    leadership: renderLeadership,
+    hiring: renderHiring,
+    contact: renderContact,
+    verify: renderVerify
+  };
+
+  /* ----- HERO ----- */
+  function renderHero(cfg){
+    if(!cfg) return '';
+    const stats = cfg.statsSource === 'manual' && Array.isArray(cfg.customStats) && cfg.customStats.length
+      ? cfg.customStats
+      : computeHeroStats();
+    const primary = cfg.primaryCtaLink ? `<a href="${E.esc(cfg.primaryCtaLink)}" class="btn-hero-primary">${E.esc(cfg.primaryCtaText || 'Enquire Now')} →</a>` : '';
+    const secondary = cfg.secondaryCtaText
+      ? `<button class="btn-hero-outline" type="button" onclick="window.location.href='${E.esc(cfg.secondaryCtaLink || 'index.html')}'">${E.esc(cfg.secondaryCtaText)}</button>`
+      : '';
+    return `
+      <section class="hero no-carousel" id="top" aria-labelledby="heroTitle">
+        <div class="hero-inner">
+          <div>
+            ${cfg.kickerText ? `<span class="hero-kicker"><span class="dot"></span>${E.esc(cfg.kickerText)}</span>` : ''}
+            <h1 id="heroTitle">${E.esc(cfg.title || 'Welcome')}</h1>
+            ${cfg.subtitle ? `<p>${E.esc(cfg.subtitle)}</p>` : ''}
+            ${(primary || secondary) ? `<div class="hero-cta">${primary}${secondary}</div>` : ''}
+          </div>
+          ${(cfg.showStats !== false && stats.length) ? `
+            <div class="hero-card" aria-label="School statistics">
+              ${stats.slice(0,3).map(s => `
+                <div class="hero-stat">
+                  <div class="icon">${E.esc(s.icon || '•')}</div>
+                  <div>
+                    <small>${E.esc(s.label || '')}</small>
+                    <strong>${E.esc(String(s.value || '—'))}</strong>
+                    ${s.sub ? `<div class="sub">${E.esc(s.sub)}</div>` : ''}
+                  </div>
+                </div>`).join('')}
+            </div>` : ''}
+        </div>
+      </section>`;
+  }
+
+  /* ----- CAROUSEL ----- */
+  function renderCarousel(cfg){
+    if(!cfg || cfg.enabled === false || !Array.isArray(cfg.slides) || !cfg.slides.length) return '';
+    const slides = cfg.slides.slice().sort((a,b) => Number(a.order || 0) - Number(b.order || 0));
+    const interval = Number(cfg.intervalMs) || 6000;
+    return `
+      <section class="carousel-wrap" id="carousel" data-interval="${interval}" data-autoplay="${cfg.autoPlay !== false}">
+        <div class="carousel-track" id="carouselTrack">
+          ${slides.map((s, i) => `
+            <div class="carousel-slide ${s.overlay || 'dark'} ${i === 0 ? 'active' : ''}"
+              data-index="${i}"
+              ${s.image ? `style="background-image:url('${E.esc(s.image)}')"` : ''}>
+              <div class="carousel-content">
+                ${s.title ? `<h2>${E.esc(s.title)}</h2>` : ''}
+                ${s.caption ? `<p>${E.esc(s.caption)}</p>` : ''}
+                ${s.ctaText && s.ctaLink ? `<a href="${E.esc(s.ctaLink)}" class="btn">${E.esc(s.ctaText)} →</a>` : ''}
+              </div>
+            </div>`).join('')}
+        </div>
+        ${slides.length > 1 ? `
+          <button class="carousel-nav prev" data-carousel-prev aria-label="Previous slide">‹</button>
+          <button class="carousel-nav next" data-carousel-next aria-label="Next slide">›</button>
+          <div class="carousel-dots">
+            ${slides.map((_, i) => `<button class="carousel-dot ${i === 0 ? 'active' : ''}" data-carousel-dot="${i}" aria-label="Go to slide ${i+1}"></button>`).join('')}
+          </div>` : ''}
+      </section>`;
+  }
+
+  /* ----- TICKER ----- */
+  function renderTicker(cfg){
+    if(!cfg || cfg.enabled === false) return '';
+    const list = (E.readStore(E.STORE_KEYS.announcements, []) || [])
+      .filter(a => !a.deleted && E.announcementIsLive(a) && String(a.audience || 'All') === 'All')
+      .sort((a,b) => new Date(b.at || 0) - new Date(a.at || 0))
+      .slice(0, 6);
+    if(!list.length) return '';
+    const items = list.map(a => `
+      <span class="ticker-item"><strong>${E.esc(a.title || 'Update')}</strong>${a.body ? ' · ' + E.esc(String(a.body).slice(0, 100)) : ''}</span>`).join('');
+    return `
+      <div class="ticker" aria-label="Latest announcements">
+        <span class="badge">📢 Latest</span>
+        <div class="ticker-track">
+          <div class="ticker-items">${items}${items}</div>
+        </div>
+      </div>`;
+  }
+
+  /* ----- WELCOME (PATCH: remove dead <div class="message">) ----- */
+  function renderWelcome(cfg){
+    if(!cfg || cfg.enabled === false) return '';
+    if(!cfg.message && !cfg.headName) return '';
+    const photo = cfg.headPhoto
+      ? `<img src="${E.esc(cfg.headPhoto)}" alt="${E.esc(cfg.headName || 'Head of school')}">`
+      : E.initials(cfg.headName || 'Principal');
+    const cta = cfg.ctaText && cfg.ctaLink
+      ? `<a href="${E.esc(cfg.ctaLink)}" style="display:inline-flex;align-items:center;gap:6px;
+          background:#eef2fb;color:#34415c;padding:11px 18px;border-radius:9px;
+          font-weight:700;font-size:12px;margin-top:8px">${E.esc(cfg.ctaText)} →</a>`
+      : '';
+    return `
+      <section class="welcome" id="about" aria-labelledby="welcomeTitle">
+        <div class="welcome-grid reveal">
+          <div class="welcome-photo">${photo}</div>
+          <div class="welcome-content">
+            <h2 id="welcomeTitle" style="font-size:26px;color:var(--navy);margin:0 0 22px;letter-spacing:-.3px">
+              A Message from ${E.esc(cfg.headTitle || 'the Principal')}
+            </h2>
+            ${cfg.message ? `<blockquote class="quote">"${E.esc(cfg.message)}"</blockquote>` : ''}
+            ${cfg.headName ? `<div class="signature">${E.esc(cfg.headName)}<small>${E.esc(cfg.headTitle || '')}</small></div>` : ''}
+            ${cta}
+          </div>
+        </div>
+      </section>`;
+  }
+
+  /* ----- QUICK FACTS ----- */
+  function renderQuickFacts(cfg){
+    if(!cfg || cfg.enabled === false) return '';
+    const items = cfg.statsSource === 'manual' && Array.isArray(cfg.items) && cfg.items.length
+      ? cfg.items
+      : computeHeroStats();
+    if(!items.length) return '';
+    return `
+      <section class="quick-facts">
+        <div class="facts-grid">
+          ${items.slice(0,4).map(s => `
+            <div class="fact reveal">
+              <div class="icon">${E.esc(s.icon || '•')}</div>
+              <h3>${E.esc(String(s.value || '—'))}</h3>
+              <small>${E.esc(s.label || '')}</small>
+              ${s.sub ? `<p>${E.esc(s.sub)}</p>` : ''}
+            </div>`).join('')}
+        </div>
+      </section>`;
+  }
+
+  /* ----- PROGRAMS ----- */
+  function renderPrograms(cfg){
+    if(!cfg || cfg.enabled === false || !Array.isArray(cfg.tiers) || !cfg.tiers.length) return '';
+    return `
+      <section class="academics" id="academics" aria-labelledby="programsTitle">
+        <div class="section-inner">
+          <div class="section-head reveal">
+            <span class="kicker">Our Programs</span>
+            <h2 id="programsTitle">${E.esc(cfg.heading || 'Our Programs')}</h2>
+            ${cfg.subheading ? `<p>${E.esc(cfg.subheading)}</p>` : ''}
+          </div>
+          <div class="academics-grid">
+            ${cfg.tiers.map(t => `
+              <div class="tier ${E.esc(t.pillColor || 'primary')} reveal">
+                <div class="icon">${E.esc(t.icon || '📚')}</div>
+                ${t.pillLabel ? `<span class="pill">${E.esc(t.pillLabel)}</span>` : ''}
+                <h3>${E.esc(t.name || '')}</h3>
+                ${t.range ? `<p class="range">${E.esc(t.range)}</p>` : ''}
+                ${(Array.isArray(t.bullets) && t.bullets.length) ? `
+                  <ul>${t.bullets.map(b => `<li>${E.esc(b)}</li>`).join('')}</ul>` : ''}
+              </div>`).join('')}
+          </div>
+        </div>
+      </section>`;
+  }
+
+  /* ----- WHY CHOOSE US ----- */
+  function renderWhyChooseUs(cfg){
+    if(!cfg || cfg.enabled === false || !Array.isArray(cfg.tiles) || !cfg.tiles.length) return '';
+    return `
+      <section class="why">
+        <div class="section-inner">
+          <div class="section-head reveal">
+            <span class="kicker">Why Us</span>
+            <h2>${E.esc(cfg.heading || 'Why Choose Us?')}</h2>
+          </div>
+          <div class="why-grid">
+            ${cfg.tiles.slice(0, 6).map(t => `
+              <div class="why-tile reveal">
+                <div class="icon">${E.esc(t.icon || '✨')}</div>
+                <h3>${E.esc(t.title || '')}</h3>
+                <p>${E.esc(t.text || '')}</p>
+              </div>`).join('')}
+          </div>
+        </div>
+      </section>`;
+  }
+
+  /* ----- GALLERY ----- */
+  function renderGallery(cfg){
+    if(!cfg || cfg.enabled === false || !Array.isArray(cfg.photos) || !cfg.photos.length) return '';
+    const photos = cfg.photos.slice().sort((a,b) => Number(a.order || 0) - Number(b.order || 0));
+    return `
+      <section class="gallery">
+        <div class="section-inner">
+          <div class="section-head reveal">
+            <span class="kicker">Campus Life</span>
+            <h2>${E.esc(cfg.heading || 'Life at our School')}</h2>
+            ${cfg.subheading ? `<p>${E.esc(cfg.subheading)}</p>` : ''}
+          </div>
+          <div class="gallery-track">
+            ${photos.map(p => `
+              <div class="gallery-item">
+                ${p.image ? `<img src="${E.esc(p.image)}" alt="${E.esc(p.caption || 'School photo')}" loading="lazy">` : '<div class="placeholder">🏫</div>'}
+                ${p.caption ? `<div class="caption">${E.esc(p.caption)}</div>` : ''}
+              </div>`).join('')}
+          </div>
+        </div>
+      </section>`;
+  }
+
+  /* ----- LEADERSHIP ----- */
+  function renderLeadership(cfg){
+    if(!cfg || cfg.enabled === false) return '';
+    let members = Array.isArray(cfg.members) ? cfg.members.filter(m => m && m.name) : [];
+    if(!members.length){
+      members = (E.readStore(E.STORE_KEYS.users, []) || [])
+        .filter(u => u.active && (u.role === 'Principal' || u.role === 'Registrar'))
+        .map(u => ({ name: u.name || u.username, role: u.role, photo: '', bio: '' }));
+    }
+    if(!members.length) return '';
+    return `
+      <section class="leadership">
+        <div class="section-inner">
+          <div class="section-head reveal">
+            <span class="kicker">Our Team</span>
+            <h2>${E.esc(cfg.heading || 'Leadership & Administration')}</h2>
+          </div>
+          <div class="lead-grid">
+            ${members.slice(0, 8).map(m => `
+              <div class="lead-card reveal">
+                <div class="lead-avatar">
+                  ${m.photo ? `<img src="${E.esc(m.photo)}" alt="${E.esc(m.name)}">` : E.esc(E.initials(m.name))}
+                </div>
+                <h4>${E.esc(m.name)}</h4>
+                <div class="role">${E.esc(m.role || '')}</div>
+                ${m.bio ? `<p class="bio">${E.esc(m.bio)}</p>` : ''}
+              </div>`).join('')}
+          </div>
+        </div>
+      </section>`;
+  }
+
+  /* ----- HIRING ----- */
+  function renderHiring(cfg){
+    if(!cfg || cfg.enabled === false) return '';
+    const open = E.listOpenHiringForms();
+    return `
+      <section class="hiring" id="hiring" aria-labelledby="hiringTitle">
+        <div class="section-inner">
+          <div class="section-head reveal">
+            <span class="kicker">Careers</span>
+            <h2 id="hiringTitle">${E.esc(cfg.heading || "We're Hiring")}</h2>
+            ${cfg.subheading ? `<p>${E.esc(cfg.subheading)}</p>` : ''}
+          </div>
+          ${open.length ? `
+            <div class="hiring-list">
+              ${open.map(f => {
+                const closeTxt = f.closeAt ? E.fmtDate(f.closeAt) : '';
+                return `<div class="hiring-card reveal">
+                  <div>
+                    <h4>${E.esc(f.title || 'Open position')}</h4>
+                    <p class="meta">
+                      ${E.esc(f.position || 'Staff')}${f.department ? ' · ' + E.esc(f.department) : ''}
+                      ${f.location ? ' · ' + E.esc(f.location) : ''}
+                    </p>
+                    ${closeTxt ? `<span class="closes">Closes ${E.esc(closeTxt)}</span>` : ''}
+                  </div>
+                  <a href="apply.html?id=${encodeURIComponent(f.id)}" class="apply">Apply now →</a>
+                </div>`;
+              }).join('')}
+            </div>` : `
+            <div style="text-align:center;color:var(--muted);padding:40px 20px;
+              background:#fff;border:1px solid var(--line);border-radius:14px;margin-bottom:28px">
+              No open positions at the moment. Check back soon!
+            </div>`}
+          <div class="status-check reveal">
+            <h4>Check application status</h4>
+            <p>Enter the verify code you received when you submitted your application.</p>
+            <div class="row">
+              <input type="text" id="hiringStatusInput" placeholder="e.g. HIR-2026-A4F29K2M" autocomplete="off" spellcheck="false">
+              <button type="button" id="hiringStatusBtn">Check status</button>
+            </div>
+            <div class="status-result" id="hiringStatusResult" role="status" aria-live="polite"></div>
+          </div>
+        </div>
+      </section>`;
+  }
+
+  /* ----- VERIFY ----- */
+  function renderVerify(cfg){
+    if(!cfg || cfg.enabled === false) return '';
+    return `
+      <section class="verify" id="verify" aria-labelledby="verifyTitle">
+        <div class="section-inner">
+          <div class="verify-card reveal">
+            <div class="verify-head">
+              <h3 id="verifyTitle">🔍 ${E.esc(cfg.heading || 'Verify a Member')}</h3>
+              <p>${E.esc(cfg.subheading || 'Confirm whether someone is part of our school community.')}</p>
+            </div>
+            <div class="verify-body">
+              <div class="verify-input-row">
+                <input type="text" id="verifyInput" placeholder="Enter official ID, email, phone, or full name" autocomplete="off" spellcheck="false">
+                <button type="button" id="verifyBtn">Verify</button>
+              </div>
+              <div class="verify-note">
+                ${E.esc(cfg.note || 'This lookup shows limited public info only — no fees, grades, or contact details.')}
+              </div>
+              <div class="verify-result" id="verifyResult" role="status" aria-live="polite"></div>
+            </div>
+          </div>
+        </div>
+      </section>`;
+  }
+
+  /* ----- CONTACT ----- */
+  function renderContact(cfg){
+    if(!cfg || cfg.enabled === false) return '';
+    const addr = cfg.address || settings.location || '123 School Road, Monrovia, Liberia';
+    const phone = cfg.phone || settings.phone || '+231 77 000 0000';
+    const email = cfg.email || settings.email || 'info@educore.edu';
+    const hours = cfg.hours || 'Mon–Fri · 7:30 AM – 4:00 PM';
+    const showForm = cfg.showEnquiryForm !== false;
+    const classList = (E.readStore(E.STORE_KEYS.classes, []) || []).map(c => c.name).sort((a,b) => a.localeCompare(b));
+
+    return `
+      <section id="contact" aria-labelledby="contactTitle">
+        <div class="contact-grid">
+          <div class="contact-info reveal">
+            <h2 id="contactTitle">${E.esc(cfg.heading || 'Get in touch')}</h2>
+            <p class="lead">${E.esc(cfg.subheading || "We'd love to hear from you.")}</p>
+            <div class="contact-row">
+              <div class="icon">📍</div>
+              <div><small>Address</small><strong>${E.esc(addr)}</strong></div>
+            </div>
+            <div class="contact-row">
+              <div class="icon">📞</div>
+              <div><small>Phone</small><strong>${E.esc(phone)}</strong></div>
+            </div>
+            <div class="contact-row">
+              <div class="icon">✉</div>
+              <div><small>Email</small><strong>${E.esc(email)}</strong></div>
+            </div>
+            <div class="contact-row">
+              <div class="icon">🕐</div>
+              <div><small>Office Hours</small><strong style="white-space:pre-line">${E.esc(hours)}</strong></div>
+            </div>
+          </div>
+          ${showForm ? `
+            <div class="enq-card reveal">
+              <div class="enq-head">
+                <h3>${E.esc(cfg.enquiryHeading || 'Send us a message')}</h3>
+                <p>All fields marked with * are required. We'll get back to you soon.</p>
+              </div>
+              <form class="enq-form" id="enquiryForm" novalidate>
+                <div class="row">
+                  <div class="field">
+                    <label for="enqName">Full name *</label>
+                    <input type="text" id="enqName" name="name" required autocomplete="name">
+                  </div>
+                  <div class="field">
+                    <label for="enqEmail">Email *</label>
+                    <input type="email" id="enqEmail" name="email" required autocomplete="email">
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="field">
+                    <label for="enqPhone">Phone</label>
+                    <input type="tel" id="enqPhone" name="phone" autocomplete="tel">
+                  </div>
+                  <div class="field">
+                    <label for="enqClass">Child's class</label>
+                    <select id="enqClass" name="childClass">
+                      <option value="">— Not applicable —</option>
+                      ${classList.map(c => `<option value="${E.esc(c)}">${E.esc(c)}</option>`).join('')}
+                    </select>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="enqMessage">Message *</label>
+                  <textarea id="enqMessage" name="message" required placeholder="Tell us a bit about your enquiry..."></textarea>
+                </div>
+                <div class="honeypot">
+                  <label for="enqWebsite">Website (leave blank)</label>
+                  <input type="text" id="enqWebsite" name="website" tabindex="-1" autocomplete="off">
+                </div>
+                <div class="status" id="enqStatus" role="status" aria-live="polite"></div>
+                <button type="submit" class="submit" id="enqSubmit">Send enquiry →</button>
+              </form>
+            </div>` : ''}
+        </div>
+      </section>`;
+  }
+
+      /* ---------- RENDER ALL ----------
+     PATCH: carousel-aware render. Hero hides only when the carousel
+     will actually render (enabled AND has slides). Carousel skips
+     when disabled or empty. Any other section respects .enabled.
+
+     PATCH: 'verify' was added to DEFAULT_HOMEPAGE.sectionOrder, but
+     existing installs have a saved config whose sectionOrder predates
+     that change. Force 'verify' into the order here so the widget
+     renders on all installs without requiring a re-save or migration.
+     The renderer itself still respects verify.enabled === false. */
+  const main = document.getElementById('main');
+  let order = Array.isArray(config.sectionOrder)
+    ? config.sectionOrder.slice()
+    : E.DEFAULT_HOMEPAGE.sectionOrder.slice();
+
+  if(order.indexOf('verify') === -1){
+    const contactIdx = order.indexOf('contact');
+    if(contactIdx >= 0) order.splice(contactIdx, 0, 'verify');
+    else order.push('verify');
+  }
+
+  const carouselOn = !!(config.carousel
+    && config.carousel.enabled
+    && Array.isArray(config.carousel.slides)
+    && config.carousel.slides.length);
+  let html = '';
+  order.forEach(key => {
+    if(key === 'hero' && carouselOn) return;
+    if(key === 'carousel' && !carouselOn) return;
+    const cfg = config[key];
+    if(!cfg) return;
+    if(key !== 'hero' && key !== 'carousel' && cfg.enabled === false) return;
+    const fn = RENDERERS[key];
+    if(!fn) return;
+    const part = fn(cfg);
+    if(part) html += part;
+  });
+  main.innerHTML = html;
+
+  /* ---------- FOOTER LINKS ---------- */
+  function paintFooter(){
+    const quickLinks = Array.isArray(config.footer?.quickLinks) && config.footer.quickLinks.length
+      ? config.footer.quickLinks
+      : [{ label:'About', href:'#about' }, { label:'Academics', href:'#academics' }, { label:'Careers', href:'#hiring' }, { label:'Contact', href:'#contact' }];
+    document.getElementById('footerQuickLinks').innerHTML =
+      quickLinks.map(l => `<li><a href="${E.esc(l.href || '#')}">${E.esc(l.label || '')}</a></li>`).join('');
+
+    const socials = Array.isArray(config.footer?.socials) ? config.footer.socials : [];
+    const socialWrap = document.getElementById('footerSocials');
+    if(socials.length){
+      socialWrap.innerHTML = socials.map(s =>
+        `<a href="${E.esc(s.url || '#')}" aria-label="${E.esc(s.platform || 'Social')}" target="_blank" rel="noopener">${E.esc(s.icon || '🔗')}</a>`
+      ).join('');
+    } else {
+      socialWrap.innerHTML = '';
+    }
+  }
+  paintFooter();
+
+  /* ---------- REVEAL ANIMATIONS ---------- */
+  function attachReveals(){
+    const items = document.querySelectorAll('.reveal:not(.visible)');
+    if(!items.length) return;
+    if('IntersectionObserver' in window){
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if(entry.isIntersecting){
+            entry.target.classList.add('visible');
+            io.unobserve(entry.target);
+          }
+        });
+      }, { threshold:0.15, rootMargin:'0px 0px -40px 0px' });
+      items.forEach(el => io.observe(el));
+    } else {
+      items.forEach(el => el.classList.add('visible'));
+    }
+  }
+  attachReveals();
+
+  /* ---------- CAROUSEL ENGINE ---------- */
+  (function initCarousel(){
+    const wrap = document.getElementById('carousel');
+    if(!wrap) return;
+    const track = document.getElementById('carouselTrack');
+    const slides = Array.from(track.querySelectorAll('.carousel-slide'));
+    const dots = Array.from(wrap.querySelectorAll('[data-carousel-dot]'));
+    if(slides.length < 2) return;
+
+    let current = 0;
+    let timer = null;
+    const interval = Number(wrap.dataset.interval) || 6000;
+    const autoPlay = wrap.dataset.autoplay !== 'false';
+
+    function go(idx){
+      current = (idx + slides.length) % slides.length;
+      slides.forEach((s, i) => s.classList.toggle('active', i === current));
+      dots.forEach((d, i) => d.classList.toggle('active', i === current));
+    }
+    function next(){ go(current + 1); }
+    function prev(){ go(current - 1); }
+    function start(){
+      if(!autoPlay) return;
+      stop();
+      timer = setInterval(next, interval);
+    }
+    function stop(){ if(timer) clearInterval(timer); timer = null; }
+
+    wrap.querySelector('[data-carousel-next]')?.addEventListener('click', () => { next(); start(); });
+    wrap.querySelector('[data-carousel-prev]')?.addEventListener('click', () => { prev(); start(); });
+    dots.forEach((d, i) => d.addEventListener('click', () => { go(i); start(); }));
+
+    wrap.addEventListener('mouseenter', stop);
+    wrap.addEventListener('mouseleave', start);
+
+    let touchStartX = 0;
+    wrap.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive:true });
+    wrap.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      if(Math.abs(dx) > 50){ dx > 0 ? prev() : next(); start(); }
+    });
+
+    document.addEventListener('keydown', e => {
+      if(e.key === 'ArrowLeft'){ prev(); start(); }
+      if(e.key === 'ArrowRight'){ next(); start(); }
+    });
+
+    start();
+  })();
+
+  /* ---------- ENQUIRY FORM (PATCH: email validation) ---------- */
+  (function initEnquiry(){
+    const form = document.getElementById('enquiryForm');
+    if(!form) return;
+    const status = document.getElementById('enqStatus');
+    const btn = document.getElementById('enqSubmit');
+
+    function setStatus(kind, msg){
+      status.className = 'status ' + kind;
+      status.textContent = msg;
+    }
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      if(document.getElementById('enqWebsite').value){
+        setStatus('success', 'Thank you — we\'ll be in touch soon.');
+        form.reset();
+        return;
+      }
+      const lastSubmit = Number(sessionStorage.getItem('educoreLastEnquiry') || 0);
+      if(Date.now() - lastSubmit < 10000){
+        setStatus('error', 'Please wait a moment before sending another enquiry.');
+        return;
+      }
+      const emailRaw = document.getElementById('enqEmail').value.trim();
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailRaw)){
+        setStatus('error', 'Enter a valid email address.');
+        return;
+      }
+      const data = {
+        name: document.getElementById('enqName').value,
+        email: emailRaw,
+        phone: document.getElementById('enqPhone').value,
+        childClass: document.getElementById('enqClass').value,
+        message: document.getElementById('enqMessage').value
+      };
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+      setTimeout(() => {
+        const res = E.saveEnquiry(data);
+        btn.disabled = false;
+        btn.textContent = 'Send enquiry →';
+        if(!res.ok){ setStatus('error', res.error || 'Something went wrong.'); return; }
+        sessionStorage.setItem('educoreLastEnquiry', String(Date.now()));
+        setStatus('success', 'Thank you — your enquiry has been received. We\'ll respond within one working day.');
+        form.reset();
+        if(E.toast) E.toast('Enquiry sent.');
+      }, 250);
+    });
+  })();
+
+  /* ---------- VERIFY (PATCH: min length + shared renderer) ---------- */
+  (function initVerify(){
+    const input = document.getElementById('verifyInput');
+    const btn = document.getElementById('verifyBtn');
+    const result = document.getElementById('verifyResult');
+    if(!input || !btn) return;
+
+    function setResult(kind, html){
+      result.className = 'verify-result ' + kind + ' show';
+      result.innerHTML = html;
+    }
+
+    function run(){
+      const q = input.value.trim();
+      if(!q){ setResult('not-matched', 'Enter a value to search.'); return; }
+      if(q.length < 3){
+        setResult('not-matched', 'Enter at least 3 characters (an official ID, full name, email, or phone).');
+        return;
+      }
+      const lastSubmit = Number(sessionStorage.getItem('educoreLastVerify') || 0);
+      if(Date.now() - lastSubmit < 3000){
+        setResult('not-matched', 'Please wait a moment before searching again.');
+        return;
+      }
+      sessionStorage.setItem('educoreLastVerify', String(Date.now()));
+
+      const res = E.verifyMember(q);
+      if(!res.ok){ setResult('not-matched', E.esc(res.error || 'Search failed.')); return; }
+      if(!res.match){
+        setResult('not-matched', `<span class="verdict">Not found</span>${E.esc(res.message || 'No member found.')}`);
+        return;
+      }
+      const m = res.member;
+      setResult('matched', `
+        <span class="verdict">✓ Verified</span>
+        <dl>
+          <dt>Name</dt><dd>${E.esc(m.name)}</dd>
+          <dt>Role</dt><dd>${E.esc(m.role)}</dd>
+          ${m.class ? `<dt>Class</dt><dd>${E.esc(m.class)}</dd>` : ''}
+          ${m.department ? `<dt>Department</dt><dd>${E.esc(m.department)}</dd>` : ''}
+          <dt>Status</dt><dd>${E.esc(m.status)}</dd>
+          <dt>Year</dt><dd>${E.esc(m.year || '—')}</dd>
+        </dl>
+        <div class="verified-at">Verified on ${E.esc(new Date(res.verifiedAt).toLocaleString())} · ${E.esc(schoolName)}</div>`);
+    }
+
+    btn.addEventListener('click', run);
+    input.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); run(); } });
+  })();
+
+  /* ---------- HIRING STATUS ---------- */
+  (function initHiringStatus(){
+    const input = document.getElementById('hiringStatusInput');
+    const btn = document.getElementById('hiringStatusBtn');
+    const result = document.getElementById('hiringStatusResult');
+    if(!input || !btn) return;
+
+    function run(){
+      const code = input.value.trim();
+      if(!code){
+        result.className = 'status-result error show';
+        result.innerHTML = 'Enter your verify code.';
+        return;
+      }
+      const lastSubmit = Number(sessionStorage.getItem('educoreLastStatus') || 0);
+      if(Date.now() - lastSubmit < 3000){
+        result.className = 'status-result error show';
+        result.innerHTML = 'Please wait a moment before checking again.';
+        return;
+      }
+      sessionStorage.setItem('educoreLastStatus', String(Date.now()));
+
+      const res = E.checkHiringStatus(code);
+      if(!res.ok){
+        result.className = 'status-result error show';
+        result.innerHTML = E.esc(res.error || 'Check failed.');
+        return;
+      }
+      if(!res.found){
+        result.className = 'status-result error show';
+        result.innerHTML = E.esc(res.message || 'No application found with that code.');
+        return;
+      }
+      if(!res.resultsOut){
+        result.className = 'status-result info show';
+        result.innerHTML = `<span class="label">${E.esc(res.position)}</span>${E.esc(res.message)}`;
+        return;
+      }
+      const cls = res.status === 'accepted' ? 'success'
+        : res.status === 'rejected' ? 'error' : 'info';
+      const label = ({ pending:'Pending', shortlisted:'Shortlisted', accepted:'Accepted', rejected:'Not successful' })[res.status] || res.status;
+      result.className = 'status-result ' + cls + ' show';
+      result.innerHTML = `
+        <span class="label">${E.esc(res.position)} · ${E.esc(res.applicantName || '')}</span>
+        <strong>${E.esc(label)}</strong><br>
+        ${E.esc(res.message)}`;
+    }
+
+    btn.addEventListener('click', run);
+    input.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); run(); } });
+  })();
+
+  /* ---------- PATCH: live-refresh hiring list on storage event ---------- */
+  window.addEventListener('storage', e => {
+    if(!e.key) return;
+    if(e.key === E.STORE_KEYS.hiringForms || e.key === E.STORE_KEYS.hiringApplications){
+      const oldSection = document.querySelector('#hiring');
+      if(oldSection){
+        const wrap = document.createElement('div');
+        wrap.innerHTML = renderHiring(config.hiring || {});
+        if(wrap.firstElementChild){
+          oldSection.replaceWith(wrap.firstElementChild);
+          attachReveals();
+          /* Re-init hiring status input listeners after the section is rebuilt */
+          (function(){
+            const input = document.getElementById('hiringStatusInput');
+            const btn = document.getElementById('hiringStatusBtn');
+            const result = document.getElementById('hiringStatusResult');
+            if(!input || !btn) return;
+            btn.addEventListener('click', () => {
+              const code = input.value.trim();
+              if(!code){ result.className = 'status-result error show'; result.innerHTML = 'Enter your verify code.'; return; }
+              const res = E.checkHiringStatus(code);
+              if(!res.ok){ result.className = 'status-result error show'; result.innerHTML = E.esc(res.error || 'Check failed.'); return; }
+              if(!res.found){ result.className = 'status-result error show'; result.innerHTML = E.esc(res.message || 'No application found with that code.'); return; }
+              if(!res.resultsOut){ result.className = 'status-result info show'; result.innerHTML = `<span class="label">${E.esc(res.position)}</span>${E.esc(res.message)}`; return; }
+              const cls = res.status === 'accepted' ? 'success' : res.status === 'rejected' ? 'error' : 'info';
+              const label = ({ pending:'Pending', shortlisted:'Shortlisted', accepted:'Accepted', rejected:'Not successful' })[res.status] || res.status;
+              result.className = 'status-result ' + cls + ' show';
+              result.innerHTML = `<span class="label">${E.esc(res.position)} · ${E.esc(res.applicantName || '')}</span><strong>${E.esc(label)}</strong><br>${E.esc(res.message)}`;
+            });
+          })();
+        }
+      }
+    }
+  });
+
+  /* ---------- RE-ATTACH REVEALS AFTER DYNAMIC RENDERS ---------- */
+  attachReveals();
+})();
+</script>
+</body>
+</html>

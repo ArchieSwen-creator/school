@@ -10,12 +10,13 @@
     --text:#23354d;--muted:#73849a;--green:#14805e;--orange:#d88922;--red:#d64545;
     --gold:#c99a2e;--gold2:#fff4d6;--line:#e8ebf2;
     --shadow:0 8px 24px rgba(24,42,78,.06);
+    --shadow-lg:0 20px 60px rgba(24,42,78,.14);
   }
   *{box-sizing:border-box}
   body{margin:0;padding:64px 16px 40px;
     background:linear-gradient(135deg,#edf4fc,#dfeaf7);
     font-family:Arial,Helvetica,sans-serif;color:var(--text);min-height:100vh}
-  button,input,select{font:inherit}
+  button,input,select,textarea{font:inherit}
   button{cursor:pointer}
   .page{width:100%;max-width:1320px;margin:0 auto}
   .band{background:linear-gradient(120deg,#102949,#245d9c);color:#fff;
@@ -32,52 +33,117 @@
     background:#ffffff14;border:1px solid #ffffff36;padding:7px 12px;border-radius:20px}
   .band-user strong{color:#fff}
 
-  .selector-strip{background:#fff;border:1px solid var(--line);border-radius:13px;
-    box-shadow:var(--shadow);padding:18px 22px;margin-bottom:18px;
-    display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
-  .sel-block{display:flex;flex-direction:column;gap:6px;min-width:0}
-  .sel-block label{font-size:10px;font-weight:800;color:var(--muted);
-    text-transform:uppercase;letter-spacing:.8px}
-  .sel-block select,.sel-block input{border:1px solid var(--line);border-radius:9px;
-    padding:11px 12px;font-size:12px;background:#fff;outline:none;color:var(--text)}
-  .sel-block select:focus,.sel-block input:focus{border-color:var(--blue)}
+  .tabs{display:flex;gap:4px;background:#fff;border:1px solid var(--line);
+    border-radius:13px;box-shadow:var(--shadow);padding:8px;margin-bottom:18px;flex-wrap:wrap}
+  .tab{border:0;background:transparent;padding:10px 16px;border-radius:9px;
+    font-size:12px;font-weight:800;color:#54637d;cursor:pointer;position:relative}
+  .tab:hover{background:#f3f6fd}
+  .tab.active{background:#14213d;color:#fff}
+  .tab .badge-count{display:inline-block;margin-left:6px;background:#d64545;color:#fff;
+    font-size:9.5px;font-weight:800;padding:1px 6px;border-radius:10px;min-width:16px;text-align:center}
 
-  .period-strip{background:#fff;border:1px solid var(--line);border-radius:13px;
-    box-shadow:var(--shadow);padding:16px 22px;margin-bottom:18px;
-    display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
-  .period-strip .left{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-  .period-chip{padding:8px 14px;border-radius:10px;background:#fff;color:#34415c;
-    font-size:11.5px;font-weight:700;border:1px solid var(--line);cursor:pointer}
-  .period-chip:hover{background:#f6f9ff}
-  .period-chip.active{background:#eaf2ff;color:#1d4d82;border-color:#b9d1f6}
-  .period-chip.has-data::after{content:"●";margin-left:6px;color:#1c9b72;font-size:9px}
-  .period-chip.exam{background:#fff9ec;border-color:#f3d999}
-  .period-chip.exam.active{background:#fff4d6;color:#8a6a1a;border-color:#e4cd86}
-
-  .meta-bar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;font-size:11px}
-  .meta-chip{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;
-    background:#fff;border:1px solid var(--line);border-radius:20px;color:#34415c;font-weight:700}
-  .meta-chip .dot{width:7px;height:7px;border-radius:50%;background:#94a3b8}
-  .meta-chip.cat-nursery .dot{background:#9c2a63}
-  .meta-chip.cat-numeric .dot{background:#0f6b4b}
-  .meta-chip.locked{background:#fff4d6;color:#8a6a1a;border-color:#e4cd86}
+  .btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;
+    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{filter:brightness(.96)}
+  .btn.secondary{background:#eef2fb;color:#34415c}
+  .btn.outline{background:#fff;color:#34415c;border:1px solid var(--line)}
+  .btn.danger{background:#fff0f1;color:var(--red)}
+  .btn.green{background:#e6f7f0;color:#16835f}
+  .btn.warn{background:#fff2dd;color:#a86414}
+  .btn.gold{background:linear-gradient(135deg,#f7d97a,#c99a2e);color:#5a3a00}
+  .btn.small{padding:7px 11px;font-size:11px}
+  .btn.big{padding:14px 22px;font-size:13px}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
 
   .card{background:#fff;border:1px solid var(--line);border-radius:13px;
-    box-shadow:var(--shadow);overflow:hidden}
-  .table-wrap{overflow-x:auto}
-  table{width:100%;border-collapse:collapse;white-space:nowrap}
-  th{text-align:left;background:#fafbfe;color:#7a8498;font-size:10px;
-    text-transform:uppercase;letter-spacing:.6px;padding:13px 18px;
-    border-bottom:1px solid var(--line)}
-  td{padding:11px 18px;border-bottom:1px solid #f0f2f7;font-size:12px}
-  tbody tr:last-child td{border-bottom:0}
-  tbody tr:hover{background:#fbfdff}
+    box-shadow:var(--shadow);overflow:hidden;margin-bottom:18px}
+  .card-head{padding:16px 22px;border-bottom:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .card-head h3{margin:0;font-size:15px;color:var(--navy)}
+  .card-head .sub{font-size:11px;color:var(--muted);margin-top:3px}
+  .card-body{padding:20px 22px}
 
-  .person{display:flex;align-items:center;gap:10px}
-  .mini-avatar{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;
-    background:#edf2ff;color:#3859b7;font-size:10px;font-weight:700}
-  .person strong{display:block;font-size:12px}
-  .person small{display:block;color:var(--muted);font-size:10px;margin-top:4px}
+  .push-row{display:grid;grid-template-columns:2.4fr 1fr 1fr 1.4fr auto;gap:14px;
+    align-items:center;padding:14px 18px;border-bottom:1px solid #f0f2f7;
+    font-size:12px;transition:background .15s}
+  .push-row:last-child{border-bottom:0}
+  .push-row:hover{background:#fbfdff}
+  .push-row .who strong{display:block;font-size:13px;color:var(--navy)}
+  .push-row .who small{display:block;font-size:10.5px;color:var(--muted);margin-top:3px}
+  .push-row .period{font-family:monospace;font-size:12px;color:#34415c;font-weight:700}
+  .push-row .period small{display:block;font-weight:400;font-size:10px;color:var(--muted);margin-top:2px}
+  .push-row .time{font-size:11px;color:var(--muted);font-family:monospace}
+  .push-row .progress{font-size:11px;color:var(--muted)}
+  .push-row .progress strong{color:var(--navy)}
+  .push-row .actions{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+
+  .status-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;
+    border-radius:20px;font-size:10px;font-weight:800;letter-spacing:.4px;text-transform:uppercase}
+  .status-pill.open{background:#edf2ff;color:#3b5cc1}
+  .status-pill.locked{background:#fff2dd;color:#a86414}
+  .status-pill.submitted{background:#fff8e6;color:#8a6a1a}
+  .status-pill.approved{background:#e6f7f0;color:#16835f}
+  .status-pill.returned{background:#f4eaff;color:#6b3da5}
+  .status-pill.hidden{background:#eef1f6;color:#59647c}
+
+  .filter-row{display:flex;gap:8px;flex-wrap:wrap;padding:14px 18px 4px}
+  .filter-chip{border:1px solid var(--line);background:#fff;border-radius:20px;
+    padding:7px 13px;font-size:11px;font-weight:700;color:#34415c;cursor:pointer}
+  .filter-chip.active{background:#14213d;color:#fff;border-color:#14213d}
+  .filter-chip .n{font-weight:800;margin-left:5px;opacity:.7}
+
+  .empty-state{padding:50px 24px;text-align:center;color:var(--muted);font-size:13px;
+    background:#fff;border:1px solid var(--line);border-radius:13px}
+  .empty-state .icon{font-size:44px;opacity:.5;margin-bottom:12px;display:block}
+  .empty-state strong{display:block;color:var(--navy);font-size:15px;margin-bottom:8px}
+
+  .push-card{background:#fff;border:1px solid var(--line);border-left:5px solid var(--blue);
+    border-radius:13px;padding:18px 22px;margin-bottom:14px;box-shadow:var(--shadow);
+    transition:box-shadow .2s}
+  .push-card:hover{box-shadow:var(--shadow-lg)}
+  .push-card.status-open{border-left-color:var(--blue)}
+  .push-card.status-returned{border-left-color:#6b3da5;background:#fbf8ff}
+  .push-card.status-submitted{border-left-color:#d88922}
+  .push-card.status-approved{border-left-color:var(--green);background:#f8fffc}
+  .push-card.status-locked{border-left-color:#a86414;background:#fffdf7}
+  .push-card.status-hidden{border-left-color:#59647c;background:#f8f9fb}
+
+  .push-card .top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+  .push-card h4{margin:0;font-size:15px;color:var(--navy)}
+  .push-card .meta{font-size:11.5px;color:var(--muted);margin-top:5px;line-height:1.5}
+  .push-card .meta strong{color:var(--text)}
+  .push-card .subj-code{font-family:monospace;font-size:11px;color:var(--muted);
+    font-weight:600;margin-left:6px}
+
+  .countdown{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;
+    border-radius:10px;background:#eaf2ff;color:#1d4d82;font-family:monospace;
+    font-weight:800;font-size:13px}
+  .countdown.warn{background:#fff2dd;color:#a86414}
+  .countdown.danger{background:#ffeaec;color:#bd3b48;animation:pulse 1s infinite}
+  @keyframes pulse{50%{opacity:.7}}
+
+  .push-card .footer{display:flex;justify-content:space-between;align-items:center;
+    gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);flex-wrap:wrap}
+  .push-card .progress{display:flex;align-items:center;gap:10px;font-size:11.5px;color:var(--muted)}
+  .push-card .bar{width:120px;height:7px;background:#eef1f7;border-radius:20px;overflow:hidden}
+  .push-card .bar span{display:block;height:100%;background:linear-gradient(90deg,#3987ee,#14805e);border-radius:20px}
+
+  .selector-strip{background:#fff;border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);padding:16px 20px;margin-bottom:16px;
+    display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+  .sel-block{display:flex;flex-direction:column;gap:6px}
+  .sel-block label{font-size:10px;font-weight:800;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.8px}
+  .sel-block select{border:1px solid var(--line);border-radius:9px;
+    padding:10px 12px;font-size:12px;background:#fff;outline:none;color:var(--text)}
+  .sel-block select:focus{border-color:var(--blue)}
+
+  .readonly-banner{display:flex;align-items:center;gap:12px;padding:14px 18px;
+    border-radius:10px;margin-bottom:14px;font-size:12.5px;line-height:1.6;border:1px solid}
+  .readonly-banner.locked{background:#fff8e6;border-color:#f3d999;color:#8a6a1a}
+  .readonly-banner.submitted{background:#fff2dd;border-color:#f0d9a0;color:#a86414}
+  .readonly-banner.approved{background:#f0fdf7;border-color:#b8e9d3;color:#0e6b4a}
+  .readonly-banner .icon{font-size:20px;flex:0 0 auto}
 
   .score-input{width:90px;border:1px solid #dfe4ee;border-radius:7px;padding:8px 10px;
     font-size:13px;text-align:center;font-family:monospace;font-weight:700;
@@ -87,34 +153,68 @@
   .score-input:disabled{background:#f6f8fd;color:#94a3b8;cursor:not-allowed}
   .score-input.letter{width:52px;text-transform:uppercase}
 
-  .score-readonly{display:inline-block;font-family:monospace;font-weight:800;font-size:13px;
-    color:var(--navy);min-width:60px;text-align:center;
-    padding:8px 10px;background:#f6f8fd;border-radius:7px}
+  .person{display:flex;align-items:center;gap:10px}
+  .mini-avatar{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;
+    background:#edf2ff;color:#3859b7;font-size:10px;font-weight:700}
+  .person strong{display:block;font-size:12px}
+  .person small{display:block;color:var(--muted);font-size:10px;margin-top:4px}
 
-  .avg-cell{font-family:monospace;font-weight:800;color:var(--navy);font-size:13px;
-    display:inline-flex;align-items:center;gap:6px}
-  .grade-pill{display:inline-block;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:800}
-  .grade-pill.a{background:#e6f7f0;color:#16835f}
-  .grade-pill.b{background:#edf2ff;color:#3b5cc1}
-  .grade-pill.c{background:#fff2dd;color:#a86414}
-  .grade-pill.d{background:#fff2dd;color:#a86414}
-  .grade-pill.f{background:#ffeaec;color:#bd3b48}
+  table{width:100%;border-collapse:collapse;white-space:nowrap;font-size:12px}
+  th{text-align:left;background:#fafbfe;color:#7a8498;font-size:10px;
+    text-transform:uppercase;letter-spacing:.6px;padding:12px 14px;
+    border-bottom:1px solid var(--line);font-weight:800}
+  td{padding:11px 14px;border-bottom:1px solid #f0f2f7;font-size:12px}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:hover{background:#fbfdff}
 
-  .btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:#fff;
-    font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
-  .btn:hover{filter:brightness(.96)}
-  .btn.green{background:#e6f7f0;color:#16835f}
-  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .pill{display:inline-block;padding:4px 9px;border-radius:20px;font-size:10px;font-weight:700}
+  .pill.green{background:#e6f7f0;color:#16835f}
+  .pill.orange{background:#fff2dd;color:#a86414}
+  .pill.red{background:#ffeaec;color:#bd3b48}
+  .pill.blue{background:#edf2ff;color:#3b5cc1}
+  .pill.grey{background:#eef1f6;color:#59647c}
 
   .save-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;
-    padding:16px 22px;background:#f8faff;border-top:1px solid var(--line);flex-wrap:wrap}
-  .save-bar .note{font-size:11.5px;color:var(--muted)}
+    padding:16px 20px;background:#f8faff;border-top:1px solid var(--line);flex-wrap:wrap}
+  .save-bar .note{font-size:11.5px;color:var(--muted);line-height:1.5}
+  .save-bar .note strong{color:#a86414}
 
-  .empty{padding:60px 30px;text-align:center;color:var(--muted);font-size:13px;
-    background:#fff;border:1px solid var(--line);border-radius:13px}
-  .empty .icon{font-size:48px;margin-bottom:14px;opacity:.5;display:block}
+  .wizard-step{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--line);align-items:flex-start}
+  .wizard-step:last-child{border-bottom:0}
+  .wizard-step .num{width:26px;height:26px;border-radius:50%;background:#eef2fb;color:#2f4d8a;
+    display:grid;place-items:center;font-weight:800;font-size:11px;flex:0 0 26px}
+  .wizard-step.active .num{background:#14213d;color:#fff}
+  .wizard-step .content{flex:1;min-width:0}
+  .wizard-step .content label{display:block;font-size:11px;font-weight:800;color:#34415c;
+    text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+  .wizard-step .content input,
+  .wizard-step .content select{width:100%;border:1px solid #dfe4ee;border-radius:8px;
+    padding:10px 12px;font-size:12px;outline:none;background:#fff}
+  .wizard-step .content input:focus{border-color:var(--blue)}
 
-  @media (max-width:900px){.selector-strip{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  .scope-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .scope-card{border:1px solid var(--line);border-radius:10px;padding:12px 14px;
+    cursor:pointer;text-align:center;background:#fff;transition:.15s}
+  .scope-card:hover{background:#f8faff}
+  .scope-card.active{background:#eaf2ff;border-color:#b9d1f6}
+  .scope-card .icon{font-size:20px;display:block;margin-bottom:6px}
+  .scope-card strong{display:block;font-size:12px;color:var(--navy)}
+  .scope-card small{display:block;font-size:10px;color:var(--muted);margin-top:3px}
+
+  .preview-box{background:#f8faff;border:1px solid var(--line);border-radius:10px;
+    padding:12px 14px;max-height:220px;overflow-y:auto;font-size:11px;line-height:1.7}
+  .preview-box .row{display:flex;justify-content:space-between;padding:3px 0;
+    border-bottom:1px dotted #eef2f7}
+  .preview-box .row:last-child{border-bottom:0}
+  .preview-box .teacher{color:var(--navy);font-weight:700}
+  .preview-box .subj{color:var(--muted)}
+
+  @media (max-width:900px){
+    .selector-strip{grid-template-columns:1fr 1fr}
+    .push-row{grid-template-columns:1fr 1fr;gap:8px}
+    .push-row .actions{grid-column:1/-1;justify-content:flex-start}
+    .scope-cards{grid-template-columns:1fr}
+  }
   @media (max-width:650px){
     body{padding:64px 8px 24px}
     .band{padding:18px 20px}
@@ -126,41 +226,22 @@
 <body>
 
 <div class="page">
-
   <div class="band">
     <div class="band-left">
       <div class="band-logo" id="bandLogo">EC</div>
       <div>
         <h1 id="bandSchool">Gradesheet</h1>
-        <p id="bandSub">Assessment scores</p>
+        <p id="bandSub">Push → Enter → Approve → Publish</p>
       </div>
     </div>
     <div class="band-user">Signed in as <strong id="bandUser">—</strong></div>
   </div>
 
-  <div class="selector-strip">
-    <div class="sel-block"><label>Academic session</label><select id="yearSelect"></select></div>
-    <div class="sel-block"><label>Class</label><select id="classSelect"></select></div>
-    <div class="sel-block"><label>Subject</label><select id="subjectSelect"></select></div>
-    <div class="sel-block"><label>Semester</label>
-      <select id="semesterSelect">
-        <option value="1">Semester One</option>
-        <option value="2">Semester Two</option>
-      </select>
-    </div>
-    <div class="sel-block"><label>Assessment period</label><select id="periodSelect"></select></div>
-  </div>
-
-  <div class="period-strip">
-    <div class="left" id="periodChips"></div>
-    <div class="meta-bar" id="metaBar"></div>
-  </div>
-
+  <div id="tabsWrap"></div>
   <div id="pageBody"></div>
-
 </div>
 
-<script src="educore-shared.js"></script>
+<script src="educore-shared.js?v=10"></script>
 <script>
 (function(){
   'use strict';
@@ -170,27 +251,79 @@
   const user = E.requirePerm('exams', 'Gradesheet');
   if(!user) return;
 
-  /* ---------- FEE THRESHOLD GATE (viewer-level) ---------- */
+  /* ---------- REDIRECT GUARD ---------- */
+  if(user.role === 'Student' || user.role === 'Parent'){
+    const ledgerEntry = E.PAGE_REGISTRY.find(p => p.key === 'ledger');
+    const hasLedger = !!(user.permissions && user.permissions.reportcard);
+    if(ledgerEntry && ledgerEntry.file && hasLedger){
+      E.toast('Redirecting to Gradesheet Ledger…');
+      setTimeout(() => { window.location.replace(ledgerEntry.file); }, 400);
+      document.getElementById('pageBody').innerHTML = `
+        <div class="card"><div class="card-body" style="text-align:center;padding:60px 30px">
+          <div style="font-size:44px;opacity:.5;margin-bottom:14px">↪</div>
+          <strong style="display:block;color:var(--navy);font-size:15px;margin-bottom:8px">
+            Redirecting to Gradesheet Ledger…
+          </strong>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:16px">
+            Your grades are available in the Ledger.
+          </div>
+          <a href="${ledgerEntry.file}" style="display:inline-block;background:#3987ee;color:#fff;
+            padding:11px 18px;border-radius:9px;text-decoration:none;font-weight:700;font-size:12px">
+            Open Ledger now →
+          </a>
+        </div></div>`;
+      return;
+    }
+    E.showDenied('Gradesheet (use Gradesheet Ledger instead)');
+    return;
+  }
+
+  /* ---------- FEE THRESHOLD GATE ---------- */
   const gsAccess = E.viewerGradesheetAccess();
   if(!gsAccess.allowed){
     E.renderGradesheetLocked(gsAccess, 'Gradesheet');
     return;
   }
 
-  /* ---------- ROLE SCOPE ----------
-     Teacher / Principal / Registrar : full class roster, editable
-     Student / Parent                 : only their own (or their children's) rows, read-only
-  --------------------------------- */
-  const isStudent = user.role === 'Student';
-  const isParent  = user.role === 'Parent';
+  /* ---------- ROLES ---------- */
   const isTeacher = user.role === 'Teacher';
   const isStaff   = user.role === 'Principal' || user.role === 'Registrar';
-  const canEditAny = !isStudent && !isParent;   // students/parents never edit scores
 
-  /* ---------- SUB-FEATURE PERMISSIONS ---------- */
-  const canAdd  = E.can('exams.add');
-  const canEdit = E.can('exams.edit');
-  const canSave = canEditAny && (canAdd || canEdit);
+  /* ---------- PERMISSIONS ---------- */
+  const canViewPushes = E.can('exams.view_pushes');
+  const canPush       = E.can('exams.push');
+  const canApprove    = E.can('exams.approve');
+  const canReturn     = E.can('exams.return');
+  const canReopen     = E.can('exams.reopen');
+  const canBypass     = E.can('exams.bypass');
+  const canSave       = isStaff || isTeacher;
+
+  /* ---------- STATE ---------- */
+  const state = {
+    tab: isTeacher ? 'mine' : 'board',
+    boardFilter: 'submitted',
+    year: E.currentAcademicYear(),
+    className: '', subject: '', semester: 1, period: 1,
+    marks: {}, original: {}, dirty: false,
+    activePush: null
+  };
+
+  /* ---------- HELPERS ---------- */
+  /* Canonicalize any subject reference to its DISPLAY NAME.
+     saveScore and every lookup function in educore-shared.js normalizes
+     internally, so passing either a code or a name works — but the
+     canonical display name keeps the UI labels consistent. */
+  function canonicalSubject(value){
+    if(!value) return '';
+    const name = E.subjectName(value);
+    return name || value;
+  }
+
+  /* The push itself may store either the raw code or the display name,
+     so we must look it up by the canonical display name. */
+  function resolveSubjectCode(value){
+    return canonicalSubject(value);
+  }
 
   /* ---------- HEADER ---------- */
   function paintHeader(){
@@ -203,392 +336,888 @@
         name.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase() || 'EC';
     }
     document.getElementById('bandSchool').textContent = name;
-    document.getElementById('bandSub').textContent = isStudent
-      ? 'Your assessment scores'
-      : isParent
-      ? "Your children's assessment scores"
-      : 'Enter assessment scores period by period';
+    document.getElementById('bandSub').textContent = isTeacher
+      ? 'Your pushed periods and score entry'
+      : 'Push periods, review submissions, approve grades';
     document.getElementById('bandUser').textContent = user.name || user.username;
   }
 
-  /* ---------- STATE ---------- */
-  const state = {
-    year: E.currentAcademicYear(),
-    className: '', subject: '', semester: 1, period: 1,
-    marks: {}, original: {}, dirty: false
-  };
+  /* ---------- TABS ---------- */
+  function paintTabs(){
+    const wrap = document.getElementById('tabsWrap');
+    const tabs = [];
+    if(canViewPushes) tabs.push({ key:'board', label:'Push board' });
+    if(isTeacher || isStaff) tabs.push({ key:'mine', label:'My pushes' });
+    tabs.push({ key:'entry', label:'Score entry' });
 
-  /* ============================================================
-     SCOPED STUDENT LIST
-     Returns the students this viewer is allowed to see in this class.
-     ============================================================ */
-  function scopedStudents(className){
-    const all = (E.readStore(E.STORE_KEYS.students, []) || [])
-      .filter(s => s.class === className)
-      .sort((a,b) => a.name.localeCompare(b.name));
+    const pendingForTeacher = isTeacher ? E.pendingPushCountForTeacher(E.currentTeacherId()) : 0;
+    const pendingForAdmin = isStaff ? E.pendingApprovalCount() : 0;
 
-    if(isStudent){
-      return all.filter(s => s.id === user.linkedStudentId);
-    }
-    if(isParent){
-      const ids = new Set(E.childrenOf(user).map(k => k.id));
-      return all.filter(s => ids.has(s.id));
-    }
-    if(isTeacher){
-      /* Teacher: restrict to classes they teach — the class already
-         came from visibleClassNamesFor so we don't need to filter further. */
-      return all;
-    }
-    return all;  // Principal / Registrar
-  }
-
-  /* ---------- SELECTORS ---------- */
-  function fillYears(){
-    const s = E.readStore(E.STORE_KEYS.settings, {}) || {};
-    const year = s.academicYear || '2025/2026';
-    document.getElementById('yearSelect').innerHTML = `<option>${E.esc(year)}</option>`;
-    state.year = year;
-  }
-
-  function fillClasses(){
-    const sel = document.getElementById('classSelect');
-    let classes = E.visibleClassNamesFor(user);
-
-    /* Student: only their own class */
-    if(isStudent){
-      const me = (E.readStore(E.STORE_KEYS.students, []) || []).find(s => s.id === user.linkedStudentId);
-      classes = me ? [me.class] : [];
-    }
-
-    if(!classes.length){
-      sel.innerHTML = '<option value="">No classes available</option>';
-      sel.disabled = true;
-      return;
-    }
-    sel.disabled = false;
-    sel.innerHTML = classes.map(c => {
-      const cat = E.classCategoryFor(c);
-      return `<option value="${E.esc(c)}">${E.esc(c)}${cat ? ' — ' + E.esc(cat) : ''}</option>`;
-    }).join('');
-    const saved = sessionStorage.getItem('educoreGradesheetClass');
-    state.className = (saved && classes.includes(saved)) ? saved : classes[0];
-    sel.value = state.className;
-  }
-
-  function fillSubjects(){
-    const sel = document.getElementById('subjectSelect');
-    let subjectNames;
-    if(user.role === 'Teacher'){
-      subjectNames = Array.from(new Set(E.taughtSubjectsInClass(user, state.className)));
-    } else {
-      const cls = E.classByName(state.className);
-      if(cls && Array.isArray(cls.subjects) && cls.subjects.length){
-        subjectNames = cls.subjects.map(code => E.subjectName(code));
-      } else {
-        subjectNames = E.getSubjects().map(s => s.name);
-      }
-    }
-
-    /* Students/parents: only show subjects that have any recorded score
-       for their linked student(s) in this class — no empty subject list.
-       Fallback to the full list if nothing has been recorded yet. */
-    if((isStudent || isParent) && subjectNames.length){
-      const scoped = scopedStudents(state.className);
-      const namesSet = new Set(scoped.map(s => s.name));
-      const recorded = new Set();
-      (E.readStore(E.STORE_KEYS.results, []) || [])
-        .filter(r => r.class === state.className && namesSet.has(r.student))
-        .forEach(r => recorded.add(r.subject));
-      if(recorded.size){
-        subjectNames = subjectNames.filter(n => recorded.has(n));
-      }
-    }
-
-    if(!subjectNames.length){
-      sel.innerHTML = '<option value="">No subjects available</option>';
-      sel.disabled = true;
-      return;
-    }
-    sel.disabled = false;
-    sel.innerHTML = subjectNames.map(s => `<option>${E.esc(s)}</option>`).join('');
-    const saved = sessionStorage.getItem('educoreGradesheetSubject');
-    state.subject = (saved && subjectNames.includes(saved)) ? saved : subjectNames[0];
-    sel.value = state.subject;
-  }
-
-  function fillPeriods(){
-    const sem = Number(document.getElementById('semesterSelect').value) || 1;
-    state.semester = sem;
-    const periods = E.periodsForSemester(sem);
-    const sel = document.getElementById('periodSelect');
-    sel.innerHTML = periods.map(p =>
-      `<option value="${p.key}">${p.isExam ? 'Semester ' + sem + ' Examinations' : p.label}</option>`
-    ).join('');
-    state.period = periods[0].key;
-    sel.value = state.period;
-  }
-
-  /* ---------- CHIPS + META ---------- */
-  function paintPeriodChips(){
-    const periods = E.periodsForSemester(state.semester);
-    document.getElementById('periodChips').innerHTML = periods.map(p => {
-      const active = String(p.key) === String(state.period);
-      const hasData = hasDataFor(p.key);
-      const cls = ['period-chip', p.isExam ? 'exam' : '', active ? 'active' : '', hasData ? 'has-data' : ''].filter(Boolean).join(' ');
-      return `<button class="${cls}" data-period="${E.esc(p.key)}">${p.isExam ? 'Exam' : p.label}</button>`;
-    }).join('');
-  }
-  function hasDataFor(periodKey){
-    const students = scopedStudents(state.className);
-    return students.some(s => E.scoreFor(s.name, s.class, state.subject, state.semester, periodKey, state.year) !== '');
-  }
-  function paintMeta(){
-    const cat = E.classCategoryFor(state.className);
-    const isNursery = E.isNurseryCategory(cat);
-    const locked = E.isSemesterLocked(state.semester, state.year);
-    const bits = [];
-    bits.push(`<span class="meta-chip ${isNursery ? 'cat-nursery' : 'cat-numeric'}">
-      <span class="dot"></span>${isNursery ? 'Nursery · Letter grading' : (cat || 'No category') + ' · Numeric grading'}</span>`);
-    bits.push(`<span class="meta-chip">Year: <strong>${E.esc(state.year)}</strong></span>`);
-    if(locked) bits.push(`<span class="meta-chip locked">🔒 Semester locked</span>`);
-    if(isStudent || isParent) bits.push(`<span class="meta-chip">View only</span>`);
-    document.getElementById('metaBar').innerHTML = bits.join('');
-  }
-
-  /* ---------- LOAD + RENDER ---------- */
-  function loadMarks(){
-    state.marks = {}; state.original = {}; state.dirty = false;
-    scopedStudents(state.className).forEach(s => {
-      const v = E.scoreFor(s.name, s.class, state.subject, state.semester, state.period, state.year);
-      state.marks[s.id] = v === '' ? '' : v;
-      state.original[s.id] = v === '' ? '' : v;
+    wrap.innerHTML = `<div class="tabs">
+      ${tabs.map(t => {
+        let badge = '';
+        if(t.key === 'mine' && pendingForTeacher > 0) badge = `<span class="badge-count">${pendingForTeacher}</span>`;
+        if(t.key === 'board' && pendingForAdmin > 0) badge = `<span class="badge-count">${pendingForAdmin}</span>`;
+        return `<button class="tab ${state.tab === t.key ? 'active' : ''}" data-tab="${t.key}">${t.label}${badge}</button>`;
+      }).join('')}
+    </div>`;
+    wrap.querySelectorAll('.tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if(state.dirty && !confirm('You have unsaved scores. Discard and switch tab?')) return;
+        state.tab = btn.dataset.tab;
+        paintAll();
+      });
     });
   }
 
-  function paintTable(){
+  /* ---------- PAINT ---------- */
+  function paintAll(){
+    paintTabs();
     const body = document.getElementById('pageBody');
-    const students = scopedStudents(state.className);
+    if(state.tab === 'board' && canViewPushes){
+      body.innerHTML = paintBoard(); bindBoard();
+    } else if(state.tab === 'mine'){
+      body.innerHTML = paintMine(); bindMine();
+    } else {
+      body.innerHTML = paintEntry(); bindEntry();
+    }
+  }
 
-    if(!students.length){
-      if(isStudent){
-        body.innerHTML = `<div class="empty"><span class="icon">🔒</span>
-          Your student record could not be located in <strong>${E.esc(state.className)}</strong>.</div>`;
-      } else if(isParent){
-        body.innerHTML = `<div class="empty"><span class="icon">👨‍👩‍👧</span>
-          None of your children are enrolled in <strong>${E.esc(state.className)}</strong>.</div>`;
-      } else {
-        body.innerHTML = `<div class="empty"><span class="icon">👥</span>
-          No students are enrolled in <strong>${E.esc(state.className)}</strong>.</div>`;
+  /* ---------- PUSH BOARD ---------- */
+  function paintBoard(){
+    const pushes = E.readGradePushes();
+    const filter = state.boardFilter;
+    const filterPushes = pushes.filter(p => filter === 'all' ? true : p.status === filter)
+      .sort((a,b) => new Date(b.pushedAt) - new Date(a.pushedAt));
+
+    const counts = { all: pushes.length };
+    ['submitted','approved','open','locked','returned','hidden'].forEach(k => {
+      counts[k] = pushes.filter(p => p.status === k).length;
+    });
+
+    const filterBar = `<div class="filter-row">
+      ${['submitted','open','returned','approved','hidden','locked','all'].map(k => `
+        <button class="filter-chip ${filter === k ? 'active' : ''}" data-filter="${k}">
+          ${k[0].toUpperCase() + k.slice(1)} <span class="n">${counts[k] || 0}</span>
+        </button>`).join('')}
+    </div>`;
+
+    const rows = filterPushes.length
+      ? filterPushes.map(p => renderBoardRow(p)).join('')
+      : `<div class="empty-state">
+           <span class="icon">📭</span>
+           <strong>No pushes in this filter</strong>
+           ${canPush ? 'Click <strong>Push a period</strong> above to create one.' : ''}
+         </div>`;
+
+    return `<div class="card">
+      <div class="card-head">
+        <div><h3>Push board</h3><div class="sub">Review teacher submissions and approve grades</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          ${canPush ? `<button class="btn" id="newPushBtn">＋ Push a period</button>` : ''}
+        </div>
+      </div>
+      <div class="card-body" style="padding:0">
+        ${filterBar}
+        ${rows}
+      </div>
+    </div>`;
+  }
+
+  function renderBoardRow(p){
+    const prog = E.pushProgress(p.id);
+    const deadlineStr = p.deadline ? new Date(p.deadline).toLocaleString() : '—';
+    const label = E.pushStatusLabel(p).split(' — ')[0];
+    const actions = [];
+    if(p.status === 'submitted' && (canApprove || canReturn)){
+      actions.push(`<button class="btn green small" data-review="${E.esc(p.id)}">Review</button>`);
+    }
+    if(p.status === 'approved' && canReturn){
+      actions.push(`<button class="btn outline small" data-hide="${E.esc(p.id)}">Hide</button>`);
+    }
+    if(p.status === 'hidden' && canApprove){
+      actions.push(`<button class="btn green small" data-reapprove="${E.esc(p.id)}">Re-approve</button>`);
+    }
+    if((p.status === 'locked' || p.status === 'returned') && canReopen){
+      actions.push(`<button class="btn warn small" data-reopen="${E.esc(p.id)}">Reopen</button>`);
+    }
+    if(p.status === 'open' || p.status === 'returned'){
+      actions.push(`<button class="btn secondary small" data-preview="${E.esc(p.id)}">Preview</button>`);
+    }
+    return `<div class="push-row">
+      <div class="who">
+        <strong>${E.esc(p.teacherName)}</strong>
+        <small>${E.esc(p.className)} · ${E.esc(E.subjectName(p.subject))}</small>
+      </div>
+      <div class="period">P${E.periodMeta(p.period)?.isExam ? 'Exam' : p.period}<small>S${p.semester} · ${E.esc(p.year)}</small></div>
+      <div class="time">${E.esc(deadlineStr)}</div>
+      <div class="progress">
+        <span class="status-pill ${p.status}">${label}</span>
+        <span style="margin-left:8px"><strong>${prog.filled}</strong> / ${prog.total} (${prog.pct}%)</span>
+      </div>
+      <div class="actions">${actions.join(' ')}</div>
+    </div>`;
+  }
+
+  function bindBoard(){
+    document.querySelectorAll('[data-filter]').forEach(btn => {
+      btn.addEventListener('click', () => { state.boardFilter = btn.dataset.filter; paintAll(); });
+    });
+    document.getElementById('newPushBtn')?.addEventListener('click', openPushWizard);
+    document.querySelectorAll('[data-review]').forEach(btn => {
+      btn.addEventListener('click', () => openReviewModal(btn.dataset.review));
+    });
+    document.querySelectorAll('[data-hide]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const ok = await E.confirmModal({
+          title: 'Hide from parents?',
+          message: 'Approved grades will become invisible to students and parents immediately. The teacher is NOT notified. Use Return if you want them to fix something.',
+          submitText: 'Hide', danger: true
+        });
+        if(!ok) return;
+        const res = E.hideGradePush(btn.dataset.hide);
+        if(!res.ok){ E.toast(res.error); return; }
+        E.toast('Hidden from parents.'); paintAll();
+      });
+    });
+    document.querySelectorAll('[data-reapprove]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const res = E.approveGradePush(btn.dataset.reapprove);
+        if(!res.ok){ E.toast(res.error); return; }
+        E.toast('Re-approved.'); paintAll();
+      });
+    });
+    document.querySelectorAll('[data-reopen]').forEach(btn => {
+      btn.addEventListener('click', () => openReopenModal(btn.dataset.reopen));
+    });
+    document.querySelectorAll('[data-preview]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const p = E.getGradePush(btn.dataset.preview);
+        if(!p) return;
+        state.className = p.className;
+        state.subject = E.subjectName(p.subject);
+        state.semester = p.semester;
+        state.period = p.period;
+        state.activePush = p;
+        state.tab = 'entry';
+        paintAll();
+      });
+    });
+  }
+
+  /* ---------- MY PUSHES ---------- */
+  function paintMine(){
+    const tid = E.currentTeacherId();
+    if(!tid){
+      return `<div class="empty-state"><span class="icon">🔒</span>
+        <strong>No teacher record linked</strong>
+        Your account is not linked to a teacher record. Ask the admin to link it.</div>`;
+    }
+    const pushes = E.readGradePushes().filter(p => p.teacherId === tid)
+      .sort((a,b) => {
+        const order = { open:0, returned:1, submitted:2, approved:3, locked:4, hidden:5 };
+        const oa = order[a.status] ?? 9, ob = order[b.status] ?? 9;
+        if(oa !== ob) return oa - ob;
+        return new Date(b.pushedAt) - new Date(a.pushedAt);
+      });
+    if(!pushes.length){
+      return `<div class="empty-state"><span class="icon">📭</span>
+        <strong>No pushes for you yet</strong>
+        When the admin pushes a period to you, it will appear here.</div>`;
+    }
+    return pushes.map(p => renderPushCard(p)).join('');
+  }
+
+  function renderPushCard(p){
+    const prog = E.pushProgress(p.id);
+    const deadline = p.deadline ? new Date(p.deadline) : null;
+    const remaining = deadline ? deadline.getTime() - Date.now() : null;
+    const fmtRemaining = ms => {
+      if(ms <= 0) return 'Expired';
+      const sec = Math.floor(ms / 1000);
+      const d = Math.floor(sec / 86400);
+      const h = Math.floor((sec % 86400) / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      if(d > 0) return `${d}d ${h}h`;
+      if(h > 0) return `${h}h ${m}m`;
+      return `${m}m`;
+    };
+    let countdownClass = 'countdown';
+    if(remaining != null && remaining < 24 * 3600 * 1000) countdownClass += ' warn';
+    if(remaining != null && remaining < 6 * 3600 * 1000) countdownClass += ' danger';
+
+    const canEnter = p.status === 'open' || p.status === 'returned';
+    const actions = [];
+    if(canEnter){
+      actions.push(`<button class="btn big" data-enter="${E.esc(p.id)}">✎ Enter scores</button>`);
+      if(prog.filled > 0){
+        actions.push(`<button class="btn green big" data-submit-push="${E.esc(p.id)}">✔ Submit for approval</button>`);
       }
-      return;
+    } else if(p.status === 'submitted'){
+      actions.push(`<span style="font-size:12px;color:var(--muted)">Submitted ${E.fmtDateTime(p.submittedAt)} — awaiting approval</span>`);
+    } else if(p.status === 'approved'){
+      actions.push(`<span style="font-size:12px;color:var(--green);font-weight:700">✓ Approved — visible to students</span>`);
+    } else if(p.status === 'locked'){
+      actions.push(`<span style="font-size:12px;color:#a86414;font-weight:700">🔒 Locked — deadline expired</span>`);
+    } else if(p.status === 'hidden'){
+      actions.push(`<span style="font-size:12px;color:#59647c;font-weight:700">Hidden by admin</span>`);
     }
 
-    const cat = E.classCategoryFor(state.className);
-    const isNursery = E.isNurseryCategory(cat);
-    const locked = E.isSemesterLocked(state.semester, state.year);
-    const editable = canSave && !locked;
-    const period = E.periodMeta(state.period);
-    const periodLabel = period ? (period.isExam ? `Semester ${state.semester} Examinations` : period.label) : '';
+    const returnNote = p.status === 'returned' && p.returnReason
+      ? `<div style="margin-top:10px;padding:10px 12px;background:#f4eaff;border:1px solid #d9c9f0;border-radius:8px;font-size:11.5px;color:#6b3da5">
+           <strong>Admin returned this push:</strong> ${E.esc(p.returnReason)}
+         </div>` : '';
 
-    body.innerHTML = `
-      <div class="card">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th style="width:56px">#</th>
-                <th>Student</th>
-                <th>ID</th>
-                <th>${E.esc(periodLabel)} score</th>
-                <th>Semester Avg</th>
-                <th>Yearly Avg</th>
-              </tr>
-            </thead>
-            <tbody id="tbody"></tbody>
-          </table>
-        </div>
-        <div class="save-bar">
-          <div class="note" id="saveNote"></div>
-          <div>
-            ${editable
-              ? `<button class="btn green" id="saveBtn" disabled>💾 Save scores</button>`
-              : `<span style="font-size:11.5px;color:var(--muted);padding:8px 0">${
-                  (isStudent || isParent)
-                    ? 'View only — you can only see your own scores.'
-                    : locked
-                      ? '🔒 Semester is locked — scores cannot be edited.'
-                      : 'View only.'
-                }</span>`}
+    return `<div class="push-card status-${p.status}">
+      <div class="top">
+        <div>
+          <h4>${E.esc(p.className)} · ${E.esc(E.subjectName(p.subject))}</h4>
+          <div class="meta">
+            <strong>P${E.periodMeta(p.period)?.isExam ? 'Exam' : p.period}</strong> · Semester ${p.semester} · ${E.esc(p.year)}<br>
+            Deadline: <strong>${E.esc(deadline ? deadline.toLocaleString() : '—')}</strong>
           </div>
         </div>
-      </div>`;
+        <div style="text-align:right">
+          ${canEnter && remaining != null
+            ? `<div class="${countdownClass}">⏱ ${fmtRemaining(remaining)}</div>`
+            : `<span class="status-pill ${p.status}">${E.esc(E.pushStatusLabel(p).split(' — ')[0])}</span>`}
+        </div>
+      </div>
+      ${returnNote}
+      <div class="footer">
+        <div class="progress">
+          <div class="bar"><span style="width:${prog.pct}%"></span></div>
+          <span><strong>${prog.filled}</strong> of ${prog.total} scores (${prog.pct}%)</span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">${actions.join(' ')}</div>
+      </div>
+    </div>`;
+  }
 
-    const tb = document.getElementById('tbody');
-    tb.innerHTML = students.map((s, i) => {
+  function bindMine(){
+    document.querySelectorAll('[data-enter]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const p = E.getGradePush(btn.dataset.enter);
+        if(!p) return;
+        E.markPushOpened(p.id);
+        state.className = p.className;
+        state.subject = E.subjectName(p.subject);
+        state.semester = p.semester;
+        state.period = p.period;
+        state.activePush = p;
+        state.tab = 'entry';
+        paintAll();
+      });
+    });
+    document.querySelectorAll('[data-submit-push]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const p = E.getGradePush(btn.dataset.submitPush);
+        if(!p) return;
+        const prog = E.pushProgress(p.id);
+        const ok = await E.confirmModal({
+          title: 'Submit for approval?',
+          message: `You have <strong>${prog.filled} of ${prog.total}</strong> scores entered.<br><br>
+            ${prog.filled < prog.total ? `<span style="color:#a86414">${prog.total - prog.filled} students have no score. Submit anyway?</span><br><br>` : ''}
+            Once submitted, you cannot edit until the admin approves or returns.`,
+          submitText: 'Submit'
+        });
+        if(!ok) return;
+        const res = E.submitGradePush(p.id);
+        if(!res.ok){ E.toast(res.error); return; }
+        E.toast(`Submitted ${res.rows} score${res.rows === 1 ? '' : 's'}.`);
+        paintAll();
+      });
+    });
+  }
+
+  /* ---------- ENTRY MATRIX ---------- */
+  function paintEntry(){
+    const classes = getScopedClasses();
+    if(!classes.length){
+      return `<div class="empty-state"><span class="icon">📚</span>
+        <strong>No classes available</strong>
+        ${isTeacher ? 'Ask the admin to assign you to classes.' : 'No classes registered yet.'}</div>`;
+    }
+    if(!state.className || !classes.includes(state.className)) state.className = classes[0];
+
+    const subjects = getScopedSubjects(state.className);
+    if(!subjects.length){
+      return `<div class="empty-state"><span class="icon">📚</span>
+        <strong>No subjects for ${E.esc(state.className)}</strong>
+        ${isTeacher ? 'Ask the admin to assign you subjects.' : 'Configure class subjects first.'}</div>`;
+    }
+    if(!state.subject || !subjects.includes(state.subject)) state.subject = subjects[0];
+
+    /* state.subject is already a display name (getScopedSubjects returns names).
+       canonicalSubject is a no-op here, but we keep the call so any future
+       caller passing a code gets normalized. */
+    const subjectNameValue = canonicalSubject(state.subject);
+
+    let push = null;
+    if(isTeacher){
+      const tid = E.currentTeacherId();
+      push = tid ? E.findPush(tid, state.className, subjectNameValue, state.semester, state.period, state.year) : null;
+      if(!push){
+        return paintEntrySelector(classes, subjects) + renderReadOnlyBanner('no-push');
+      }
+    } else if(isStaff){
+      /* findPush uses normSubject internally, so passing the display name
+         matches regardless of whether the stored push.subject is a code
+         or a name. */
+      push = E.readGradePushes().find(p =>
+        p.className === state.className &&
+        E.normSubject(p.subject) === E.normSubject(subjectNameValue) &&
+        Number(p.semester) === Number(state.semester) &&
+        String(p.period) === String(state.period) &&
+        p.year === state.year
+      ) || null;
+    }
+    state.activePush = push;
+
+    const students = scopedStudents(state.className);
+    const cat = E.classCategoryFor(state.className);
+    const isNursery = E.isNurseryCategory(cat);
+
+    let editable = false;
+    let bannerKind = null;
+    if(isStaff) editable = true;
+    else if(isTeacher && push){
+      if(push.status === 'open' || push.status === 'returned') editable = true;
+      else bannerKind = push.status;
+    } else if(isTeacher && !push){
+      bannerKind = 'no-push';
+    }
+
+    state.marks = {};
+    state.original = {};
+    students.forEach(s => {
+      const v = E.scoreFor(s.name, s.class, subjectNameValue, state.semester, state.period, state.year);
+      state.marks[s.id] = v === '' ? '' : v;
+      state.original[s.id] = v === '' ? '' : v;
+    });
+    state.dirty = false;
+
+    const periodLabel = E.periodMeta(state.period)?.isExam
+      ? `Semester ${state.semester} Exam`
+      : E.periodMeta(state.period)?.label || '';
+
+    const banner = bannerKind ? renderReadOnlyBanner(bannerKind, push) : '';
+
+    const rows = students.map((s, i) => {
       const cur = state.marks[s.id] ?? '';
-      const s1 = E.semesterAverageFor(s.name, s.class, state.subject, 1, cat, state.year);
-      const s2 = E.semesterAverageFor(s.name, s.class, state.subject, 2, cat, state.year);
-      const yr = E.yearlyAverageFor(s.name, s.class, state.subject, cat, state.year);
-      const semAvg = state.semester === 1 ? s1 : s2;
-      const semTxt = semAvg ? `${semAvg.number.toFixed(1)}% <span class="grade-pill ${gradeCls(semAvg.letter)}">${semAvg.letter}</span>` : '—';
-      const yrTxt  = yr ? `${yr.number.toFixed(1)}% <span class="grade-pill ${gradeCls(yr.letter)}">${yr.letter}</span>` : '—';
-
-      /* Editable input for staff, read-only span for students/parents */
-      const scoreCell = editable
+      const cell = editable
         ? `<input class="score-input ${isNursery ? 'letter' : ''}" type="text"
               inputmode="${isNursery ? 'text' : 'decimal'}"
               maxlength="${isNursery ? 1 : 5}"
               placeholder="${isNursery ? 'A–F' : '0–100'}"
               data-student-id="${E.esc(s.id)}"
               value="${cur === '' ? '' : E.esc(String(cur))}">`
-        : `<span class="score-readonly">${cur === '' ? '—' : E.esc(String(cur))}</span>`;
-
+        : `<span style="display:inline-block;font-family:monospace;font-weight:800;
+              font-size:13px;color:var(--navy);min-width:60px;text-align:center;
+              padding:8px 10px;background:#f6f8fd;border-radius:7px">
+              ${cur === '' ? '—' : E.esc(String(cur))}</span>`;
       return `<tr>
         <td style="color:var(--muted)">${i + 1}</td>
-        <td><div class="person">
-          <div class="mini-avatar">${E.initials(s.name)}</div>
-          <div><strong>${E.esc(s.name)}</strong><small>${E.esc(s.class)}</small></div>
-        </div></td>
+        <td><div class="person"><div class="mini-avatar">${E.initials(s.name)}</div>
+          <div><strong>${E.esc(s.name)}</strong><small>${E.esc(s.class)}</small></div></div></td>
         <td style="font-family:monospace;font-size:11px;color:var(--muted)">${E.esc(s.id)}</td>
-        <td>${scoreCell}</td>
-        <td><span class="avg-cell">${semTxt}</span></td>
-        <td><span class="avg-cell">${yrTxt}</span></td>
+        <td>${cell}</td>
       </tr>`;
     }).join('');
 
-    bindTableEvents(editable, cat);
-    updateSaveNote();
+    const pushBadge = push
+      ? `<span class="status-pill ${push.status}">${E.esc(E.pushStatusLabel(push).split(' — ')[0])}</span>`
+      : `<span class="pill grey">No push</span>`;
+
+    const actions = editable ? `
+      <button class="btn green" id="saveBtn" disabled>💾 Save scores</button>
+      ${isTeacher && push ? `<button class="btn gold" id="submitPushBtn">✔ Submit for approval</button>` : ''}
+    ` : '';
+
+    return `
+      ${paintEntrySelector(classes, subjects)}
+      ${banner}
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <h3>${E.esc(state.className)} · ${E.esc(E.subjectName(subjectNameValue))} · ${E.esc(periodLabel)}</h3>
+            <div class="sub">${pushBadge}${push ? ` · Deadline: ${E.fmtDateTime(push.deadline)}` : ''}</div>
+          </div>
+          <div>${actions}</div>
+        </div>
+        <div class="card-body" style="padding:0;overflow-x:auto">
+          <table>
+            <thead><tr><th style="width:56px">#</th><th>Student</th><th>ID</th><th>Score</th></tr></thead>
+            <tbody>${rows || '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px">No students.</td></tr>'}</tbody>
+          </table>
+        </div>
+        ${editable ? `<div class="save-bar"><div class="note" id="saveNote">Enter scores to enable saving.</div></div>` : ''}
+      </div>`;
   }
 
-  function gradeCls(letter){ return ({ A:'a', B:'b', C:'c', D:'d', F:'f' }[letter] || 'b'); }
+  function paintEntrySelector(classes, subjects){
+    return `<div class="selector-strip">
+      <div class="sel-block"><label>Class</label>
+        <select id="classSelect">${classes.map(c => `<option ${state.className === c ? 'selected' : ''}>${E.esc(c)}</option>`).join('')}</select>
+      </div>
+      <div class="sel-block"><label>Subject</label>
+        <select id="subjectSelect">${subjects.map(s => `<option ${state.subject === s ? 'selected' : ''}>${E.esc(s)}</option>`).join('')}</select>
+      </div>
+      <div class="sel-block"><label>Semester · Period</label>
+        <select id="periodSelect">
+          ${[1,2].map(sem => E.periodsForSemester(sem).map(p =>
+            `<option value="${sem}|${p.key}" ${Number(state.semester) === sem && String(state.period) === String(p.key) ? 'selected' : ''}>
+              Semester ${sem} · ${p.isExam ? 'Exam' : p.label}
+            </option>`).join('')).join('')}
+        </select>
+      </div>
+    </div>`;
+  }
 
-  function bindTableEvents(editable, cat){
-    const tb = document.getElementById('tbody');
-    if(!tb) return;
-    if(!editable) return;   /* students/parents never see inputs */
+  function renderReadOnlyBanner(kind, push){
+    const map = {
+      'no-push':   { cls:'locked', icon:'🔒', html:`<div><strong>No push open.</strong> This period has not been pushed to you. Ask the admin to push it.</div>` },
+      'locked':    { cls:'locked', icon:'🔒', html:`<div><strong>Locked.</strong> Deadline was ${push ? E.fmtDateTime(push.deadline) : ''}. Ask admin to reopen.</div>` },
+      'submitted': { cls:'submitted', icon:'⏳', html:`<div><strong>Submitted.</strong> Waiting for admin approval. Submitted ${push ? E.fmtDateTime(push.submittedAt) : ''}.</div>` },
+      'approved':  { cls:'approved', icon:'✓', html:`<div><strong>Approved.</strong> Visible to students. Approved ${push ? E.fmtDateTime(push.approvedAt) : ''}.</div>` },
+      'returned':  { cls:'locked', icon:'↩', html:`<div><strong>Returned for revision.</strong> ${push ? E.esc(push.returnReason) : ''}</div>` },
+      'hidden':    { cls:'locked', icon:'🚫', html:`<div><strong>Hidden by admin.</strong> Invisible to students.</div>` }
+    };
+    const b = map[kind];
+    if(!b) return '';
+    return `<div class="readonly-banner ${b.cls}"><div class="icon">${b.icon}</div>${b.html}</div>`;
+  }
 
-    tb.querySelectorAll('.score-input').forEach(inp => {
+  function bindEntry(){
+    document.getElementById('classSelect')?.addEventListener('change', e => {
+      if(state.dirty && !confirm('Discard unsaved and switch class?')){ e.target.value = state.className; return; }
+      state.className = e.target.value; state.subject = ''; state.activePush = null; state.dirty = false; paintAll();
+    });
+    document.getElementById('subjectSelect')?.addEventListener('change', e => {
+      if(state.dirty && !confirm('Discard unsaved and switch subject?')){ e.target.value = state.subject; return; }
+      state.subject = e.target.value; state.activePush = null; state.dirty = false; paintAll();
+    });
+    document.getElementById('periodSelect')?.addEventListener('change', e => {
+      if(state.dirty && !confirm('Discard unsaved and switch period?')){ e.target.value = `${state.semester}|${state.period}`; return; }
+      const [sem, period] = e.target.value.split('|');
+      state.semester = Number(sem); state.period = period;
+      state.activePush = null; state.dirty = false; paintAll();
+    });
+    document.querySelectorAll('[data-student-id]').forEach(inp => {
       inp.addEventListener('input', () => {
         const id = inp.dataset.studentId;
-        const raw = inp.value;
-        const v = E.validateScore(raw, cat);
-        inp.classList.toggle('invalid', raw !== '' && !v.ok);
-        state.marks[id] = raw;
-        state.dirty = state.dirty || String(raw) !== String(state.original[id] ?? '');
-        updateSaveNote();
+        const cat = E.classCategoryFor(state.className);
+        const v = E.validateScore(inp.value, cat);
+        inp.classList.toggle('invalid', inp.value !== '' && !v.ok);
+        state.marks[id] = inp.value;
+        updateDirtyState();
       });
       inp.addEventListener('blur', () => {
         const id = inp.dataset.studentId;
+        const cat = E.classCategoryFor(state.className);
         const v = E.validateScore(inp.value, cat);
-        if(v.ok && v.normalized !== ''){
-          inp.value = v.normalized;
-          state.marks[id] = v.normalized;
-        }
-        updateSaveNote();
+        if(v.ok && v.normalized !== ''){ inp.value = v.normalized; state.marks[id] = v.normalized; }
+        updateDirtyState();
       });
     });
-    document.getElementById('saveBtn')?.addEventListener('click', saveAll);
+    document.getElementById('saveBtn')?.addEventListener('click', () => saveAll());
+    document.getElementById('submitPushBtn')?.addEventListener('click', async () => {
+      if(!state.activePush) return;
+      const ok = await saveAll();
+      if(!ok) return;
+      const p = E.getGradePush(state.activePush.id);
+      if(!p) return;
+      const prog = E.pushProgress(p.id);
+      const doSubmit = await E.confirmModal({
+        title: 'Submit for approval?',
+        message: `You have <strong>${prog.filled} of ${prog.total}</strong> scores entered.<br><br>
+          ${prog.filled < prog.total ? `<span style="color:#a86414">${prog.total - prog.filled} students have no score.</span><br><br>` : ''}
+          Once submitted, you cannot edit until the admin approves or returns.`,
+        submitText: 'Submit'
+      });
+      if(!doSubmit) return;
+      const res = E.submitGradePush(p.id);
+      if(!res.ok){ E.toast(res.error); return; }
+      E.toast('Submitted for approval.');
+      state.tab = 'mine'; paintAll();
+    });
   }
 
-  function updateSaveNote(){
-    const btn = document.getElementById('saveBtn');
-    const note = document.getElementById('saveNote');
-    if(!btn || !note) return;
-    let changedCount = 0, invalidCount = 0;
+  function updateDirtyState(){
     const cat = E.classCategoryFor(state.className);
+    let changed = 0, invalid = 0;
     Object.keys(state.marks).forEach(id => {
       const cur = String(state.marks[id] ?? '');
       const orig = String(state.original[id] ?? '');
-      if(cur !== orig) changedCount++;
-      if(!E.validateScore(state.marks[id], cat).ok) invalidCount++;
+      if(cur !== orig) changed++;
+      if(!E.validateScore(state.marks[id], cat).ok) invalid++;
     });
-    state.dirty = changedCount > 0;
-    btn.disabled = changedCount === 0 || invalidCount > 0;
-    if(invalidCount){ note.textContent = `${invalidCount} invalid score${invalidCount===1?'':'s'} — fix highlighted fields before saving.`; note.style.color = '#bd3b48'; }
-    else if(changedCount === 0){ note.textContent = 'No changes yet. Enter scores to enable saving.'; note.style.color = ''; }
-    else { note.textContent = `${changedCount} unsaved change${changedCount===1?'':'s'}.`; note.style.color = '#a86414'; }
+    state.dirty = changed > 0;
+    const btn = document.getElementById('saveBtn');
+    const note = document.getElementById('saveNote');
+    if(btn) btn.disabled = changed === 0 || invalid > 0;
+    if(note){
+      if(invalid) note.innerHTML = `<strong style="color:#bd3b48">${invalid} invalid — fix before saving.</strong>`;
+      else if(changed === 0) note.textContent = 'No changes yet.';
+      else note.innerHTML = `<strong>${changed} unsaved change${changed === 1 ? '' : 's'}</strong>.`;
+    }
   }
 
-  function saveAll(){
-    if(!canSave){ E.toast("You don't have permission to save scores."); return; }
-    if(E.isSemesterLocked(state.semester, state.year)){ E.toast('This semester is locked.'); return; }
+  async function saveAll(){
+    if(!canSave) return false;
     const cat = E.classCategoryFor(state.className);
-    let saved = 0, skipped = 0, errors = 0;
     const students = scopedStudents(state.className);
-    students.forEach(s => {
+    const subjectNameValue = canonicalSubject(state.subject);
+    let saved = 0, errors = 0;
+    for(const s of students){
       const raw = state.marks[s.id];
       const orig = state.original[s.id] ?? '';
-      if(String(raw ?? '') === String(orig)) return;
+      if(String(raw ?? '') === String(orig)) continue;
       const v = E.validateScore(raw, cat);
-      if(!v.ok){ errors++; return; }
-      if(user.role === 'Teacher' && !E.canEditSubject(user, s.class, state.subject)){ skipped++; return; }
-      const res = E.saveScore({ student: s.name, className: s.class, subject: state.subject,
-        semester: state.semester, period: state.period, score: v.normalized, year: state.year });
-      if(!res.ok){ if(res.skipped) skipped++; else errors++; return; }
-      E.audit('update', `${s.name} · ${state.subject} · S${state.semester} · ${state.period}`, String(orig ?? ''), String(v.normalized ?? ''));
-      saved++;
-    });
-    loadMarks(); paintPeriodChips(); paintTable();
-    if(saved) E.toast(`Saved ${saved} score change${saved===1?'':'s'}.`);
-    else E.toast('Nothing to save.');
-    if(errors) E.toast(`${errors} score${errors===1?'':'s'} skipped (invalid).`);
-    if(skipped) E.toast(`${skipped} value${skipped===1?'':'s'} skipped (not your subject).`);
+      if(!v.ok){ errors++; continue; }
+      const res = E.saveScore({
+        studentId: s.id, student: s.name, className: s.class,
+        subject: subjectNameValue,
+        semester: state.semester,
+        period: state.period,
+        score: v.normalized,
+        year: state.year
+      });
+      if(res.ok) saved++;
+      else { errors++; E.toast(res.error); }
+    }
+    if(saved){
+      E.toast(`Saved ${saved} score${saved === 1 ? '' : 's'}.`);
+      state.dirty = false;
+      /* Re-read from the store so state.original reflects exactly what was
+         persisted — this prevents a false "unsaved" nag after saving. */
+      const refreshed = {};
+      students.forEach(s => {
+        const v = E.scoreFor(s.name, s.class, subjectNameValue, state.semester, state.period, state.year);
+        refreshed[s.id] = v === '' ? '' : v;
+      });
+      state.original = refreshed;
+      state.marks = Object.assign({}, refreshed);
+      paintAll();
+      return true;
+    }
+    if(errors) E.toast(`${errors} error${errors === 1 ? '' : 's'}.`);
+    return errors === 0;
   }
 
-  function bindSelectors(){
-    document.getElementById('classSelect').addEventListener('change', e => {
-      if(state.dirty && !confirm('You have unsaved changes. Discard and switch class?')){ e.target.value = state.className; return; }
-      state.className = e.target.value;
-      sessionStorage.setItem('educoreGradesheetClass', state.className);
-      fillSubjects(); fillPeriods(); refreshAll();
+  /* ---------- SCOPED HELPERS ---------- */
+  function getScopedClasses(){
+    return E.visibleClassNamesFor(user);
+  }
+  function getScopedSubjects(className){
+    if(isTeacher){
+      const raw = E.taughtSubjectsInClass(user, className);
+      const names = raw.map(s => E.subjectName(s)).filter(Boolean);
+      return Array.from(new Set(names)).sort();
+    }
+    const cls = E.classByName(className);
+    if(cls && Array.isArray(cls.subjects) && cls.subjects.length){
+      const names = cls.subjects.map(c => E.subjectName(c)).filter(Boolean);
+      return Array.from(new Set(names));
+    }
+    return E.getSubjects().map(s => s.name);
+  }
+  function scopedStudents(className){
+    return (E.readStore(E.STORE_KEYS.students, []) || [])
+      .filter(s => s.class === className).sort((a,b) => a.name.localeCompare(b.name));
+  }
+
+  /* ---------- PUSH WIZARD ---------- */
+  function openPushWizard(){
+    if(!canPush){ E.toast("You don't have permission."); return; }
+    const classes = E.getClasses();
+    const teachers = E.getTeachers();
+    const wizard = {
+      semester: 1, period: 1,
+      scope: 'school', scopeClass: classes[0]?.name || '',
+      scopeTeacher: teachers[0]?.id || '',
+      scopeTeacherClass: '', scopeTeacherSubject: '',
+      deadline: defaultDeadline(), notes: ''
+    };
+    function defaultDeadline(){
+      const d = new Date(Date.now() + 48 * 3600 * 1000); d.setMinutes(0,0,0);
+      const pad = n => String(n).padStart(2,'0');
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+    function previewTargets(){
+      const assignments = E.getAssignments();
+      let list = [];
+      if(wizard.scope === 'school') list = assignments;
+      else if(wizard.scope === 'class') list = assignments.filter(a => a.className === wizard.scopeClass);
+      else if(wizard.scope === 'teacher') list = assignments.filter(a =>
+        a.teacherId === wizard.scopeTeacher &&
+        a.className === wizard.scopeTeacherClass &&
+        E.normSubject(a.subject) === E.normSubject(wizard.scopeTeacherSubject));
+      const seen = new Set();
+      return list.filter(a => {
+        const k = `${a.teacherId}|${a.className}|${E.normSubject(a.subject)}`;
+        if(seen.has(k)) return false; seen.add(k); return true;
+      }).map(a => {
+        const t = teachers.find(x => x.id === a.teacherId);
+        return { teacherName: t ? t.name : a.teacherId, className: a.className, subject: a.subject };
+      });
+    }
+    function renderWizardBody(){
+      const targets = previewTargets();
+      const teacherClassOptions = Array.from(new Set(E.getAssignments()
+        .filter(a => a.teacherId === wizard.scopeTeacher).map(a => a.className)));
+      if(!wizard.scopeTeacherClass && teacherClassOptions.length) wizard.scopeTeacherClass = teacherClassOptions[0];
+      const teacherSubjectOptions = E.getAssignments()
+        .filter(a => a.teacherId === wizard.scopeTeacher && a.className === wizard.scopeTeacherClass)
+        .map(a => a.subject);
+      if(!wizard.scopeTeacherSubject && teacherSubjectOptions.length) wizard.scopeTeacherSubject = teacherSubjectOptions[0];
+
+      return `<div class="full">
+        <div class="wizard-step active"><div class="num">1</div><div class="content">
+          <label>Which period to push?</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <select id="wizSemester">
+              <option value="1" ${wizard.semester === 1 ? 'selected' : ''}>Semester One</option>
+              <option value="2" ${wizard.semester === 2 ? 'selected' : ''}>Semester Two</option>
+            </select>
+            <select id="wizPeriod">
+              ${E.periodsForSemester(wizard.semester).map(p =>
+                `<option value="${p.key}" ${String(wizard.period) === String(p.key) ? 'selected' : ''}>
+                  ${p.isExam ? 'Semester Exam' : p.label}
+                </option>`).join('')}
+            </select>
+          </div>
+        </div></div>
+
+        <div class="wizard-step active"><div class="num">2</div><div class="content">
+          <label>Who gets the push?</label>
+          <div class="scope-cards">
+            <div class="scope-card ${wizard.scope === 'school' ? 'active' : ''}" data-scope="school">
+              <span class="icon">🏫</span><strong>Whole school</strong><small>Every teacher</small>
+            </div>
+            <div class="scope-card ${wizard.scope === 'class' ? 'active' : ''}" data-scope="class">
+              <span class="icon">▤</span><strong>One class</strong><small>All subjects</small>
+            </div>
+            <div class="scope-card ${wizard.scope === 'teacher' ? 'active' : ''}" data-scope="teacher">
+              <span class="icon">👤</span><strong>One teacher</strong><small>One subject</small>
+            </div>
+          </div>
+          ${wizard.scope === 'class' ? `<select id="wizScopeClass" style="margin-top:10px">
+            ${classes.map(c => `<option ${c.name === wizard.scopeClass ? 'selected' : ''}>${E.esc(c.name)}</option>`).join('')}
+          </select>` : ''}
+          ${wizard.scope === 'teacher' ? `
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px">
+              <select id="wizScopeTeacher">
+                ${teachers.map(t => `<option value="${E.esc(t.id)}" ${t.id === wizard.scopeTeacher ? 'selected' : ''}>${E.esc(t.name)}</option>`).join('')}
+              </select>
+              <select id="wizScopeTeacherClass">
+                ${teacherClassOptions.map(c => `<option ${c === wizard.scopeTeacherClass ? 'selected' : ''}>${E.esc(c)}</option>`).join('')}
+              </select>
+              <select id="wizScopeTeacherSubject">
+                ${Array.from(new Set(teacherSubjectOptions)).map(s => `<option value="${E.esc(s)}" ${s === wizard.scopeTeacherSubject ? 'selected' : ''}>${E.esc(E.subjectName(s))}</option>`).join('')}
+              </select>
+            </div>` : ''}
+        </div></div>
+
+        <div class="wizard-step active"><div class="num">3</div><div class="content">
+          <label>Deadline</label>
+          <input type="datetime-local" id="wizDeadline" value="${wizard.deadline}">
+        </div></div>
+
+        <div class="wizard-step active"><div class="num">4</div><div class="content">
+          <label>Notes (optional)</label>
+          <input type="text" id="wizNotes" value="${E.esc(wizard.notes)}">
+        </div></div>
+
+        <div class="wizard-step active"><div class="num">✓</div><div class="content">
+          <label>Preview — ${targets.length} push${targets.length === 1 ? '' : 'es'}</label>
+          <div class="preview-box">
+            ${targets.length
+              ? targets.map(t => `<div class="row"><span class="teacher">${E.esc(t.teacherName)}</span><span class="subj">${E.esc(t.className)} · ${E.esc(E.subjectName(t.subject))}</span></div>`).join('')
+              : '<div style="text-align:center;color:#7a8498;padding:12px">No assignments match.</div>'}
+          </div>
+        </div></div>
+      </div>`;
+    }
+    function rebindWizard(){
+      document.querySelectorAll('[data-scope]').forEach(card => {
+        card.addEventListener('click', () => { wizard.scope = card.dataset.scope; refreshModalBody(); });
+      });
+      document.getElementById('wizSemester')?.addEventListener('change', e => {
+        wizard.semester = Number(e.target.value);
+        wizard.period = E.periodsForSemester(wizard.semester)[0].key;
+        refreshModalBody();
+      });
+      document.getElementById('wizPeriod')?.addEventListener('change', e => { wizard.period = e.target.value; refreshModalBody(); });
+      document.getElementById('wizScopeClass')?.addEventListener('change', e => { wizard.scopeClass = e.target.value; refreshModalBody(); });
+      document.getElementById('wizScopeTeacher')?.addEventListener('change', e => {
+        wizard.scopeTeacher = e.target.value;
+        wizard.scopeTeacherClass = ''; wizard.scopeTeacherSubject = '';
+        refreshModalBody();
+      });
+      document.getElementById('wizScopeTeacherClass')?.addEventListener('change', e => {
+        wizard.scopeTeacherClass = e.target.value; wizard.scopeTeacherSubject = ''; refreshModalBody();
+      });
+      document.getElementById('wizScopeTeacherSubject')?.addEventListener('change', e => { wizard.scopeTeacherSubject = e.target.value; });
+      document.getElementById('wizDeadline')?.addEventListener('change', e => { wizard.deadline = e.target.value; });
+      document.getElementById('wizNotes')?.addEventListener('input', e => { wizard.notes = e.target.value; });
+    }
+    function refreshModalBody(){
+      const form = document.getElementById('educoreModalForm');
+      if(!form) return;
+      const actionsHTML = form.querySelector('.educore-modal-actions')?.outerHTML || '';
+      form.innerHTML = renderWizardBody() + actionsHTML;
+      document.getElementById('educoreModalCancel').onclick = E.closeModal;
+      form.onsubmit = e => { e.preventDefault(); submitWizard(); };
+      rebindWizard();
+    }
+    async function submitWizard(){
+      if(!wizard.deadline){ E.toast('Pick a deadline.'); return; }
+      const deadlineIso = new Date(wizard.deadline).toISOString();
+      let scope;
+      if(wizard.scope === 'school') scope = { type:'school' };
+      else if(wizard.scope === 'class') scope = { type:'class', className: wizard.scopeClass };
+      else scope = { type:'teacher', teacherId: wizard.scopeTeacher, className: wizard.scopeTeacherClass, subject: wizard.scopeTeacherSubject };
+      const ok = await E.confirmModal({
+        title: 'Create pushes?',
+        message: `This will create (or replace) pushes.<br><br>
+          <strong>Period:</strong> P${wizard.period}<br>
+          <strong>Semester:</strong> ${wizard.semester}<br>
+          <strong>Deadline:</strong> ${new Date(deadlineIso).toLocaleString()}`,
+        submitText: 'Create pushes'
+      });
+      if(!ok) return;
+      const res = E.createGradePushes({ scope, semester: wizard.semester, period: wizard.period,
+        year: E.currentAcademicYear(), deadlineIso, notes: wizard.notes });
+      if(!res.ok){ E.toast(res.error); return; }
+      E.closeModal();
+      E.toast(`${res.created.length} created` + (res.replaced.length ? ` · ${res.replaced.length} replaced` : '') + (res.blocked.length ? ` · ${res.blocked.length} blocked` : ''));
+      paintAll();
+    }
+    E.openModal('Push a period', renderWizardBody(), 'Create pushes', () => submitWizard(), true);
+    rebindWizard();
+  }
+
+  /* ---------- REVIEW MODAL ---------- */
+  function openReviewModal(pushId){
+    const p = E.getGradePush(pushId);
+    if(!p) return;
+    const results = E.readResults().filter(r => r.pushId === p.id);
+    const students = (E.readStore(E.STORE_KEYS.students, []) || []).filter(s => s.class === p.className);
+
+    const rows = students.map(s => {
+      const r = results.find(x => x.studentId === s.id || x.student === s.name);
+      const score = r ? r.score : '';
+      const status = r ? r.status : 'missing';
+      const pill = status === 'submitted' ? 'orange' : status === 'approved' ? 'green' : status === 'returned' ? 'blue' : 'grey';
+      return `<tr>
+        <td><input type="checkbox" data-approve-student="${E.esc(s.id)}" ${status === 'submitted' ? 'checked' : 'disabled'}></td>
+        <td><div class="person"><div class="mini-avatar">${E.initials(s.name)}</div>
+          <div><strong>${E.esc(s.name)}</strong><small>${E.esc(s.id)}</small></div></div></td>
+        <td style="font-family:monospace;font-weight:800">${score === '' ? '—' : E.esc(String(score))}</td>
+        <td><span class="pill ${pill}">${status}</span></td>
+      </tr>`;
+    }).join('');
+
+    const html = `<div class="full">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6">
+        <strong>${E.esc(p.teacherName)}</strong> · ${E.esc(p.className)} · ${E.esc(E.subjectName(p.subject))}<br>
+        Submitted ${E.fmtDateTime(p.submittedAt)}
+      </div>
+      <div style="max-height:400px;overflow-y:auto;border:1px solid var(--line);border-radius:10px">
+        <table>
+          <thead><tr><th style="width:40px"><input type="checkbox" id="approveAllChk" checked></th>
+            <th>Student</th><th>Score</th><th>Status</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <div style="margin-top:14px;padding:12px 14px;background:#f8faff;border-radius:10px;
+        font-size:11.5px;color:#34415c;line-height:1.6">
+        <strong>Approve selected</strong> publishes only checked rows.<br>
+        <strong>Return for revision</strong> sends everything back with your note.
+      </div>
+      <div style="margin-top:14px">
+        <label>Return note (required if returning)</label>
+        <textarea id="reviewReturnReason" rows="2" placeholder="e.g. Amara's P2 scores look wrong"
+          style="width:100%;border:1px solid #dfe4ee;border-radius:8px;padding:10px 12px;font-size:12px;outline:none"></textarea>
+      </div>
+    </div>`;
+
+    E.openModal(`Review — ${p.teacherName}`, html, null, null, true);
+
+    document.getElementById('approveAllChk')?.addEventListener('change', e => {
+      document.querySelectorAll('[data-approve-student]:not([disabled])').forEach(cb => { cb.checked = e.target.checked; });
     });
-    document.getElementById('subjectSelect').addEventListener('change', e => {
-      if(state.dirty && !confirm('You have unsaved changes. Discard and switch subject?')){ e.target.value = state.subject; return; }
-      state.subject = e.target.value;
-      sessionStorage.setItem('educoreGradesheetSubject', state.subject);
-      refreshAll();
-    });
-    document.getElementById('semesterSelect').addEventListener('change', e => {
-      if(state.dirty && !confirm('You have unsaved changes. Discard and switch semester?')){ e.target.value = String(state.semester); return; }
-      state.semester = Number(e.target.value);
-      fillPeriods(); refreshAll();
-    });
-    document.getElementById('periodSelect').addEventListener('change', e => {
-      if(state.dirty && !confirm('You have unsaved changes. Discard and switch period?')){ e.target.value = String(state.period); return; }
-      state.period = e.target.value; refreshAll();
-    });
-    document.getElementById('yearSelect').addEventListener('change', e => {
-      if(state.dirty && !confirm('You have unsaved changes. Discard and switch year?')){ e.target.value = state.year; return; }
-      state.year = e.target.value; refreshAll();
-    });
-    document.getElementById('periodChips').addEventListener('click', e => {
-      const chip = e.target.closest('.period-chip'); if(!chip) return;
-      if(state.dirty && !confirm('You have unsaved changes. Discard and switch period?')) return;
-      state.period = chip.dataset.period;
-      document.getElementById('periodSelect').value = state.period;
-      refreshAll();
+
+    const actionsWrap = document.querySelector('.educore-modal-actions');
+    if(actionsWrap){
+      actionsWrap.innerHTML = `
+        <button type="button" class="ecedu-btn outline" id="closeReview">Close</button>
+        ${canReturn ? `<button type="button" class="ecedu-btn" id="returnBtn" style="background:#f4eaff;color:#6b3da5;border:1px solid #d9c9f0">↩ Return for revision</button>` : ''}
+        ${canApprove ? `<button type="button" class="ecedu-btn" id="approveBtn" style="background:#14805e">✓ Approve selected</button>` : ''}`;
+      document.getElementById('closeReview').onclick = E.closeModal;
+      document.getElementById('approveBtn')?.addEventListener('click', () => {
+        const ids = Array.from(document.querySelectorAll('[data-approve-student]:checked')).map(x => x.dataset.approveStudent);
+        if(!ids.length){ E.toast('Select at least one row.'); return; }
+        const res = E.approveGradePush(p.id, { studentIds: ids });
+        if(!res.ok){ E.toast(res.error); return; }
+        E.toast(`Approved ${res.rows} score${res.rows === 1 ? '' : 's'}.`);
+        E.closeModal(); paintAll();
+      });
+      document.getElementById('returnBtn')?.addEventListener('click', () => {
+        const reason = document.getElementById('reviewReturnReason').value.trim();
+        if(!reason){ E.toast('Add a note explaining what to fix.'); return; }
+        const d = new Date(Date.now() + 48 * 3600 * 1000); d.setMinutes(0,0,0);
+        const pad = n => String(n).padStart(2,'0');
+        const def = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        const newDeadline = prompt('New deadline for the teacher (YYYY-MM-DDTHH:MM):', def);
+        if(!newDeadline) return;
+        let iso;
+        try { iso = new Date(newDeadline).toISOString(); }
+        catch(e){ E.toast('Invalid date.'); return; }
+        const res = E.returnGradePush(p.id, reason, iso);
+        if(!res.ok){ E.toast(res.error); return; }
+        E.toast('Returned to teacher.'); E.closeModal(); paintAll();
+      });
+    }
+  }
+
+  /* ---------- REOPEN MODAL ---------- */
+  function openReopenModal(pushId){
+    const p = E.getGradePush(pushId);
+    if(!p) return;
+    const d = new Date(Date.now() + 48 * 3600 * 1000); d.setMinutes(0,0,0);
+    const pad = n => String(n).padStart(2,'0');
+    const def = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    const html = `<div class="full">
+      <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:12px">
+        Reopening <strong>${E.esc(p.teacherName)} · ${E.esc(p.className)} · ${E.esc(E.subjectName(p.subject))}</strong><br>
+        Current status: <strong>${E.esc(p.status)}</strong>
+      </div>
+      <label>New deadline</label>
+      <input type="datetime-local" id="reopenDeadline" value="${def}">
+      <div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.6">
+        Teacher can edit and resubmit until this new deadline.
+      </div>
+    </div>`;
+    E.openModal('Reopen push', html, 'Reopen', () => {
+      const val = document.getElementById('reopenDeadline').value;
+      if(!val){ E.toast('Pick a deadline.'); return; }
+      const res = E.reopenGradePush(p.id, new Date(val).toISOString());
+      if(!res.ok){ E.toast(res.error); return; }
+      E.closeModal(); E.toast('Reopened.'); paintAll();
     });
   }
-  function refreshAll(){ loadMarks(); paintPeriodChips(); paintMeta(); paintTable(); }
 
   /* ---------- INIT ---------- */
   paintHeader();
-  fillYears();
-  fillClasses();
-  if(!document.getElementById('classSelect').disabled){
-    fillSubjects();
-    if(!document.getElementById('subjectSelect').disabled){
-      fillPeriods(); refreshAll(); bindSelectors();
-    } else {
-      document.getElementById('pageBody').innerHTML = `
-        <div class="empty"><span class="icon">📚</span>
-          No scores have been recorded for you in <strong>${E.esc(state.className)}</strong> yet.</div>`;
-    }
-  } else {
-    document.getElementById('pageBody').innerHTML = `
-      <div class="empty"><span class="icon">📚</span>
-        No classes are available to you. Ask the Registrar to assign you to a class.</div>`;
-  }
+  if(isTeacher) state.tab = 'mine';
+  else state.tab = 'board';
+  paintAll();
+
+  setInterval(() => {
+    if((state.tab === 'mine' || state.tab === 'board') && !state.dirty) paintAll();
+  }, 60 * 1000);
 })();
 </script>
 </body>

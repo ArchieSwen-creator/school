@@ -81,7 +81,8 @@
 
   .person{display:flex;align-items:center;gap:10px}
   .mini-avatar{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;
-    background:#edf2ff;color:#3859b7;font-size:10px;font-weight:700}
+    background:#edf2ff;color:#3859b7;font-size:10px;font-weight:700;overflow:hidden}
+  .mini-avatar img{width:100%;height:100%;object-fit:cover}
   .person strong{display:block;font-size:12px}
   .person small{display:block;color:var(--muted);font-size:10px;margin-top:4px}
 
@@ -96,6 +97,79 @@
 
   .empty{padding:60px 20px;text-align:center;color:var(--muted);font-size:13px}
   .empty .icon{font-size:48px;margin-bottom:14px;opacity:.5;display:block}
+
+  /* View modal */
+  .view-head{
+    display:flex;align-items:center;gap:16px;
+    padding-bottom:16px;border-bottom:1px solid #e8ebf2;margin-bottom:6px;
+  }
+  .view-avatar{
+    width:72px;height:72px;border-radius:18px;background:#edf2ff;
+    color:#3859b7;display:grid;place-items:center;font-weight:800;font-size:20px;
+    overflow:hidden;flex:0 0 72px;border:2px solid #d8e8ff;
+  }
+  .view-avatar img{width:100%;height:100%;object-fit:cover}
+  .view-name{margin:0;font-size:18px;color:#14213d}
+  .view-sub{font-size:12px;color:#73849a;margin-top:4px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .view-pill{
+    display:inline-flex;align-items:center;gap:5px;padding:3px 9px;
+    border-radius:20px;font-size:10px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;
+  }
+  .view-pill.green{background:#e6f7f0;color:#16835f}
+  .view-pill.orange{background:#fff2dd;color:#a86414}
+  .view-pill.red{background:#ffeaec;color:#bd3b48}
+  .view-pill.blue{background:#edf2ff;color:#3b5cc1}
+  .view-pill.grey{background:#eef1f6;color:#59647c}
+
+  .view-section{margin-top:16px}
+  .view-section-head{
+    font-size:10px;font-weight:800;color:#73849a;
+    text-transform:uppercase;letter-spacing:1px;
+    padding-bottom:6px;border-bottom:1px solid #e8ebf2;margin-bottom:8px;
+  }
+  .view-row{
+    display:flex;justify-content:space-between;gap:14px;
+    padding:7px 0;font-size:12.5px;border-bottom:1px dotted #f0f2f7;
+  }
+  .view-row:last-child{border-bottom:0}
+  .view-row .label{
+    color:#73849a;font-weight:700;font-size:10px;
+    text-transform:uppercase;letter-spacing:.5px;flex:0 0 42%;
+  }
+  .view-row .value{
+    color:#14213d;text-align:right;word-break:break-word;font-weight:700;
+  }
+  .view-child-row{
+    display:flex;justify-content:space-between;gap:10px;
+    padding:9px 12px;background:#f8faff;border:1px solid #e8ebf2;border-radius:8px;
+    margin-bottom:6px;font-size:12.5px;
+  }
+  .view-child-row:last-child{margin-bottom:0}
+  .view-child-row .who strong{color:#14213d;font-weight:700;display:block}
+  .view-child-row .who small{color:#73849a;font-size:10.5px;display:block;margin-top:2px}
+  .view-child-row .cls-pill{
+    display:inline-flex;align-items:center;
+    background:#edf2ff;color:#3b5cc1;
+    padding:3px 9px;border-radius:12px;font-size:10px;font-weight:800;
+    white-space:nowrap;align-self:center;
+  }
+
+  /* Edit modal — profile block */
+  .personal-block-label{
+    font-size:12px;color:#34415c;letter-spacing:.5px;text-transform:uppercase;
+    padding-top:6px;border-top:1px dashed #e8ebf2;margin-top:6px;
+  }
+  .photo-field{display:flex;gap:14px;align-items:flex-start;margin-top:6px}
+  .photo-preview{
+    width:88px;height:88px;flex:0 0 88px;border-radius:14px;
+    border:2px dashed #c9d1e0;background:#f8faff;
+    display:grid;place-items:center;overflow:hidden;
+    color:#7a8498;font-size:11px;text-align:center;position:relative;
+    font-weight:800;
+  }
+  .photo-preview img{width:100%;height:100%;object-fit:cover}
+  .photo-actions{display:flex;flex-direction:column;gap:6px;flex:1}
+  .photo-actions .help{font-size:10.5px;color:#73849a;line-height:1.5}
 
   @media (max-width:850px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
   @media (max-width:650px){
@@ -169,7 +243,7 @@
 
 </div>
 
-<script src="educore-shared.js"></script>
+<script src="educore-shared.js?v=15"></script>
 <script>
 (function(){
   'use strict';
@@ -201,6 +275,20 @@
     if(!needle) return [];
     return (E.readStore(E.STORE_KEYS.students, []) || [])
       .filter(s => String(s.guardian || '').trim().toLowerCase() === needle);
+  }
+
+  function linkedUserForParent(parent){
+    if(!parent) return null;
+    const users = E.readStore(E.STORE_KEYS.users, []) || [];
+    return users.find(u => u.role === 'Parent' &&
+      String(u.name || '').trim().toLowerCase() === String(parent.name || '').trim().toLowerCase()) || null;
+  }
+
+  function parentPhoto(parent){
+    if(!parent) return '';
+    const u = linkedUserForParent(parent);
+    if(u && u.photo) return u.photo;
+    return '';
   }
 
   function paintTable(){
@@ -237,10 +325,15 @@
         ? kids.map(k => `<span class="pill blue">${E.esc(k.name)} · ${E.esc(k.class)}</span>`).join(' ')
         : '<span class="pill grey">No students linked</span>';
 
+      const photo = parentPhoto(p);
+      const avatar = photo
+        ? `<img src="${E.esc(photo)}" alt="">`
+        : E.initials(p.name);
+
       return `<tr>
         <td>
           <div class="person">
-            <div class="mini-avatar">${E.initials(p.name)}</div>
+            <div class="mini-avatar">${avatar}</div>
             <div>
               <strong>${E.esc(p.name)}</strong>
               <small>${E.esc(p.address || p.id)}</small>
@@ -253,6 +346,7 @@
         <td class="chips-cell">${kidChips}</td>
         <td>
           <div class="row-actions">
+            <button class="btn outline" data-view="${E.esc(p.id)}">View</button>
             ${canEdit ? `<button class="btn secondary" data-edit="${E.esc(p.id)}">Edit</button>` : ''}
             ${canDelete ? `<button class="btn danger" data-delete="${E.esc(p.id)}">Delete</button>` : ''}
           </div>
@@ -266,17 +360,137 @@
     document.getElementById('count').textContent = rows.length;
   }
 
+  /* ============================================================
+     VIEW MODAL — parent basic information
+     ============================================================ */
+  function openViewModal(parentId){
+    const parents = E.getParents();
+    const p = parents.find(x => x.id === parentId);
+    if(!p) return;
+
+    const linkedUser = linkedUserForParent(p);
+    const photo = parentPhoto(p);
+    const kids = studentsForParent(p.name);
+
+    function renderSection(title, rows){
+      const filled = rows.filter(([, v]) => v && String(v).trim() && String(v).trim() !== '—');
+      if(!filled.length) return '';
+      return `<div class="view-section">
+        <div class="view-section-head">${E.esc(title)}</div>
+        ${filled.map(([label, value]) => `
+          <div class="view-row">
+            <span class="label">${E.esc(label)}</span>
+            <strong class="value">${E.esc(String(value))}</strong>
+          </div>`).join('')}
+      </div>`;
+    }
+
+    const personalHTML = renderSection('Personal & identity', [
+      ['Full name', p.name],
+      ['Registry ID', p.id],
+      ['Relationship', p.relationship || '—'],
+      ['Nationality', linkedUser?.nationality || ''],
+      ['County of origin', linkedUser?.countyOfOrigin || ''],
+      ['Ethnic group', linkedUser?.ethnicGroup || ''],
+      ['Religion', linkedUser?.religion || ''],
+      ['Qualification', linkedUser?.qualification || '']
+    ]);
+
+    const contactHTML = renderSection('Contact & registry', [
+      ['Phone', p.phone || '—'],
+      ['Email', p.email || '—'],
+      ['Address', p.address || '—'],
+      ['Occupation', p.occupation || '—']
+    ]);
+
+    let childrenHTML = '';
+    if(kids.length){
+      childrenHTML = `<div class="view-section">
+        <div class="view-section-head">Linked children (${kids.length})</div>
+        ${kids.map(k => `
+          <div class="view-child-row">
+            <div class="who">
+              <strong>${E.esc(k.name)}</strong>
+              <small>${E.esc(k.id)} · ${E.esc(k.status || 'Active')}</small>
+            </div>
+            <span class="cls-pill">${E.esc(k.class)}</span>
+          </div>`).join('')}
+      </div>`;
+    }
+
+    const accountHTML = linkedUser
+      ? renderSection('Account', [
+          ['Username', linkedUser.username],
+          ['Account status', linkedUser.active ? 'Active' : 'Disabled'],
+          ['Public verify', linkedUser.showInPublicVerify ? '✓ Shown' : 'Hidden'],
+          ['Last login', linkedUser.lastLogin ? E.fmtDateTime(linkedUser.lastLogin) : 'Never']
+        ])
+      : '';
+
+    const avatarHTML = photo
+      ? `<img src="${E.esc(photo)}" alt="">`
+      : E.initials(p.name);
+
+    const relPillClass = p.relationship === 'Father' ? 'blue'
+                       : p.relationship === 'Mother' ? 'green'
+                       : p.relationship === 'Guardian' ? 'orange'
+                       : 'grey';
+
+    const html = `
+      <div class="full view-head">
+        <div class="view-avatar">${avatarHTML}</div>
+        <div>
+          <h3 class="view-name">${E.esc(p.name)}</h3>
+          <div class="view-sub">
+            ${p.relationship ? `<span class="view-pill ${relPillClass}">${E.esc(p.relationship)}</span>` : ''}
+            <span>${kids.length} ${kids.length === 1 ? 'child' : 'children'}</span>
+            <span style="color:#c5cee0">·</span>
+            <span>${E.esc(p.id)}</span>
+          </div>
+        </div>
+      </div>
+
+      ${personalHTML}
+      ${contactHTML}
+      ${childrenHTML}
+      ${accountHTML}
+    `;
+
+    E.openModal('Parent profile', html, 'Edit parent', () => {
+      E.closeModal();
+      const target = E.parentById(p.id);
+      if(target) openParentModal(target.id);
+    }, true);
+  }
+
+  /* ============================================================
+     ADD / EDIT PARENT (extended with profile fields)
+     ============================================================ */
   function openParentModal(existingId){
     const existing = existingId ? E.parentById(existingId) : null;
     const isNew = !existing;
     const p = existing || { name:'', phone:'', email:'', address:'', occupation:'', relationship:'', notes:'' };
+
+    const linkedUser = existing ? linkedUserForParent(existing) : null;
+    const profile = {
+      photo: linkedUser?.photo || '',
+      nationality: linkedUser?.nationality || '',
+      countyOfOrigin: linkedUser?.countyOfOrigin || '',
+      ethnicGroup: linkedUser?.ethnicGroup || '',
+      religion: linkedUser?.religion || '',
+      qualification: linkedUser?.qualification || ''
+    };
+
+    const photoPreviewHTML = profile.photo
+      ? `<img src="${E.esc(profile.photo)}" alt="">`
+      : (p.name ? E.initials(p.name) : 'No photo');
 
     const relOptions = ['Father','Mother','Guardian','Grandparent','Uncle','Aunt','Sibling','Other'];
     const currentRel = p.relationship || '';
 
     const html = `
       <div class="full"><label>Parent / guardian name <span style="color:#bd3b48">*</span></label>
-        <input name="name" required value="${E.esc(p.name||'')}"
+        <input name="name" id="parentNameInput" required value="${E.esc(p.name||'')}"
           placeholder="e.g. Mr. & Mrs. Johnson">
         <small style="color:var(--muted);font-size:10px;display:block;margin-top:4px">
           This exact name appears in the student's <strong>Guardian</strong> dropdown.
@@ -302,6 +516,49 @@
       </div>
       <div class="full"><label>Notes</label>
         <textarea name="notes" rows="3" placeholder="Anything the school should know...">${E.esc(p.notes||'')}</textarea>
+      </div>
+
+      <div class="full personal-block-label">Personal information</div>
+
+      <div class="full">
+        <label>Photo</label>
+        <div class="photo-field">
+          <div class="photo-preview" id="parentPhotoPreview">${photoPreviewHTML}</div>
+          <div class="photo-actions">
+            <input type="file" id="parentPhotoInput" accept="image/*" style="display:none">
+            <input type="hidden" name="photo" id="parentPhotoHidden" value="${E.esc(profile.photo)}">
+            <button type="button" class="btn secondary" id="parentPhotoPickBtn">📷 Upload photo</button>
+            <button type="button" class="btn outline" id="parentPhotoClearBtn"
+              ${profile.photo ? '' : 'style="display:none"'}>✕ Remove photo</button>
+            <span class="help">Square · max 1 MB · PNG / JPG / WEBP / GIF</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label>Nationality</label>
+        <input name="nationality" value="${E.esc(profile.nationality)}" placeholder="e.g. Liberian">
+      </div>
+
+      <div>
+        <label>County of origin</label>
+        <input name="countyOfOrigin" value="${E.esc(profile.countyOfOrigin)}" placeholder="e.g. Montserrado">
+      </div>
+
+      <div>
+        <label>Ethnic group</label>
+        <input name="ethnicGroup" value="${E.esc(profile.ethnicGroup)}" placeholder="e.g. Kpelle">
+      </div>
+
+      <div>
+        <label>Religion</label>
+        <input name="religion" value="${E.esc(profile.religion)}" placeholder="e.g. Christian">
+      </div>
+
+      <div class="full">
+        <label>Qualification</label>
+        <input name="qualification" value="${E.esc(profile.qualification)}"
+          placeholder="e.g. BSc Economics">
       </div>`;
 
     E.openModal(isNew ? 'Add parent / guardian' : `Edit · ${p.name}`, html,
@@ -316,20 +573,76 @@
           notes: d.notes || ''
         };
         let res;
+        let parentRecord;
         if(isNew){
           res = E.addParent(payload);
           if(!res.ok){ E.toast(res.error); return; }
-          E.audit('create', `Parent ${res.parent.id}`, '', res.parent.name);
-          E.toast('Parent added to registry.');
+          parentRecord = res.parent;
+          E.audit('create', `Parent ${parentRecord.id}`, '', parentRecord.name);
         } else {
           res = E.updateParent(existing.id, payload);
           if(!res.ok){ E.toast(res.error); return; }
-          E.audit('update', `Parent ${existing.id}`, existing.name, res.parent.name);
-          E.toast('Parent updated.');
+          parentRecord = res.parent;
+          E.audit('update', `Parent ${existing.id}`, existing.name, parentRecord.name);
         }
+
+        /* Write profile fields to linked parent user account.
+           Parents match by NAME, so we pass the (possibly new) name
+           inside the patch so updateLinkedUserProfile can find them. */
+        const profilePatch = {
+          name: parentRecord.name,
+          photo: d.photo || '',
+          nationality: d.nationality || '',
+          countyOfOrigin: d.countyOfOrigin || '',
+          ethnicGroup: d.ethnicGroup || '',
+          religion: d.religion || '',
+          qualification: d.qualification || ''
+        };
+        const linkRes = E.updateLinkedUserProfile('Parent', null, profilePatch);
+        if(!linkRes.ok){
+          E.toast(isNew
+            ? 'Parent added. Note: no linked user account to store profile fields.'
+            : 'Parent saved. Note: no linked user account to store profile fields.');
+        } else {
+          E.toast(isNew ? 'Parent added to registry.' : 'Parent updated.');
+        }
+
         E.closeModal();
         paintTable();
       }, true);
+
+    /* Photo picker */
+    const photoInput  = document.getElementById('parentPhotoInput');
+    const photoHidden = document.getElementById('parentPhotoHidden');
+    const photoPick   = document.getElementById('parentPhotoPickBtn');
+    const photoClear  = document.getElementById('parentPhotoClearBtn');
+    const photoPrev   = document.getElementById('parentPhotoPreview');
+    const nameInput   = document.getElementById('parentNameInput');
+
+    photoPick?.addEventListener('click', () => photoInput.click());
+    photoInput?.addEventListener('change', async () => {
+      const file = photoInput.files[0];
+      if(!file) return;
+      const read = await E.readPhotoFile(file);
+      if(!read.ok){ E.toast(read.error); photoInput.value = ''; return; }
+      const small = await E.downscalePhoto(read.dataUrl, 256);
+      photoHidden.value = small;
+      photoPrev.innerHTML = `<img src="${small}" alt="">`;
+      photoClear.style.display = '';
+    });
+    photoClear?.addEventListener('click', () => {
+      photoHidden.value = '';
+      const n = nameInput.value.trim();
+      photoPrev.innerHTML = n ? E.initials(n) : 'No photo';
+      photoClear.style.display = 'none';
+      photoInput.value = '';
+    });
+    nameInput?.addEventListener('input', () => {
+      if(!photoHidden.value && photoPrev && !photoPrev.querySelector('img')){
+        const n = nameInput.value.trim();
+        photoPrev.textContent = n ? E.initials(n) : 'No photo';
+      }
+    });
   }
 
   function deleteParentConfirm(id){
@@ -377,8 +690,10 @@
   document.getElementById('exportBtn').addEventListener('click', exportCSV);
 
   document.getElementById('tbody').addEventListener('click', e => {
+    const view = e.target.closest('[data-view]');
     const edit = e.target.closest('[data-edit]');
     const del  = e.target.closest('[data-delete]');
+    if(view) openViewModal(view.dataset.view);
     if(edit) openParentModal(edit.dataset.edit);
     if(del)  deleteParentConfirm(del.dataset.delete);
   });
